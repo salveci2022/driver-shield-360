@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <title>Cadastro - Pessoas de confiança</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="dark">
+    <div class="container">
+        <h1>Cadastro de Pessoas de Confiança</h1>
+        <p class="subtitle">
+            Cadastre até 3 pessoas para receberem os alertas de emergência do motorista.
+        </p>
+
+        {% if msg %}
+        <p class="status-text">{{ msg }}</p>
+        {% endif %}
+
+        <form method="post" class="form-box">
+            <label for="name">Nome do contato:</label>
+            <input id="name" name="name" type="text" required />
+
+            <label for="login">Login (e-mail ou usuário):</label>
+            <input id="login" name="login" type="text" required />
+
+            <label for="password">Senha:</label>
+            <input id="password" name="password" type="password" required />
+
+            <button type="submit" class="refresh-main">Salvar contato</button>
+        </form>
+
+        <h2 class="section-title">Contatos cadastrados</h2>
+        <ul class="contacts-list">
+            {% if contacts %}
+                {% for c in contacts %}
+                    <li>{{ c.name }} ({{ c.login }})</li>
+                {% endfor %}
+            {% else %}
+                <li>Nenhum contato cadastrado ainda.</li>
+            {% endif %}
+        </ul>
+
+        <p class="hint">
+            Estes contatos poderão acessar o painel em<br />
+            <strong>/login</strong> com o login e senha cadastrados aqui.
+        </p>
+    </div>
+</body>
+</html>
