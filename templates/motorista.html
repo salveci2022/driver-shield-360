@@ -143,17 +143,17 @@
                     const lat = pos.coords.latitude;
                     const lng = pos.coords.longitude;
                     if (gpsStatus) {
-                        gpsStatus.textContent = "Localização obtida: lat " + lat.toFixed(5) + ", lng " + lng.toFixed(5);
+                        gpsStatus.textContent = "Localização obtida com sucesso: lat " + lat.toFixed(5) + ", lng " + lng.toFixed(5);
                     }
-                    statusText.textContent = "Localização obtida com sucesso. Enviando alerta...";
+                    statusText.textContent = "Enviando alerta com localização em tempo real para as pessoas de confiança...";
                     sendPanicAlert(lat, lng);
                 },
                 (err) => {
                     console.error(err);
                     if (gpsStatus) {
-                        gpsStatus.textContent = "O navegador bloqueou ou não conseguiu acessar o GPS deste aparelho.";
+                        gpsStatus.textContent = "O navegador bloqueou ou não conseguiu acessar o GPS deste aparelho (sem lat/lng).";
                     }
-                    statusText.textContent = "Não foi possível obter a localização automática. Enviando alerta mesmo assim, sem GPS.";
+                    statusText.textContent = "Enviando alerta mesmo assim, sem localização. Oriente o motorista a ativar o GPS/Localização do aparelho.";
                     // envia mesmo sem localização para não perder o registro da ocorrência
                     sendPanicAlert(null, null);
                 },
