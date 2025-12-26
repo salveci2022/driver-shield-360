@@ -45,6 +45,62 @@
             Estes contatos poderão acessar o painel em<br />
             <strong>/login</strong> com o login e senha cadastrados aqui.
         </p>
+    
+        <div class="cadastro-extra-actions" style="margin-top:24px; display:flex; flex-wrap:wrap; gap:10px;">
+            <button type="button" onclick="limparFormulario()" class="btn-secondary">
+                Limpar campos
+            </button>
+            <button type="button" onclick="recadastrarPessoa()" class="btn-secondary">
+                Recadastrar pessoa
+            </button>
+            <button type="button" onclick="apagarContatos()" class="btn-danger">
+                Apagar todas as pessoas de confiança
+            </button>
+            <button type="button" onclick="sairCadastro()" class="btn-secondary">
+                Sair
+            </button>
+        </div>
+
+        <script>
+            function getCadastroForm() {
+                return document.querySelector("form");
+            }
+
+            function limparFormulario() {
+                var form = getCadastroForm();
+                if (form) {
+                    form.reset();
+                    var first = form.querySelector("input,select,textarea");
+                    if (first) first.focus();
+                }
+            }
+
+            function recadastrarPessoa() {
+                limparFormulario();
+            }
+
+            function apagarContatos() {
+                if (!confirm("Tem certeza que deseja apagar TODAS as pessoas de confiança cadastradas?")) return;
+
+                fetch("/api/clear_contacts", { method: "POST" })
+                    .then(function(res) {
+                        if (res.ok) {
+                            alert("Contatos apagados com sucesso.");
+                            location.reload();
+                        } else {
+                            alert("Não foi possível apagar os contatos.");
+                        }
+                    })
+                    .catch(function() {
+                        alert("Erro ao comunicar com o servidor.");
+                    });
+            }
+
+            function sairCadastro() {
+                window.location.href = "/login";
+            }
+        </script>
+
     </div>
 </body>
 </html>

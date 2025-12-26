@@ -46,6 +46,14 @@ def api_contacts():
     return jsonify(public_contacts)
 
 
+
+
+@app.route("/api/clear_contacts", methods=["POST"])
+def api_clear_contacts():
+    """Limpa TODAS as pessoas de confiança cadastradas."""
+    contacts.clear()
+    return jsonify({"status": "ok", "message": "Contatos apagados."})
+
 # ====== LOGIN DAS PESSOAS DE CONFIANÇA E PAINEL ======
 
 @app.route("/login", methods=["GET", "POST"])
@@ -115,6 +123,15 @@ def get_alerts():
 def clear_alerts():
     alerts.clear()
     return jsonify({"status": "ok", "message": "Alertas limpos."})
+
+
+# ====== RELATÓRIO DE OCORRÊNCIAS ======
+
+@app.route("/relatorio")
+def relatorio():
+    """Página simples para listar as ocorrências registradas."""
+    return render_template("relatorio.html", alerts=alerts)
+
 
 
 if __name__ == "__main__":
