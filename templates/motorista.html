@@ -105,8 +105,16 @@ function renderPills(){
 }
 
 function updateButtonState(){
-  const ok = $("acceptTerms").checked && $("driverName").value.trim().length >= 2 && !!selectedOcc;
+  const ok = $("acceptTerms").checked && ($("driverName").value||"").trim().length >= 2 && !!selectedOcc;
   $("panicBtn").disabled = !ok;
+
+  // Mantém o botão redondo (FAB) sincronizado com as regras de aceite/nome/ocorrência
+  const fab = document.getElementById("panicFab");
+  if(fab){
+    fab.setAttribute("aria-disabled", String(!ok));
+    fab.style.pointerEvents = ok ? "auto" : "none";
+    fab.style.opacity = ok ? "1" : ".35";
+  }
 }
 
 async function loadContacts(){
@@ -190,6 +198,9 @@ async function clearAlerts(){
 $("acceptTerms").addEventListener("change", ()=>{ updateButtonState(); if($("acceptTerms").checked) acceptTerms(); });
 $("driverName").addEventListener("input", updateButtonState);
 $("panicBtn").addEventListener("click", sendPanic);
+const panicFab=document.getElementById("panicFab");
+if(panicFab){ panicFab.addEventListener("click", ()=> $("panicBtn").click()); }
+
 $("reloadBtn").addEventListener("click", ()=>location.reload());
 $("clearBtn").addEventListener("click", clearAlerts);
 
@@ -202,5 +213,11 @@ if("serviceWorker" in navigator){
   navigator.serviceWorker.register("/static/sw.js").catch(()=>{});
 }
 </script>
+
+<button id="panicFab" class="panic-fab" type="button" aria-label="Botão de pânico" aria-disabled="true">
+  <span class="fab-icon">🚨</span>
+  <span class="fab-label">Pânico</span>
+</button>
+
 </body>
 </html>

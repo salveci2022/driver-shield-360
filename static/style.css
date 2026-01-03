@@ -106,9 +106,24 @@ input::placeholder{color:rgba(234,246,255,.45)}
 }
 .big-panic{
   width:100%;
-  padding:16px 14px;
-  border-radius:18px;
+  padding:18px 16px;
+  border-radius:999px;
   font-size:16px;
+  font-weight:800;
+  letter-spacing:.4px;
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(90deg, rgba(0,255,194,.75), rgba(0,160,255,.75));
+  box-shadow:0 14px 40px rgba(0,0,0,.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor:pointer;
+  transition:transform .08s ease, filter .12s ease;
+}
+.big-panic:active{ transform:scale(.985); }
+.big-panic:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  filter:saturate(.6);
 }
 .small{font-size:12px;color:var(--muted)}
 .list{margin:10px 0 0;padding-left:18px;color:var(--muted)}
@@ -148,3 +163,48 @@ input::placeholder{color:rgba(234,246,255,.45)}
   margin-top:10px; color:var(--muted); font-size:13px;
 }
 .checkbox input{width:18px;height:18px;margin-top:2px}
+
+
+
+/* Botão de pânico redondo (atalho visual no celular) */
+.panic-fab{
+  position:fixed;
+  right:22px;
+  bottom:22px;
+  width:84px;
+  height:84px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 40%),
+             linear-gradient(135deg, rgba(255,70,100,.95), rgba(255,170,0,.92));
+  box-shadow:0 20px 55px rgba(0,0,0,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  cursor:pointer;
+  user-select:none;
+  transition: transform .08s ease, filter .12s ease;
+}
+.panic-fab:active{ transform: scale(.97); }
+.panic-fab[aria-disabled="true"]{
+  opacity:.35;
+  cursor:not-allowed;
+  filter:saturate(.6);
+}
+.panic-fab .fab-icon{
+  font-size:30px;
+  line-height:1;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.45));
+}
+.panic-fab .fab-label{
+  position:absolute;
+  bottom:-28px;
+  font-size:12px;
+  opacity:.8;
+  white-space:nowrap;
+}
+/* no desktop, esconde o redondo */
+@media (min-width: 900px){
+  .panic-fab{ display:none; }
+}
