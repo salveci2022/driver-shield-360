@@ -1,37 +1,61 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Termos – {{ app_name }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Termos de Uso e Privacidade – Driver Shield 360</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.55;margin:0;background:#0b1220;color:#eef2ff}
+    .wrap{max-width:920px;margin:0 auto;padding:28px 18px 60px}
+    h1{font-size:26px;margin:0 0 14px}
+    h2{font-size:18px;margin:22px 0 8px}
+    p,li{color:#cbd5e1}
+    .box{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 16px;background:rgba(0,0,0,.25)}
+    small{color:#94a3b8}
+  </style>
 </head>
 <body>
   <div class="wrap">
-    <header class="top">
-      <h1>Termo de Uso, Aviso Legal e Política de Privacidade (LGPD)</h1>
-      <p class="sub">Última atualização: {{ (TERMS_VERSION if TERMS_VERSION is defined else "") }}</p>
-    </header>
+    <h1>Termos de Uso, Aviso Legal e Política de Privacidade (LGPD)</h1>
+    <div class="box"><small>Última atualização: 03/01/2026</small></div>
 
-    <section class="card">
-      <div class="muted small">
-        Cole aqui o texto completo do seu termo (o “bem fechado” que você já aprovou).
-        Este arquivo é exibido no link <code>/termos</code>.
-      </div>
+    <h2>1. Finalidade</h2>
+    <p>O <b>Driver Shield 360</b> é um sistema de <b>apoio preventivo</b> para motoristas de aplicativo, destinado a facilitar o envio voluntário de alertas para pessoas de confiança cadastradas pelo próprio usuário.</p>
 
-      <hr>
+    <h2>2. Não substitui emergência</h2>
+    <p>O sistema <b>não substitui</b> serviços oficiais (190/192/193) e não garante prevenção de crimes ou resposta imediata.</p>
 
-      <h2>Resumo de segurança e limitações</h2>
-      <ul>
-        <li>O sistema depende de internet, bateria, permissões e funcionamento do aparelho/navegador.</li>
-        <li>Se o celular estiver desligado, sem sinal, sem permissão, ou com falha de rede, alertas e registros podem não ocorrer.</li>
-        <li>O sistema é apoio preventivo e não substitui 190/192/193.</li>
-      </ul>
+    <h2>3. Limitações técnicas</h2>
+    <p>O funcionamento depende de internet, bateria, permissões do aparelho e disponibilidade do navegador. Falhas nessas condições podem impedir o envio de alertas, sem responsabilidade do operador do sistema.</p>
 
-      <div class="actions">
-        <a class="btn" href="{{ url_for('motorista') }}">Voltar</a>
-      </div>
-    </section>
+    <h2>4. Dados tratados (LGPD)</h2>
+    <p>O sistema trata apenas dados mínimos necessários ao funcionamento, conforme princípio da necessidade:</p>
+    <ul>
+      <li>Nome/apelido informado</li>
+      <li>Tipo de ocorrência selecionada</li>
+      <li>Data/hora do acionamento</li>
+      <li>Geolocalização aproximada <b>somente quando autorizada</b> e apenas no momento do alerta</li>
+    </ul>
+    <p><b>O sistema não coleta</b> áudio, vídeo, mensagens privadas, contatos do aparelho, dados bancários ou dados sensíveis.</p>
+
+    <h2>5. Base legal</h2>
+    <p>Tratamento baseado em <b>consentimento</b> do usuário (LGPD, art. 7º, I) e na finalidade de apoio preventivo.</p>
+
+    <h2>6. Compartilhamento</h2>
+    <p>Os dados do alerta são compartilhados somente com as pessoas de confiança cadastradas pelo usuário, no momento do acionamento. Não há venda, comercialização ou compartilhamento com terceiros não autorizados.</p>
+
+    <h2>7. Isenção de responsabilidade</h2>
+    <p>O operador do sistema não se responsabiliza por falhas de conexão, falhas do aparelho, indisponibilidade do navegador, ações de terceiros ou ausência de resultado.</p>
+
+    <h2>8. Direitos do titular</h2>
+    <p>O usuário pode solicitar informações, correções ou exclusão quando aplicável, conforme a LGPD.</p>
+
+    <h2>9. Aceite</h2>
+    <p>Ao marcar o aceite e utilizar o sistema, o usuário declara ciência e concordância com estes termos.</p>
+
+    <div class="box">
+      <p><b>Declaração:</b> Este sistema é apoio tecnológico complementar e não constitui promessa de segurança absoluta.</p>
+    </div>
   </div>
 </body>
 </html>
