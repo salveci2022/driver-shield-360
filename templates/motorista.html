@@ -5,6 +5,16 @@
     <title>Driver Shield 360 - Motorista</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="/static/style.css" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#0b1220">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/driver_shield_360_192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/static/driver_shield_360.png">
+  <link rel="apple-touch-icon" href="/static/driver_shield_360.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 </head>
 <body class="dark">
     <div class="container motorista-container">
@@ -215,6 +225,15 @@
             window.location.href = "/";
         }
     </script>
+
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/static/sw.js").catch(console.error);
+    });
+  }
+</script>
 
 </body>
 </html>
