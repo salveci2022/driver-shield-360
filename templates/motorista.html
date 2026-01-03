@@ -45,6 +45,16 @@
 
         <p id="selectedOccText" class="selected-occ-text">Ocorrência selecionada: <strong>Abordagem suspeita</strong></p>
 
+        
+        <!-- LGPD / Termos de Uso -->
+        <div class="lgpd-accept" style="margin-top:18px;font-size:14px;">
+            <label>
+                <input type="checkbox" id="acceptTerms">
+                Declaro que li e concordo com os
+                <a href="/termos" target="_blank">Termos de Uso e Política de Privacidade</a>.
+            </label>
+        </div>
+
         <div class="panic-wrapper">
             <button id="panicButton" class="panic-btn-round">
                 <span class="panic-icon">🚨</span>
@@ -233,6 +243,25 @@
       navigator.serviceWorker.register("/static/sw.js").catch(console.error);
     });
   }
+</script>
+
+
+<script>
+  const acceptTerms = document.getElementById("acceptTerms");
+  const panicBtn = document.getElementById("panicButton");
+
+  // Bloqueia o botão até aceitar os termos
+  panicBtn.disabled = true;
+  panicBtn.style.opacity = "0.6";
+
+  acceptTerms.addEventListener("change", () => {
+    panicBtn.disabled = !acceptTerms.checked;
+    panicBtn.style.opacity = acceptTerms.checked ? "1" : "0.6";
+
+    if (acceptTerms.checked) {
+      fetch("/api/accept-terms", { method: "POST" }).catch(() => {});
+    }
+  });
 </script>
 
 </body>
