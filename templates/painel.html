@@ -4,85 +4,161 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Painel — Driver Shield 360</title>
+
   <link rel="stylesheet" href="/static/style.css">
   <link rel="icon" href="/static/driver_shield_360.png">
 </head>
+
 <body>
 <div class="container">
+
   <div class="header">
     <div class="brand">
-      <div class="logo"><img src="/static/driver_shield_360.png" alt="Logo"></div>
+      <div class="logo">
+        <img src="/static/driver_shield_360.png" alt="Logo">
+      </div>
       <div>
-        <h1 class="h1">Painel (contato de confiança)</h1>
-        <div class="subtitle">Visualização rápida dos últimos alertas.</div>
+        <h1 class="h1">Painel da Pessoa de Confiança</h1>
+        <div class="subtitle">
+          Alertas aparecem somente quando o motorista aciona o botão.
+        </div>
       </div>
     </div>
   </div>
 
   <div class="card">
+
+    <!-- 🔊 CONTROLE DE SOM -->
     <div class="btnbar">
-      <a class="btn btn-secondary" href="/motorista">Painel do motorista</a>
-      <a class="btn btn-secondary" href="/relatorio">Relatório completo</a>
-      <form action="/logout" method="post" style="margin:0">
-        <button class="btn btn-danger" type="submit">Sair</button>
-      </form>
+      <button id="enableSound" class="btn btn-secondary">
+        🔊 Ativar Sirene
+      </button>
+
+      <button onclick="stopSiren()" class="btn btn-danger">
+        ⛔ Parar Sirene
+      </button>
+    </div>
+
+    <div id="soundStatus" class="small" style="margin-bottom:10px;">
+      Som: <b>desativado</b>
     </div>
 
     <div class="hr"></div>
 
-    <div class="field">
-      <table class="table" id="tbl">
-        <thead>
-          <tr>
-            <th>Data/Hora</th>
-            <th>Motorista</th>
-            <th>Ocorrência</th>
-            <th>Localização</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <tr><td colspan="4">Carregando…</td></tr>
-        </tbody>
-      </table>
-      <div class="small">Atualiza automaticamente a cada 10s.</div>
-    </div>
+    <!-- TABELA DE ALERTAS -->
+    <table class="table" id="tbl">
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Motorista</th>
+          <th>Ocorrência</th>
+          <th>Localização</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="4">Carregando…</td></tr>
+      </tbody>
+    </table>
+
+    <div class="small">Atualização automática a cada 5 segundos.</div>
+
   </div>
 </div>
 
+<!-- 🔊 SIRENE -->
+<audio id="siren" preload="auto" loop>
+  <source src="/static/sirene.mp3" type="audio/mpeg">
+</audio>
+
 <script>
+const siren = document.getElementById("siren");
+const enableBtn = document.getElementById("enableSound");
+const soundStatus = document.getElementById("soundStatus");
+
+let soundEnabled = localStorage.getItem("ds360_sound") === "1";
+let sirenPlaying = false;
+let lastAlertId = null;
+
+function setSoundStatus(){
+  soundStatus.innerHTML =
+    "Som: <b>" + (soundEnabled ? "ativado ✅" : "desativado") + "</b>";
+}
+
+async function enableSound(){
+  try{
+    await siren.play();
+    siren.pause();
+    siren.currentTime = 0;
+    soundEnabled = true;
+    localStorage.setItem("ds360_sound", "1");
+    enableBtn.innerText = "🔊 Sirene habilitada";
+    enableBtn.disabled = true;
+    setSoundStatus();
+  }catch(e){
+    alert("Toque novamente em 'Ativar Sirene' para liberar o áudio.");
+  }
+}
+
+function startSiren(){
+  if(!soundEnabled || sirenPlaying) return;
+  sirenPlaying = true;
+  siren.play().catch(()=>{});
+}
+
+function stopSiren(){
+  siren.pause();
+  siren.currentTime = 0;
+  sirenPlaying = false;
+}
+
+enableBtn.addEventListener("click", enableSound);
+setSoundStatus();
+
+/* ====== ALERTAS ====== */
+
 function fmtLoc(a){
   if(!a || !a.location) return "—";
   const {lat,lon,acc} = a.location;
   return lat.toFixed(5)+", "+lon.toFixed(5)+" (±"+Math.round(acc||0)+"m)";
 }
-async function load(){
+
+async function loadAlerts(){
   const body = document.getElementById("tbody");
   try{
     const r = await fetch("/api/alerts");
     const data = await r.json();
-    if(!data.ok) throw new Error();
-    const rows = data.alerts;
-    if(!rows.length){
+
+    if(!data.alerts || !data.alerts.length){
       body.innerHTML = '<tr><td colspan="4">Nenhum alerta.</td></tr>';
       return;
     }
+
+    const newest = data.alerts[0];
+    if(lastAlertId !== newest.id){
+      lastAlertId = newest.id;
+      startSiren(); // 🔴 TOCA A SIRENE NO ALERTA NOVO
+    }
+
     body.innerHTML = "";
-    rows.slice().reverse().slice(0,10).forEach(a=>{
+    data.alerts.slice(0,10).forEach(a=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${a.ts_human || a.ts}</td>
-        <td>${(a.driver_name||"—")}</td>
-        <td>${(a.occurrence||"—")}</td>
+        <td>${a.driver_name || "—"}</td>
+        <td>${a.occurrence || "—"}</td>
         <td>${fmtLoc(a)}</td>
       `;
       body.appendChild(tr);
     });
+
   }catch(e){
     body.innerHTML = '<tr><td colspan="4">Erro ao carregar.</td></tr>';
   }
 }
-load();
-setInterval(load, 10000);
+
+loadAlerts();
+setInterval(loadAlerts, 5000);
 </script>
+
 </body>
 </html>
