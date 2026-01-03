@@ -1,114 +1,37 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Termo de Uso • Driver Shield 360</title>
-  <link rel="stylesheet" href="/static/style.css">
-  <style>
-    .wrap{max-width:900px;margin:0 auto;padding:24px}
-    h1,h2{margin:18px 0 10px}
-    p,li{line-height:1.55}
-    .muted{opacity:.85}
-    .box{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;margin:14px 0}
-    code{word-break:break-word}
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Termos – {{ app_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="wrap">
-    <h1>TERMO DE USO, AVISO LEGAL E POLÍTICA DE PRIVACIDADE (LGPD)</h1>
-    <p class="muted"><b>Driver Shield 360</b> • Versão do termo: <b>{{ terms_version }}</b></p>
+    <header class="top">
+      <h1>Termo de Uso, Aviso Legal e Política de Privacidade (LGPD)</h1>
+      <p class="sub">Última atualização: {{ (TERMS_VERSION if TERMS_VERSION is defined else "") }}</p>
+    </header>
 
-    <div class="box">
-      <p><b>IMPORTANTE:</b> Este sistema é uma ferramenta de <b>apoio preventivo</b>. Ele <b>não substitui</b> serviços oficiais de emergência (190/192/193) e <b>não garante resultado</b>, prevenção de crimes ou resposta imediata.</p>
-    </div>
+    <section class="card">
+      <div class="muted small">
+        Cole aqui o texto completo do seu termo (o “bem fechado” que você já aprovou).
+        Este arquivo é exibido no link <code>/termos</code>.
+      </div>
 
-    <h2>1) Identificação</h2>
-    <p>O <b>Driver Shield 360</b> é um sistema digital de apoio à segurança preventiva, destinado a auxiliar motoristas na <b>comunicação rápida</b> com pessoas de confiança em situações de risco.</p>
+      <hr>
 
-    <h2>2) Aceite</h2>
-    <p>Ao acessar, instalar, criar atalho, utilizar ou interagir com o Driver Shield 360, o usuário declara que:</p>
-    <ul>
-      <li>leu e compreendeu este Termo;</li>
-      <li>concorda com as limitações técnicas;</li>
-      <li>autoriza o tratamento dos dados <b>mínimos</b> necessários ao funcionamento, conforme LGPD.</li>
-    </ul>
-    <p>Se não concordar, <b>não utilize</b> o sistema.</p>
+      <h2>Resumo de segurança e limitações</h2>
+      <ul>
+        <li>O sistema depende de internet, bateria, permissões e funcionamento do aparelho/navegador.</li>
+        <li>Se o celular estiver desligado, sem sinal, sem permissão, ou com falha de rede, alertas e registros podem não ocorrer.</li>
+        <li>O sistema é apoio preventivo e não substitui 190/192/193.</li>
+      </ul>
 
-    <h2>3) Finalidade</h2>
-    <ul>
-      <li>Enviar alertas <b>voluntários</b> para pessoas de confiança cadastradas;</li>
-      <li>Registrar ocorrências informadas pelo próprio usuário;</li>
-      <li>Apoiar a comunicação em situações de risco.</li>
-    </ul>
-
-    <h2>4) Limitações técnicas</h2>
-    <p>O funcionamento depende de fatores fora do controle do sistema, como:</p>
-    <ul>
-      <li>internet ativa e estável;</li>
-      <li>aparelho ligado, com bateria e com permissões concedidas;</li>
-      <li>recursos do navegador e do sistema operacional;</li>
-      <li>eventuais falhas de rede, sinal, servidor, atualização ou bloqueios do dispositivo.</li>
-    </ul>
-    <p>Se houver ausência dessas condições, o alerta/localização/registro <b>pode não ocorrer</b>. Nesses casos, o usuário reconhece que <b>não há responsabilidade</b> do controlador.</p>
-
-    <h2>5) Não substitui emergência</h2>
-    <p>O Driver Shield 360 <b>não substitui</b>:</p>
-    <ul>
-      <li>Polícia Militar (190)</li>
-      <li>SAMU (192)</li>
-      <li>Corpo de Bombeiros (193)</li>
-    </ul>
-
-    <h2>6) Privacidade e LGPD</h2>
-    <p>O sistema segue o princípio da <b>necessidade</b> (LGPD, art. 6º): trata apenas dados mínimos para funcionar.</p>
-
-    <h3>6.1 Dados que podem ser tratados</h3>
-    <ul>
-      <li>Nome/identificação informada pelo usuário;</li>
-      <li>Tipo de ocorrência selecionada;</li>
-      <li>Data e hora do acionamento;</li>
-      <li>Localização aproximada <b>somente se</b> o usuário permitir no navegador.</li>
-    </ul>
-
-    <h3>6.2 O que NÃO coletamos</h3>
-    <ul>
-      <li>áudio, vídeo, fotos ou gravações;</li>
-      <li>mensagens privadas;</li>
-      <li>dados bancários;</li>
-      <li>contatos do aparelho;</li>
-      <li>dados sensíveis (LGPD, art. 5º, II).</li>
-    </ul>
-
-    <h3>6.3 Geolocalização</h3>
-    <p>A geolocalização ocorre apenas no momento do acionamento e depende de permissão do usuário. O sistema <b>não</b> realiza rastreamento contínuo.</p>
-
-    <h3>6.4 Base legal</h3>
-    <ul>
-      <li><b>Consentimento</b> (LGPD, art. 7º, I);</li>
-      <li><b>Legítimo interesse</b> para proteção e registro de risco (LGPD, art. 7º, IX), quando aplicável.</li>
-    </ul>
-
-    <h3>6.5 Compartilhamento</h3>
-    <p>Os dados são compartilhados apenas com as <b>pessoas de confiança</b> cadastradas pelo usuário, no momento do alerta. Não há venda/comercialização de dados.</p>
-
-    <h3>6.6 Direitos do titular</h3>
-    <p>O usuário pode solicitar confirmação, acesso, correção e exclusão (quando aplicável), bem como revogar consentimento.</p>
-
-    <h2>7) Isenção de responsabilidade</h2>
-    <p>O controlador não se responsabiliza por falhas de conexão, falhas do aparelho, limitações do navegador, indisponibilidade de rede/servidor ou ações de terceiros. O sistema é fornecido “<b>como está</b>”, sem garantia de resultado.</p>
-
-    <h2>8) Alterações</h2>
-    <p>Este Termo pode ser alterado para melhorias e adequações legais. A versão vigente é a publicada neste endereço.</p>
-
-    <h2>9) Contato</h2>
-    <p class="muted">Para solicitações LGPD, dúvidas ou suporte, utilize o canal de contato informado pelo responsável comercial do sistema.</p>
-
-    <div class="box">
-      <p><b>Declaração final:</b> O usuário declara ciência de que o Driver Shield 360 é ferramenta de apoio preventivo, sujeita a limitações técnicas, que trata dados mínimos conforme LGPD e não substitui serviços oficiais de emergência.</p>
-    </div>
-
-    <p class="muted">© Driver Shield 360</p>
+      <div class="actions">
+        <a class="btn" href="{{ url_for('motorista') }}">Voltar</a>
+      </div>
+    </section>
   </div>
 </body>
 </html>

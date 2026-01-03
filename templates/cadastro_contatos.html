@@ -1,106 +1,80 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
-    <title>Cadastro - Pessoas de confiança</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/static/style.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cadastro – Pessoas de confiança | {{ app_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="dark">
-    <div class="container">
-        <h1>Cadastro de Pessoas de Confiança</h1>
-        <p class="subtitle">
-            Cadastre até 3 pessoas para receberem os alertas de emergência do motorista.
-        </p>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <h1>Cadastro de Pessoas de Confiança</h1>
+      <p class="sub">Cadastre até <strong>3 pessoas</strong> para receberem os alertas de emergência do motorista.</p>
+    </header>
 
-        {% if msg %}
-        <p class="status-text">{{ msg }}</p>
-        {% endif %}
+    {% if msg %}
+      <div class="alert">{{ msg }}</div>
+    {% endif %}
 
-        <form method="post" class="form-box">
-            <label for="name">Nome do contato:</label>
-            <input id="name" name="name" type="text" required />
+    <section class="card">
+      <h2>Novo cadastro</h2>
+      <form method="post" class="grid">
+        <label>
+          <span>Nome do contato</span>
+          <input name="name" required placeholder="Ex.: Maria">
+        </label>
 
-            <label for="login">Login (e-mail ou usuário):</label>
-            <input id="login" name="login" type="text" required />
+        <label>
+          <span>Login (e-mail ou usuário)</span>
+          <input name="login" required placeholder="Ex.: maria@gmail.com">
+        </label>
 
-            <label for="password">Senha:</label>
-            <input id="password" name="password" type="password" required />
+        <label>
+          <span>Senha</span>
+          <input name="senha" type="password" required placeholder="Crie uma senha">
+        </label>
 
-            <button type="submit" class="refresh-main">Salvar contato</button>
-        </form>
+        <button class="btn primary" type="submit">Salvar contato</button>
+      </form>
+      <div class="muted small">Obs.: Guarde o login e a senha — eles serão usados para entrar no painel.</div>
+    </section>
 
-        <h2 class="section-title">Contatos cadastrados</h2>
-        <ul class="contacts-list">
-            {% if contacts %}
-                {% for c in contacts %}
-                    <li>{{ c.name }} ({{ c.login }})</li>
-                {% endfor %}
-            {% else %}
-                <li>Nenhum contato cadastrado ainda.</li>
-            {% endif %}
+    <section class="card">
+      <h2>Contatos cadastrados</h2>
+
+      {% if contacts and contacts|length > 0 %}
+        <ul class="list">
+          {% for c in contacts %}
+            <li>
+              <strong>{{ c.name }}</strong>
+              <span class="pill">{{ c.login }}</span>
+            </li>
+          {% endfor %}
         </ul>
+      {% else %}
+        <div class="muted">Nenhum contato cadastrado ainda.</div>
+      {% endif %}
 
-        <p class="hint">
-            Estes contatos poderão acessar o painel em<br />
-            <strong>/login</strong> com o login e senha cadastrados aqui.
-        </p>
-    
-        <div class="cadastro-extra-actions" style="margin-top:24px; display:flex; flex-wrap:wrap; gap:10px;">
-            <button type="button" onclick="limparFormulario()" class="btn-secondary">
-                Limpar campos
-            </button>
-            <button type="button" onclick="recadastrarPessoa()" class="btn-secondary">
-                Recadastrar pessoa
-            </button>
-            <button type="button" onclick="apagarContatos()" class="btn-danger">
-                Apagar todas as pessoas de confiança
-            </button>
-            <button type="button" onclick="sairCadastro()" class="btn-secondary">
-                Sair
-            </button>
-        </div>
+      <div class="actions">
+        <button class="btn" id="btnClear" type="button">Apagar todos</button>
+        <a class="btn" href="{{ url_for('login') }}">Ir para Login</a>
+        <a class="btn ghost" href="{{ url_for('motorista') }}">Voltar</a>
+      </div>
+    </section>
 
-        <script>
-            function getCadastroForm() {
-                return document.querySelector("form");
-            }
+    <footer class="foot">
+      <a href="{{ url_for('termos') }}">Termos / Aviso Legal</a>
+    </footer>
+  </div>
 
-            function limparFormulario() {
-                var form = getCadastroForm();
-                if (form) {
-                    form.reset();
-                    var first = form.querySelector("input,select,textarea");
-                    if (first) first.focus();
-                }
-            }
-
-            function recadastrarPessoa() {
-                limparFormulario();
-            }
-
-            function apagarContatos() {
-                if (!confirm("Tem certeza que deseja apagar TODAS as pessoas de confiança cadastradas?")) return;
-
-                fetch("/api/clear_contacts", { method: "POST" })
-                    .then(function(res) {
-                        if (res.ok) {
-                            alert("Contatos apagados com sucesso.");
-                            location.reload();
-                        } else {
-                            alert("Não foi possível apagar os contatos.");
-                        }
-                    })
-                    .catch(function() {
-                        alert("Erro ao comunicar com o servidor.");
-                    });
-            }
-
-            function sairCadastro() {
-                window.location.href = "/login";
-            }
-        </script>
-
-    </div>
+<script>
+document.getElementById("btnClear")?.addEventListener("click", async () => {
+  if (!confirm("Apagar TODOS os contatos cadastrados?")) return;
+  const res = await fetch("/api/clear_contacts", { method: "POST" });
+  if (res.ok) location.reload();
+  else alert("Não foi possível apagar agora.");
+});
+</script>
 </body>
 </html>

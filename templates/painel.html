@@ -1,135 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
-    <title>Painel - Alertas de Motoristas</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/static/style.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Painel – Pessoa de confiança | {{ app_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="dark">
-    <audio id="sirenAudio" src="/static/sirene.mp3" preload="auto"></audio>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <h1>Painel – Pessoa de confiança</h1>
+      <p class="sub">Logado como: <strong>{{ trusted_login }}</strong></p>
+    </header>
 
-    <div class="top-bar">
-        <div class="logo-area">
-            <span class="logo-dot"></span>
-            <span class="logo-text">Driver Shield 360</span>
-        </div>
-        <div class="top-actions">
-            <span class="contact-label">👤 {{ contact_name }}</span>
-            <button id="clearBtn" class="top-btn">🧹 Limpar</button>
-            <button id="reloadBtn" class="top-btn">🔄 Reiniciar</button>
-            <a href="/logout" class="top-btn top-exit">⏻ Sair</a>
-        </div>
-    </div>
+    <section class="card">
+      <h2>Contatos cadastrados</h2>
+      {% if contacts and contacts|length > 0 %}
+        <ul class="list">
+          {% for c in contacts %}
+            <li><strong>{{ c.name }}</strong> <span class="pill">{{ c.login }}</span></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="muted">Nenhum contato cadastrado.</div>
+      {% endif %}
 
-    <div class="container">
-        <h1>Painel de Emergência</h1>
-        <p class="subtitle">
-            Veja em tempo real os alertas enviados pelos motoristas de aplicativo.<br />
-            Quando um novo alerta chegar, a sirene irá tocar neste celular/computador.
-        </p>
+      <div class="actions">
+        <a class="btn" href="{{ url_for('logout') }}">Sair</a>
+        <a class="btn ghost" href="{{ url_for('motorista') }}">Voltar</a>
+      </div>
+    </section>
 
-        <button id="refreshBtn" class="refresh-main">🔄 Atualizar agora</button>
-
-        <div id="alertsList" class="alerts-list"></div>
-    </div>
-
-    <script>
-        const alertsList = document.getElementById('alertsList');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const reloadBtn = document.getElementById('reloadBtn');
-        const sirenAudio = document.getElementById('sirenAudio');
-
-        let lastCount = 0;
-
-        function playSiren() {
-            if (!sirenAudio) return;
-            try {
-                sirenAudio.currentTime = 0;
-                sirenAudio.play().catch((e) => {
-                    console.warn("Navegador bloqueou reprodução automática da sirene. Toque uma vez na tela para liberar o som.");
-                });
-            } catch (e) {
-                console.warn("Erro ao tocar sirene:", e);
-            }
-        }
-
-        function renderAlerts(data) {
-            alertsList.innerHTML = "";
-
-            if (!data || data.length === 0) {
-                alertsList.innerHTML = "<p>Nenhum alerta registrado até o momento.</p>";
-                return;
-            }
-
-            data.slice().reverse().forEach((alert) => {
-                const item = document.createElement('div');
-                item.className = 'alert-card';
-
-                const mapLink = (alert.lat && alert.lng)
-                    ? `https://www.google.com/maps?q=${alert.lat},${alert.lng}`
-                    : '#';
-
-                const contacts = alert.contacts && alert.contacts.length
-                    ? alert.contacts.join(", ")
-                    : "Não informado";
-
-                item.innerHTML = `
-                    <div class="alert-header">
-                        <span class="alert-badge">EMERGÊNCIA</span>
-                        <span class="alert-time">${alert.timestamp}</span>
-                    </div>
-                    <h2>🚗 ${alert.driver_name}</h2>
-                    <p><strong>Ocorrência:</strong> ${alert.occurrence}</p>
-                    <p><strong>Pessoas de confiança:</strong> ${contacts}</p>
-                    <p><strong>Localização:</strong> ${
-                        alert.lat && alert.lng
-                            ? `<a href="${mapLink}" target="_blank">Ver no mapa</a> (lat: ${alert.lat.toFixed ? alert.lat.toFixed(5) : alert.lat}, lng: ${alert.lng.toFixed ? alert.lng.toFixed(5) : alert.lng})`
-                            : "Não foi possível obter a localização do aparelho do motorista."
-                    }</p>
-                `;
-                alertsList.appendChild(item);
-            });
-        }
-
-        function loadAlerts() {
-            fetch('/api/alerts')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.length > lastCount) {
-                        // Novo alerta chegou: toca a sirene
-                        playSiren();
-                    }
-                    lastCount = data.length;
-                    renderAlerts(data);
-                })
-                .catch(err => {
-                    console.error(err);
-                    alertsList.innerHTML = "<p>Erro ao carregar alertas.</p>";
-                });
-        }
-
-        refreshBtn.addEventListener('click', loadAlerts);
-
-        clearBtn.addEventListener('click', () => {
-            if (!confirm("Tem certeza que deseja limpar todos os alertas?")) return;
-            fetch('/api/clear_alerts', { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    lastCount = 0;
-                    alertsList.innerHTML = "<p>Alertas limpos.</p>";
-                })
-                .catch(err => console.error(err));
-        });
-
-        reloadBtn.addEventListener('click', () => {
-            location.reload();
-        });
-
-        // Carrega de início e atualiza a cada 15 segundos
-        loadAlerts();
-        setInterval(loadAlerts, 15000);
-    </script>
+    <footer class="foot">
+      <a href="{{ url_for('termos') }}">Termos / Aviso Legal</a>
+    </footer>
+  </div>
 </body>
 </html>

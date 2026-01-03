@@ -1,36 +1,44 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
-    <title>Login - Painel de Confiança</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/static/style.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login – Pessoa de confiança | {{ app_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="dark">
-    <div class="container">
-        <h1>Login - Pessoa de Confiança</h1>
-        <p class="subtitle">
-            Acesse o painel para receber os alertas do motorista.
-        </p>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <h1>Login – Pessoa de confiança</h1>
+      <p class="sub">Entre com o login e senha cadastrados para acessar o painel.</p>
+    </header>
 
-        {% if error %}
-        <p class="status-text" style="color:#f97373;">{{ error }}</p>
-        {% endif %}
+    {% if msg %}
+      <div class="alert">{{ msg }}</div>
+    {% endif %}
 
-        <form method="post" class="form-box">
-            <label for="login">Login:</label>
-            <input id="login" name="login" type="text" value="{{ last_login or '' }}" required />
+    <section class="card">
+      <form method="post" class="grid">
+        <label>
+          <span>Login</span>
+          <input name="login" required placeholder="Seu login cadastrado">
+        </label>
+        <label>
+          <span>Senha</span>
+          <input name="senha" type="password" required placeholder="Sua senha">
+        </label>
+        <button class="btn primary" type="submit">Entrar</button>
+      </form>
 
-            <label for="password">Senha:</label>
-            <input id="password" name="password" type="password" required />
+      <div class="actions">
+        <a class="btn" href="{{ url_for('cadastro_contatos') }}">Cadastrar pessoas</a>
+        <a class="btn ghost" href="{{ url_for('motorista') }}">Voltar</a>
+      </div>
+    </section>
 
-            <button type="submit" class="refresh-main">Entrar</button>
-        </form>
-
-        <p class="hint">
-            Este acesso é exclusivo para as pessoas de confiança cadastradas.<br />
-            Cadastro de contatos: <strong>/cadastro_contatos</strong>
-        </p>
-    </div>
+    <footer class="foot">
+      <a href="{{ url_for('termos') }}">Termos / Aviso Legal</a>
+    </footer>
+  </div>
 </body>
 </html>
