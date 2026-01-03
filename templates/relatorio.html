@@ -1,115 +1,94 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <title>Relatório de Ocorrências - Driver Shield 360</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/static/style.css" />
-    <style>
-        body.dark {
-            padding: 24px;
-        }
-        .relatorio-header {
-            margin-bottom: 16px;
-        }
-        .relatorio-header h1 {
-            margin: 0 0 8px 0;
-        }
-        .relatorio-actions {
-            margin-bottom: 16px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .rel-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 8px;
-        }
-        .rel-table th,
-        .rel-table td {
-            border-bottom: 1px solid rgba(148, 163, 184, 0.4);
-            padding: 8px;
-            font-size: 14px;
-            text-align: left;
-        }
-        .rel-table th {
-            background: rgba(15, 23, 42, 0.9);
-        }
-        .map-link {
-            color: #38bdf8;
-            text-decoration: none;
-            font-size: 13px;
-        }
-        .map-link:hover {
-            text-decoration: underline;
-        }
-        .btn {
-            padding: 8px 14px;
-            border-radius: 999px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .btn-primary {
-            background: #22c55e;
-            color: #0f172a;
-        }
-        .btn-secondary {
-            background: #0f172a;
-            color: #e2e8f0;
-            border: 1px solid #334155;
-        }
-    </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Relatório — Driver Shield 360</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="/static/driver_shield_360.png">
 </head>
-<body class="dark">
-    <div class="relatorio-header">
-        <h1>Relatório de Ocorrências</h1>
-        <p>Visualize os últimos alertas enviados pelos motoristas.</p>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="brand">
+      <div class="logo"><img src="/static/driver_shield_360.png" alt="Logo"></div>
+      <div>
+        <h1 class="h1">Relatório de Ocorrências</h1>
+        <div class="subtitle">Registros técnicos dos alertas acionados.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="btnbar">
+      <a class="btn btn-secondary" href="/motorista">Voltar</a>
+      <a class="btn btn-secondary" href="/cadastro">Cadastro</a>
+      <a class="btn btn-secondary" href="/termos" target="_blank" rel="noopener">Termos (LGPD)</a>
+      <button class="btn btn-danger" id="clearBtn">Limpar tudo</button>
     </div>
 
-    <div class="relatorio-actions">
-        <button class="btn btn-secondary" onclick="window.location.href='/painel'">
-            ⬅ Voltar para painel
-        </button>
-        <button class="btn btn-primary" onclick="window.print()">
-            🖨 Salvar / Imprimir em PDF
-        </button>
-    </div>
+    <div class="hr"></div>
 
-    {% if alerts and alerts|length > 0 %}
-    <table class="rel-table">
+    <div class="field">
+      <table class="table" id="tbl">
         <thead>
-            <tr>
-                <th>#</th>
-                <th>Data / Hora</th>
-                <th>Motorista</th>
-                <th>Ocorrência</th>
-                <th>Localização</th>
-            </tr>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Motorista</th>
+            <th>Ocorrência</th>
+            <th>Localização</th>
+          </tr>
         </thead>
-        <tbody>
-            {% for item in alerts %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ item.timestamp }}</td>
-                <td>{{ item.driver_name }}</td>
-                <td>{{ item.occurrence }}</td>
-                <td>
-                    {% if item.lat is not none and item.lng is not none %}
-                    <a class="map-link" href="https://www.google.com/maps?q={{ item.lat }},{{ item.lng }}" target="_blank">
-                        Ver no mapa ({{ item.lat }}, {{ item.lng }})
-                    </a>
-                    {% else %}
-                    Sem localização
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
+        <tbody id="tbody">
+          <tr><td colspan="4">Carregando…</td></tr>
         </tbody>
-    </table>
-    {% else %}
-    <p>Nenhuma ocorrência registrada ainda.</p>
-    {% endif %}
+      </table>
+      <div class="notice">Observação: este relatório é um registro técnico do acionamento. Não é garantia de atendimento de emergência.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function fmtLoc(a){
+  if(!a || !a.location) return "—";
+  const {lat,lon,acc} = a.location;
+  return lat.toFixed(5)+", "+lon.toFixed(5)+" (±"+Math.round(acc||0)+"m)";
+}
+async function load(){
+  const body = document.getElementById("tbody");
+  body.innerHTML = '<tr><td colspan="4">Carregando…</td></tr>';
+  try{
+    const r = await fetch("/api/alerts");
+    const data = await r.json();
+    if(!data.ok) throw new Error();
+    const rows = data.alerts;
+    if(!rows.length){
+      body.innerHTML = '<tr><td colspan="4">Nenhum alerta registrado.</td></tr>';
+      return;
+    }
+    body.innerHTML = "";
+    rows.slice().reverse().forEach(a=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${a.ts_human || a.ts}</td>
+        <td>${(a.driver_name||"—")}</td>
+        <td>${(a.occurrence||"—")}</td>
+        <td>${fmtLoc(a)}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }catch(e){
+    body.innerHTML = '<tr><td colspan="4">Erro ao carregar.</td></tr>';
+  }
+}
+async function clearAll(){
+  if(!confirm("Tem certeza que deseja apagar todos os registros?")) return;
+  const r = await fetch("/api/clear_alerts", {method:"POST"});
+  const data = await r.json();
+  if(data.ok){ load(); } else { alert("Falha"); }
+}
+document.getElementById("clearBtn").onclick = clearAll;
+load();
+</script>
 </body>
 </html>

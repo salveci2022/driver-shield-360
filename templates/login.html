@@ -1,44 +1,42 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Login – Pessoa de confiança | {{ app_name }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Login — Driver Shield 360</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="/static/driver_shield_360.png">
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <h1>Login – Pessoa de confiança</h1>
-      <p class="sub">Entre com o login e senha cadastrados para acessar o painel.</p>
-    </header>
+<div class="container">
+  <div class="header">
+    <div class="brand">
+      <div class="logo"><img src="/static/driver_shield_360.png" alt="Logo"></div>
+      <div>
+        <h1 class="h1">Acesso do Painel</h1>
+        <div class="subtitle">Área restrita (contatos de confiança / administrador).</div>
+      </div>
+    </div>
+  </div>
 
-    {% if msg %}
-      <div class="alert">{{ msg }}</div>
+  <div class="card">
+    {% if error %}
+      <div class="notice" style="color:#ffb3b3">❌ {{ error }}</div>
+      <div class="hr"></div>
     {% endif %}
 
-    <section class="card">
-      <form method="post" class="grid">
-        <label>
-          <span>Login</span>
-          <input name="login" required placeholder="Seu login cadastrado">
-        </label>
-        <label>
-          <span>Senha</span>
-          <input name="senha" type="password" required placeholder="Sua senha">
-        </label>
-        <button class="btn primary" type="submit">Entrar</button>
-      </form>
-
-      <div class="actions">
-        <a class="btn" href="{{ url_for('cadastro_contatos') }}">Cadastrar pessoas</a>
-        <a class="btn ghost" href="{{ url_for('motorista') }}">Voltar</a>
+    <form method="post">
+      <div class="field">
+        <label for="pass">Senha do painel</label>
+        <input id="pass" name="password" type="password" placeholder="Digite a senha" required>
+        <div class="small">Dica: você pode definir a variável de ambiente <b>PANEL_PASSWORD</b> no Render.</div>
       </div>
-    </section>
-
-    <footer class="foot">
-      <a href="{{ url_for('termos') }}">Termos / Aviso Legal</a>
-    </footer>
+      <div class="btnbar">
+        <button class="btn btn-primary" type="submit">Entrar</button>
+        <a class="btn btn-secondary" href="/motorista">Voltar</a>
+      </div>
+    </form>
   </div>
+</div>
 </body>
 </html>

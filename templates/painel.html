@@ -1,39 +1,88 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Painel – Pessoa de confiança | {{ app_name }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Painel — Driver Shield 360</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="/static/driver_shield_360.png">
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <h1>Painel – Pessoa de confiança</h1>
-      <p class="sub">Logado como: <strong>{{ trusted_login }}</strong></p>
-    </header>
-
-    <section class="card">
-      <h2>Contatos cadastrados</h2>
-      {% if contacts and contacts|length > 0 %}
-        <ul class="list">
-          {% for c in contacts %}
-            <li><strong>{{ c.name }}</strong> <span class="pill">{{ c.login }}</span></li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <div class="muted">Nenhum contato cadastrado.</div>
-      {% endif %}
-
-      <div class="actions">
-        <a class="btn" href="{{ url_for('logout') }}">Sair</a>
-        <a class="btn ghost" href="{{ url_for('motorista') }}">Voltar</a>
+<div class="container">
+  <div class="header">
+    <div class="brand">
+      <div class="logo"><img src="/static/driver_shield_360.png" alt="Logo"></div>
+      <div>
+        <h1 class="h1">Painel (contato de confiança)</h1>
+        <div class="subtitle">Visualização rápida dos últimos alertas.</div>
       </div>
-    </section>
-
-    <footer class="foot">
-      <a href="{{ url_for('termos') }}">Termos / Aviso Legal</a>
-    </footer>
+    </div>
   </div>
+
+  <div class="card">
+    <div class="btnbar">
+      <a class="btn btn-secondary" href="/motorista">Painel do motorista</a>
+      <a class="btn btn-secondary" href="/relatorio">Relatório completo</a>
+      <form action="/logout" method="post" style="margin:0">
+        <button class="btn btn-danger" type="submit">Sair</button>
+      </form>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="field">
+      <table class="table" id="tbl">
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Motorista</th>
+            <th>Ocorrência</th>
+            <th>Localização</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="4">Carregando…</td></tr>
+        </tbody>
+      </table>
+      <div class="small">Atualiza automaticamente a cada 10s.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function fmtLoc(a){
+  if(!a || !a.location) return "—";
+  const {lat,lon,acc} = a.location;
+  return lat.toFixed(5)+", "+lon.toFixed(5)+" (±"+Math.round(acc||0)+"m)";
+}
+async function load(){
+  const body = document.getElementById("tbody");
+  try{
+    const r = await fetch("/api/alerts");
+    const data = await r.json();
+    if(!data.ok) throw new Error();
+    const rows = data.alerts;
+    if(!rows.length){
+      body.innerHTML = '<tr><td colspan="4">Nenhum alerta.</td></tr>';
+      return;
+    }
+    body.innerHTML = "";
+    rows.slice().reverse().slice(0,10).forEach(a=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${a.ts_human || a.ts}</td>
+        <td>${(a.driver_name||"—")}</td>
+        <td>${(a.occurrence||"—")}</td>
+        <td>${fmtLoc(a)}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }catch(e){
+    body.innerHTML = '<tr><td colspan="4">Erro ao carregar.</td></tr>';
+  }
+}
+load();
+setInterval(load, 10000);
+</script>
 </body>
 </html>

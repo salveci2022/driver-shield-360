@@ -1,80 +1,103 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Cadastro – Pessoas de confiança | {{ app_name }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Cadastro — Driver Shield 360</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="/static/driver_shield_360.png">
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <h1>Cadastro de Pessoas de Confiança</h1>
-      <p class="sub">Cadastre até <strong>3 pessoas</strong> para receberem os alertas de emergência do motorista.</p>
-    </header>
-
-    {% if msg %}
-      <div class="alert">{{ msg }}</div>
-    {% endif %}
-
-    <section class="card">
-      <h2>Novo cadastro</h2>
-      <form method="post" class="grid">
-        <label>
-          <span>Nome do contato</span>
-          <input name="name" required placeholder="Ex.: Maria">
-        </label>
-
-        <label>
-          <span>Login (e-mail ou usuário)</span>
-          <input name="login" required placeholder="Ex.: maria@gmail.com">
-        </label>
-
-        <label>
-          <span>Senha</span>
-          <input name="senha" type="password" required placeholder="Crie uma senha">
-        </label>
-
-        <button class="btn primary" type="submit">Salvar contato</button>
-      </form>
-      <div class="muted small">Obs.: Guarde o login e a senha — eles serão usados para entrar no painel.</div>
-    </section>
-
-    <section class="card">
-      <h2>Contatos cadastrados</h2>
-
-      {% if contacts and contacts|length > 0 %}
-        <ul class="list">
-          {% for c in contacts %}
-            <li>
-              <strong>{{ c.name }}</strong>
-              <span class="pill">{{ c.login }}</span>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <div class="muted">Nenhum contato cadastrado ainda.</div>
-      {% endif %}
-
-      <div class="actions">
-        <button class="btn" id="btnClear" type="button">Apagar todos</button>
-        <a class="btn" href="{{ url_for('login') }}">Ir para Login</a>
-        <a class="btn ghost" href="{{ url_for('motorista') }}">Voltar</a>
+<div class="container">
+  <div class="header">
+    <div class="brand">
+      <div class="logo"><img src="/static/driver_shield_360.png" alt="Logo"></div>
+      <div>
+        <h1 class="h1">Cadastro de Pessoas de Confiança</h1>
+        <div class="subtitle">Esses contatos recebem o alerta que você acionar.</div>
       </div>
-    </section>
-
-    <footer class="foot">
-      <a href="{{ url_for('termos') }}">Termos / Aviso Legal</a>
-    </footer>
+    </div>
   </div>
 
+  <div class="card">
+    <div class="row">
+      <div style="flex:1; min-width:260px">
+        <div class="field">
+          <label for="name">Nome</label>
+          <input id="name" placeholder="Ex.: Maria (esposa)" autocomplete="name">
+        </div>
+      </div>
+      <div style="flex:1; min-width:260px">
+        <div class="field">
+          <label for="phone">Telefone (WhatsApp)</label>
+          <input id="phone" placeholder="Ex.: +55 61 99999-9999" inputmode="tel" autocomplete="tel">
+        </div>
+      </div>
+    </div>
+
+    <div class="btnbar">
+      <button class="btn btn-primary" id="addBtn">Adicionar contato</button>
+      <a class="btn btn-secondary" href="/motorista">Voltar ao painel</a>
+      <a class="btn btn-secondary" href="/termos" target="_blank" rel="noopener">Termos (LGPD)</a>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="field">
+      <label>Contatos cadastrados</label>
+      <div class="notice">Dica: mantenha pelo menos 2 contatos (família e amigo).</div>
+      <ul class="list" id="list"><li>Carregando…</li></ul>
+    </div>
+  </div>
+</div>
+
 <script>
-document.getElementById("btnClear")?.addEventListener("click", async () => {
-  if (!confirm("Apagar TODOS os contatos cadastrados?")) return;
-  const res = await fetch("/api/clear_contacts", { method: "POST" });
-  if (res.ok) location.reload();
-  else alert("Não foi possível apagar agora.");
-});
+function $(id){ return document.getElementById(id); }
+
+async function load(){
+  const ul = $("list");
+  ul.innerHTML = "<li>Carregando…</li>";
+  try{
+    const r = await fetch("/api/contacts");
+    const data = await r.json();
+    if(!data.ok) throw new Error();
+    ul.innerHTML = "";
+    if(!data.contacts.length){
+      ul.innerHTML = "<li>Nenhum contato cadastrado.</li>";
+      return;
+    }
+    data.contacts.forEach(c=>{
+      const li = document.createElement("li");
+      li.innerHTML = `<b>${c.name}</b> — ${c.phone} &nbsp; <a href="#" data-id="${c.id}">remover</a>`;
+      li.querySelector("a").onclick = async (e)=>{
+        e.preventDefault();
+        if(!confirm("Remover este contato?")) return;
+        await fetch("/api/contacts/"+c.id, {method:"DELETE"});
+        load();
+      };
+      ul.appendChild(li);
+    });
+  }catch(e){
+    ul.innerHTML = "<li>Erro ao carregar contatos.</li>";
+  }
+}
+
+async function add(){
+  const name = $("name").value.trim();
+  const phone = $("phone").value.trim();
+  if(name.length < 2 || phone.length < 8){
+    alert("Preencha nome e telefone corretamente.");
+    return;
+  }
+  const r = await fetch("/api/contacts", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name, phone})});
+  const data = await r.json();
+  if(!data.ok){ alert(data.error || "Erro"); return; }
+  $("name").value=""; $("phone").value="";
+  load();
+}
+
+$("addBtn").onclick = add;
+load();
 </script>
 </body>
 </html>
