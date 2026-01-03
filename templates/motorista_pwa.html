@@ -1,0 +1,148 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- PWA / Ícone do atalho -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#00c46a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Driver Shield 360">
+
+  <!-- Ícones -->
+  <link rel="icon" type="image/png" href="/static/driver_shield_360.png">
+  <link rel="apple-touch-icon" href="/static/driver_shield_360.png">
+<title>Painel do Motorista - Driver Shield 360</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="tela-escura">
+  <header class="topo">
+    <h1>🛡️ Driver Shield 360</h1>
+    <p class="subtitulo">Painel do Motorista</p>
+  </header>
+
+  <main class="container">
+    <form id="form-panico">
+      <label for="nome_motorista">Seu nome (ou apelido):</label>
+      <input type="text" id="nome_motorista" name="nome_motorista" placeholder="Ex: João Uber">
+
+      <h2>Tipo de ocorrência</h2>
+      <p class="texto-explicativo">
+        Toque em uma das opções abaixo antes de apertar o botão de pânico.
+      </p>
+
+      <div class="lista-ocorrencias">
+        <button type="button" class="chip-ocorrencia selecionado" data-ocorrencia="Abordagem suspeita">Abordagem suspeita</button>
+        <button type="button" class="chip-ocorrencia" data-ocorrencia="Tentativa de assalto">Tentativa de assalto</button>
+        <button type="button" class="chip-ocorrencia" data-ocorrencia="Passageiro agressivo">Passageiro agressivo</button>
+        <button type="button" class="chip-ocorrencia" data-ocorrencia="Conflito com outro veículo">Conflito com outro veículo</button>
+        <button type="button" class="chip-ocorrencia" data-ocorrencia="Emergência de saúde">Emergência de saúde</button>
+        <button type="button" class="chip-ocorrencia" data-ocorrencia="Outro risco">Outro risco</button>
+      </div>
+
+      <input type="hidden" id="ocorrencia" name="ocorrencia" value="Abordagem suspeita">
+      <input type="hidden" id="latitude" name="latitude">
+      <input type="hidden" id="longitude" name="longitude">
+
+      <section class="area-botao-panico">
+        <p id="status-localizacao" class="texto-explicativo">Tentando obter localização atual...</p>
+        <button id="botao-panico" type="submit" class="botao-panico">
+          <span class="icone-sirene">🚨</span><br>
+          BOTÃO DE PÂNICO<br>
+          <small>Toque para enviar alerta</small>
+        </button>
+      </section>
+
+      <div class="acoes-motorista">
+        <button type="button" id="btn-limpar" class="btn btn-secundario">Limpar</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secundario">Sair</a>
+      </div>
+    </form>
+
+    <p class="aviso-rodape">
+      * Em situação real de risco grave, ligue imediatamente <strong>190</strong> ou atendimento de emergência da sua região.<br>
+      Este sistema é um apoio extra de proteção e registro técnico.
+    </p>
+  </main>
+
+  <script>
+    // seleção de ocorrência visual
+    document.querySelectorAll('.chip-ocorrencia').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.chip-ocorrencia').forEach(function(b) {
+          b.classList.remove('selecionado');
+        });
+        btn.classList.add('selecionado');
+        document.getElementById('ocorrencia').value = btn.dataset.ocorrencia;
+      });
+    });
+
+    // obter localização
+    function atualizarStatus(msg) {
+      document.getElementById('status-localizacao').textContent = msg;
+    }
+
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        document.getElementById('latitude').value = pos.coords.latitude.toFixed(6);
+        document.getElementById('longitude').value = pos.coords.longitude.toFixed(6);
+        atualizarStatus('Localização capturada com sucesso.');
+      }, function(err) {
+        atualizarStatus('Não foi possível obter a localização automática. Você ainda pode enviar o alerta.');
+      });
+    } else {
+      atualizarStatus('Seu navegador não suporta geolocalização. Você ainda pode enviar o alerta.');
+    }
+
+    // envio do formulário (botão de pânico)
+    document.getElementById('form-panico').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('botao-panico');
+      btn.disabled = true;
+      btn.classList.add('ativo');
+
+      const payload = {
+        nome_motorista: document.getElementById('nome_motorista').value,
+        ocorrencia: document.getElementById('ocorrencia').value,
+        latitude: document.getElementById('latitude').value,
+        longitude: document.getElementById('longitude').value
+      };
+
+      try {
+        const resp = await fetch('{{ url_for("api_panico") }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        alert('🚨 Alerta enviado com sucesso!');
+      } catch (err) {
+        alert('Erro ao enviar alerta. Verifique sua conexão.');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('ativo');
+      }
+    });
+
+    // limpar campos
+    document.getElementById('btn-limpar').addEventListener('click', function() {
+      document.getElementById('nome_motorista').value = '';
+      document.getElementById('latitude').value = '';
+      document.getElementById('longitude').value = '';
+      atualizarStatus('Campos limpos. Tentando obter localização novamente...');
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          document.getElementById('latitude').value = pos.coords.latitude.toFixed(6);
+          document.getElementById('longitude').value = pos.coords.longitude.toFixed(6);
+          atualizarStatus('Localização capturada com sucesso.');
+        }, function(err) {
+          atualizarStatus('Não foi possível obter a localização automática.');
+        });
+      }
+    });
+  </script>
+</body>
+</html>

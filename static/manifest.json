@@ -1,0 +1,16 @@
+{
+  "name": "Driver Shield 360",
+  "short_name": "DriverShield",
+  "description": "Sistema de proteção para motoristas de aplicativo",
+  "start_url": "/motorista",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#00c46a",
+  "icons": [
+    {
+      "src": "/static/driver_shield_360.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
