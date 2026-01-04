@@ -92,9 +92,11 @@ def index():
 
 @app.route("/motorista", methods=["GET"])
 def motorista():
-    # Lista as pessoas de confiança cadastradas para aparecer no painel do motorista
-    contatos = _carregar_json(CONTATOS_PATH, [])
-    return render_template("motorista.html", contatos=contatos)
+    # Painel do motorista
+    contatos = _carregar_json(CONTATOS_PATH) or []
+    contatos_view = [{"nome": c.get("nome",""), "email": c.get("email","")} for c in contatos]
+    return render_template("motorista.html", contatos=contatos_view, max_contatos=3)
+
 @app.route("/api/panico", methods=["POST"])
 def api_panico():
     data = request.get_json(silent=True) or request.form
@@ -121,39 +123,43 @@ def api_limpar_alertas():
 
 @app.route("/cadastro_contatos", methods=["GET", "POST"])
 def cadastro_contatos():
-    contatos = _carregar_json(CONTATOS_PATH, [])
+    # Cadastro (máx. 3 pessoas de confiança)
+    os.makedirs(DATA_DIR, exist_ok=True)
+    if not os.path.exists(CONTATOS_PATH):
+        _salvar_json(CONTATOS_PATH, [])
+
+    contatos = _carregar_json(CONTATOS_PATH) or []
+    error = None
+    success = None
+
     if request.method == "POST":
-        nome = request.form.get("nome")
-        email = request.form.get("email")
-        senha = request.form.get("senha")
+        nome = (request.form.get("nome") or "").strip()
+        email = (request.form.get("email") or "").strip().lower()
+        senha = (request.form.get("senha") or "").strip()
 
-        if not nome or not email or not senha:
-            flash("Preencha todos os campos.", "erro")
-            return redirect(url_for("cadastro_contatos"))
-
-        # Limite: até 3 pessoas de confiança
-        if len(contatos) >= 3:
-            flash("Limite atingido: você só pode cadastrar até 3 pessoas de confiança. Apague uma para cadastrar outra.", "erro")
-            return redirect(url_for("cadastro_contatos"))
-
-
-        # evita duplicados simples
-        for c in contatos:
-            if c["email"] == email:
-                flash("Já existe um cadastro com esse e-mail.", "erro")
-                break
+        if not nome or not email:
+            error = "Preencha nome e e-mail."
+        elif len(contatos) >= 3:
+            error = "Você já cadastrou as 3 pessoas de confiança permitidas."
+        elif any((c.get("email","").lower() == email) for c in contatos):
+            error = "Este e-mail já está cadastrado."
         else:
             contatos.append({"nome": nome, "email": email, "senha": senha})
             _salvar_json(CONTATOS_PATH, contatos)
-            flash("Pessoa de confiança cadastrada com sucesso!", "sucesso")
-        return redirect(url_for("cadastro_contatos"))
+            success = "Pessoa de confiança cadastrada com sucesso!"
 
-    return render_template("cadastro_contatos.html", contatos=contatos)
+    return render_template(
+        "cadastro_contatos.html",
+        contatos=contatos,
+        error=error,
+        success=success,
+        max_contatos=3,
+    )
 
-# rota atalho /cadastro -> /cadastro_contatos
 @app.route("/cadastro")
 def cadastro_redirect():
-    return redirect(url_for("cadastro_contatos"))
+    # Tela de cadastro de pessoas de confiança (sem redirecionar)
+    return render_template("cadastro_contatos.html", max_contatos=3)
 
 @app.route("/apagar_contato/<email>", methods=["POST"])
 def apagar_contato(email):
@@ -167,33 +173,18 @@ def apagar_contato(email):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # Sem senha: mant�m compatibilidade com links antigos.
-    return redirect(url_for("pessoa"))
-
+    # Sem senha: abre direto o painel da pessoa de confiança
+    return render_template("painel.html")
 
 @app.route("/logout")
 def logout():
-    session.clear()
-    return redirect(url_for("login"))
-
-@app.route("/pessoa")
-def pessoa():
-    """Painel da pessoa de confiança SEM senha (sempre aberto)."""
-    alertas = _carregar_json(ALERTAS_PATH, [])
-    usuario = {"nome": "Pessoa de Confiança", "email": "aberto@local"}
-    return render_template("painel.html", usuario=usuario, alertas=alertas, modo_aberto=True)
-
-
-@app.route("/pessoa_sair")
-def pessoa_sair():
-    """Tela neutra para encerrar o painel aberto, sem redirecionar para outros painéis."""
-    return render_template("pessoa_sair.html")
+    # "Sair" do painel da pessoa de confiança: não redireciona para outros painéis
+    return render_template("painel_saida.html")
 
 @app.route("/painel")
 def painel():
-    # Sem senha: painel sempre aberto (evita loop de redirecionamento).
-    return redirect(url_for("pessoa"))
-
+    # Painel da pessoa de confiança (sempre aberto, sem autenticação)
+    return render_template("painel.html")
 
 @app.route("/relatorio")
 def relatorio():
@@ -202,7 +193,7 @@ def relatorio():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=True)
 
 
 # ---- Erros amigáveis (sem stacktrace no navegador) ----

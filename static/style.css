@@ -1,7 +1,5 @@
-html, body {height:100%; width:100%; margin:0; padding:0;}
 
 body.tela-escura {
-  font-size: 18px;
   background: #020617;
   color: #e5e7eb;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -27,12 +25,10 @@ body.tela-escura {
 }
 
 .container {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 24px 18px 48px;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
 }
-
 
 .botoes-home {
   display: flex;
@@ -250,22 +246,18 @@ body.tela-escura {
 }
 
 
-#tabela-alertas th, #tabela-alertas td { font-size: 16px; }
-
-.acoes-motorista { justify-content:center; }
-
-
-/* Lista de pessoas de confiança no painel do motorista */
-.contatos-bloco{margin-top:14px}
-.lista-contatos{list-style:none;padding:0;margin:10px 0 0 0;display:grid;gap:10px}
-.lista-contatos li{padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(0,0,0,.20)}
-.lista-contatos .muted{opacity:.8;font-size:.95em;margin-left:8px}
-
-/* Fullscreen / responsivo (deixa maior no PC e no celular) */
-html, body{height:100%}
-body{font-size:clamp(16px,1.4vw,22px)}
-.wrap{min-height:100vh}
-.card{width:min(1280px, 96vw)}
-.btn{padding:14px 18px}
-input, select{font-size:1em}
-
+/* --- FULLSCREEN / LAYOUT PATCH --- */
+.container{max-width:100% !important; width:100% !important; padding:24px;}
+.container.fullscreen{min-height:100vh; display:flex; flex-direction:column;}
+.topbar{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:wrap;}
+.actions{display:flex; gap:10px; flex-wrap:wrap;}
+.grid{display:grid; grid-template-columns: 2fr 1fr; gap:16px;}
+@media (max-width: 900px){ .grid{grid-template-columns:1fr;} .container{padding:16px;} }
+.alerts{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
+.alert-item{border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px 14px; background:rgba(0,0,0,.18);}
+.alert-head{display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:6px;}
+.empty{padding:16px; border:1px dashed rgba(255,255,255,.18); border-radius:14px; color:rgba(255,255,255,.75);}
+.list{margin:0; padding-left:18px;}
+.muted{opacity:.75;}
+.btn.danger{background:rgba(255,80,80,.18); border-color:rgba(255,80,80,.35);}
+.card.center{max-width:680px; margin:0 auto;}

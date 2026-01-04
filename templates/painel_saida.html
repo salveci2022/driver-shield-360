@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Painel encerrado</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app">
+  <div class="container fullscreen">
+    <div class="card center">
+      <h1>Painel encerrado</h1>
+      <p>Você saiu do painel da pessoa de confiança.</p>
+      <a class="btn primary" href="{{ url_for('painel') }}">Abrir painel novamente</a>
+    </div>
+  </div>
+</body>
+</html>

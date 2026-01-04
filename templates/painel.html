@@ -1,190 +1,130 @@
-
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Painel da Pessoa de Confiança - Driver Shield 360</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Painel — Pessoa de Confiança</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32.png') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
-  <meta name="theme-color" content="#00e5ff">
-
 </head>
-<body class="tela-escura">
-  <header class="topo">
-    <h1>Central de Confiança</h1>
-    <p class="subtitulo">Olá, {{ usuario.nome or usuario["nome"] }}. Abaixo você vê os alertas mais recentes.</p>
-  </header>
-  <audio id="sireneAudio" preload="auto" loop>
-    <source src="{{ url_for('static', filename='sirene.mp3') }}" type="audio/mpeg">
-  </audio>
+<body class="app">
+  <div class="container fullscreen">
+    <header class="topbar">
+      <div>
+        <h1>Painel da Pessoa de Confiança</h1>
+        <p class="muted">Aberto e sempre disponível (sem senha)</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btnSiren">🔊 Sirene</button>
+        <button class="btn" id="btnClear">🧹 Limpar</button>
+        <button class="btn" id="btnReload">🔄 Reiniciar</button>
+        <a class="btn danger" href="{{ url_for('logout') }}">⏻ Sair</a>
+      </div>
+    </header>
 
+    <main class="grid">
+      <section class="card">
+        <h2>Alertas em tempo real</h2>
+        <p class="muted">Quando chegar um novo alerta, a sirene toca automaticamente.</p>
+        <div id="alerts" class="alerts"></div>
+      </section>
 
-  <main class="container">
-    <div class="acoes-painel">
-      <button type="button" class="btn btn-secundario" onclick="doFullscreen()">⛶ Tela cheia</button>
-      <button type="button" class="btn btn-secundario" onclick="doReiniciar()">Reiniciar</button>
-      <button type="button" class="btn btn-perigo" onclick="toggleSirene()">🔊 Sirene</button>
+      <section class="card">
+        <h2>Dicas rápidas</h2>
+        <ul class="list">
+          <li>Se tocar sirene, verifique o alerta mais recente.</li>
+          <li>Use <strong>Limpar</strong> após resolver a ocorrência.</li>
+          <li>Use <strong>Reiniciar</strong> se a tela travar.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
 
-      <form method="post" action="{{ url_for('api_limpar_alertas') }}" onsubmit="return false;" id="form-limpar-alertas">
-        <button type="submit" class="btn btn-secundario">Limpar alertas</button>
-      </form>
-
-      {% set aberto = (modo_aberto | default(false)) %}
-      {% if not aberto %}
-      <a href="{{ url_for('relatorio') }}" class="btn btn-secundario">Relatório completo</a>
-      {% endif %}
-
-      {% if aberto %}
-        <a href="{{ url_for('pessoa_sair') }}" class="btn btn-perigo">Sair</a>
-      {% else %}
-        <a href="{{ url_for('logout') }}" class="btn btn-perigo">Sair</a>
-      {% endif %}
-    </div>
-
-    <section class="lista-alertas">
-      <h2>Alertas recebidos</h2>
-      <table id="tabela-alertas">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Data/Hora (Brasília)</th>
-            <th>Motorista</th>
-            <th>Ocorrência</th>
-            <th>Localização</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for a in alertas %}
-          <tr>
-            <td>{{ a.id or a["id"] }}</td>
-            <td>{{ a.timestamp_brt or a["timestamp_brt"] }}</td>
-            <td>{{ a.motorista or a["motorista"] }}</td>
-            <td>{{ a.ocorrencia or a["ocorrencia"] }}</td>
-            <td>
-              {% if a.latitude and a.longitude %}
-                <a href="https://www.google.com/maps?q={{ a.latitude }},{{ a.longitude }}" target="_blank">
-                  Ver no mapa ({{ a.latitude }}, {{ a.longitude }})
-                </a>
-              {% else %}
-                Sem localização
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </section>
-  </main>
+  <audio id="sireneAudio" src="{{ url_for('static', filename='sirene.mp3') }}" preload="auto" loop></audio>
 
   <script>
-    // ===== Tela cheia =====
-    function doFullscreen() {
-      const el = document.documentElement;
-      if (el.requestFullscreen) el.requestFullscreen();
-    }
+    const $alerts = document.getElementById('alerts');
+    const sirene = document.getElementById('sireneAudio');
+    const btnSiren = document.getElementById('btnSiren');
+    const btnClear = document.getElementById('btnClear');
+    const btnReload = document.getElementById('btnReload');
 
-    function doReiniciar() {
-      window.location.reload(true);
-    }
+    let lastCount = 0;
+    let sirenOn = false;
 
-    // ===== Sirene =====
-    let sireneOn = false;
-    let audioLiberado = false;
-    const audio = document.getElementById('sireneAudio');
-
-    // Chrome no celular às vezes bloqueia autoplay; liberamos após 1 toque
-    window.addEventListener('pointerdown', () => {
-      audioLiberado = true;
-    }, { once: true });
-
-    function tocarSirene() {
-      if (!audio) return;
-      if (!audioLiberado) return; // precisa interação do usuário
-      audio.volume = 1.0;
-      audio.play().then(() => { sireneOn = true; }).catch(() => {});
-    }
-
-    function pararSirene() {
-      if (!audio) return;
-      audio.pause();
-      audio.currentTime = 0;
-      sireneOn = false;
-    }
-
-    function toggleSirene() {
-      if (sireneOn) pararSirene();
-      else tocarSirene();
-    }
-
-    // ===== Limpar alertas =====
-    document.getElementById('form-limpar-alertas').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!confirm('Tem certeza que deseja limpar todos os alertas?')) return;
-
-      const resp = await fetch('{{ url_for("api_limpar_alertas") }}', { method: 'POST' });
-      const data = await resp.json();
-      if (data.status === 'ok') {
-        document.querySelector('#tabela-alertas tbody').innerHTML = '';
-        alert('Alertas limpos com sucesso.');
+    function renderAlerts(items){
+      if(!items || items.length === 0){
+        $alerts.innerHTML = '<div class="empty">Nenhum alerta no momento.</div>';
+        return;
       }
+      const html = items.slice().reverse().map(a => {
+        const hora = a.hora || '';
+        const tipo = a.tipo || 'Alerta';
+        const local = a.local || '';
+        const msg = a.mensagem || '';
+        return `
+          <div class="alert-item">
+            <div class="alert-head">
+              <strong>${tipo}</strong>
+              <span class="muted">${hora}</span>
+            </div>
+            <div class="muted">${local}</div>
+            ${msg ? `<div>${msg}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+      $alerts.innerHTML = html;
+    }
+
+    function startSiren(){
+      try{ sirene.currentTime = 0; sirene.play(); }catch(e){}
+      sirenOn = true;
+      btnSiren.textContent = '🔇 Parar';
+      btnSiren.classList.add('danger');
+    }
+
+    function stopSiren(){
+      try{ sirene.pause(); }catch(e){}
+      sirenOn = false;
+      btnSiren.textContent = '🔊 Sirene';
+      btnSiren.classList.remove('danger');
+    }
+
+    btnSiren.addEventListener('click', () => {
+      sirenOn ? stopSiren() : startSiren();
     });
 
-    // ===== Atualização em tempo real + toca sirene ao chegar alerta novo =====
-    let ultimoId = null;
+    btnReload.addEventListener('click', () => location.reload());
 
-    function montarLinha(a) {
-      const id = a.id ?? a["id"];
-      const ts = a.timestamp_brt ?? a["timestamp_brt"] ?? "";
-      const motorista = a.motorista ?? a["motorista"] ?? "";
-      const ocorr = a.ocorrencia ?? a["ocorrencia"] ?? "";
-      const lat = a.latitude ?? a["latitude"];
-      const lng = a.longitude ?? a["longitude"];
+    btnClear.addEventListener('click', async () => {
+      try{
+        await fetch('/api/limpar_alertas', {method:'POST'});
+      }catch(e){}
+      lastCount = 0;
+      stopSiren();
+      await fetchAlerts();
+    });
 
-      let locHtml = "Sem localização";
-      if (lat && lng) {
-        const url = `https://www.google.com/maps?q=${lat},${lng}`;
-        locHtml = `<a href="${url}" target="_blank">Ver no mapa (${lat}, ${lng})</a>`;
-      }
-      return `<tr>
-        <td>${id}</td>
-        <td>${ts}</td>
-        <td>${motorista}</td>
-        <td>${ocorr}</td>
-        <td>${locHtml}</td>
-      </tr>`;
-    }
+    async function fetchAlerts(){
+      try{
+        const r = await fetch('/api/alertas', {cache:'no-store'});
+        const data = await r.json();
+        const items = data.alertas || [];
+        renderAlerts(items);
 
-    async function atualizarAlertas() {
-      try {
-        const resp = await fetch('{{ url_for("api_alertas") }}', { cache: 'no-store' });
-        const alertas = await resp.json();
-
-        // ordena do mais recente pro mais antigo
-        alertas.sort((a,b) => (b.id ?? b["id"] ?? 0) - (a.id ?? a["id"] ?? 0));
-
-        const tbody = document.querySelector('#tabela-alertas tbody');
-        tbody.innerHTML = alertas.map(montarLinha).join("");
-
-        const topo = alertas[0];
-        const topoId = topo ? (topo.id ?? topo["id"]) : null;
-
-        if (ultimoId !== null && topoId !== null && topoId !== ultimoId) {
-          // alerta novo chegou
-          tocarSirene();
+        if(items.length > lastCount && lastCount !== 0){
+          // chegou alerta novo
+          startSiren();
         }
-        ultimoId = topoId;
-      } catch (e) {
-        // silencioso
+        lastCount = items.length;
+      }catch(e){
+        $alerts.innerHTML = '<div class="empty">Erro ao carregar alertas.</div>';
       }
     }
 
-    // primeira carga e polling
-    atualizarAlertas();
-    setInterval(atualizarAlertas, 3000);
+    // primeira carga
+    fetchAlerts();
+    // atualização contínua
+    setInterval(fetchAlerts, 2000);
   </script>
 </body>
 </html>
