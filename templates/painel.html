@@ -3,26 +3,46 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel da Pessoa de Confiança - Driver Shield 360</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-<link rel="icon" href="/static/favicon.ico">
-<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#00ff88">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+  <meta name="theme-color" content="#00e5ff">
+
 </head>
 <body class="tela-escura">
   <header class="topo">
     <h1>Central de Confiança</h1>
     <p class="subtitulo">Olá, {{ usuario.nome or usuario["nome"] }}. Abaixo você vê os alertas mais recentes.</p>
   </header>
+  <audio id="sireneAudio" preload="auto" loop>
+    <source src="{{ url_for('static', filename='sirene.mp3') }}" type="audio/mpeg">
+  </audio>
+
 
   <main class="container">
     <div class="acoes-painel">
+      <button type="button" class="btn btn-secundario" onclick="doFullscreen()">⛶ Tela cheia</button>
+      <button type="button" class="btn btn-secundario" onclick="doReiniciar()">Reiniciar</button>
+      <button type="button" class="btn btn-perigo" onclick="toggleSirene()">🔊 Sirene</button>
+
       <form method="post" action="{{ url_for('api_limpar_alertas') }}" onsubmit="return false;" id="form-limpar-alertas">
         <button type="submit" class="btn btn-secundario">Limpar alertas</button>
       </form>
+
+      {% set aberto = (modo_aberto | default(false)) %}
+      {% if not aberto %}
       <a href="{{ url_for('relatorio') }}" class="btn btn-secundario">Relatório completo</a>
-      <a href="{{ url_for('logout') }}" class="btn btn-perigo">Sair</a>
+      {% endif %}
+
+      {% if aberto %}
+        <a href="{{ url_for('pessoa_sair') }}" class="btn btn-perigo">Sair</a>
+      {% else %}
+        <a href="{{ url_for('logout') }}" class="btn btn-perigo">Sair</a>
+      {% endif %}
     </div>
 
     <section class="lista-alertas">
@@ -61,68 +81,110 @@
   </main>
 
   <script>
-    document.getElementById('form-limpar-alertas').addEventListener('submit', async function(e) {
+    // ===== Tela cheia =====
+    function doFullscreen() {
+      const el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen();
+    }
+
+    function doReiniciar() {
+      window.location.reload(true);
+    }
+
+    // ===== Sirene =====
+    let sireneOn = false;
+    let audioLiberado = false;
+    const audio = document.getElementById('sireneAudio');
+
+    // Chrome no celular às vezes bloqueia autoplay; liberamos após 1 toque
+    window.addEventListener('pointerdown', () => {
+      audioLiberado = true;
+    }, { once: true });
+
+    function tocarSirene() {
+      if (!audio) return;
+      if (!audioLiberado) return; // precisa interação do usuário
+      audio.volume = 1.0;
+      audio.play().then(() => { sireneOn = true; }).catch(() => {});
+    }
+
+    function pararSirene() {
+      if (!audio) return;
+      audio.pause();
+      audio.currentTime = 0;
+      sireneOn = false;
+    }
+
+    function toggleSirene() {
+      if (sireneOn) pararSirene();
+      else tocarSirene();
+    }
+
+    // ===== Limpar alertas =====
+    document.getElementById('form-limpar-alertas').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!confirm('Tem certeza que deseja limpar todos os alertas?')) return;
 
-      const resp = await fetch('{{ url_for("api_limpar_alertas") }}', {
-        method: 'POST'
-      });
+      const resp = await fetch('{{ url_for("api_limpar_alertas") }}', { method: 'POST' });
       const data = await resp.json();
       if (data.status === 'ok') {
         document.querySelector('#tabela-alertas tbody').innerHTML = '';
         alert('Alertas limpos com sucesso.');
       }
     });
-  
-// Fullscreen
-(function(){
-  const btn=document.getElementById('btnFull');
-  if(btn){
-    btn.addEventListener('click', ()=>{
-      const el=document.documentElement;
-      if(!document.fullscreenElement){
-        (el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el);
-      }else{
-        (document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(document);
+
+    // ===== Atualização em tempo real + toca sirene ao chegar alerta novo =====
+    let ultimoId = null;
+
+    function montarLinha(a) {
+      const id = a.id ?? a["id"];
+      const ts = a.timestamp_brt ?? a["timestamp_brt"] ?? "";
+      const motorista = a.motorista ?? a["motorista"] ?? "";
+      const ocorr = a.ocorrencia ?? a["ocorrencia"] ?? "";
+      const lat = a.latitude ?? a["latitude"];
+      const lng = a.longitude ?? a["longitude"];
+
+      let locHtml = "Sem localização";
+      if (lat && lng) {
+        const url = `https://www.google.com/maps?q=${lat},${lng}`;
+        locHtml = `<a href="${url}" target="_blank">Ver no mapa (${lat}, ${lng})</a>`;
       }
-    });
-  }
-})();
-
-// Ações
-const sirene = document.getElementById('sirene');
-const btnSair = document.getElementById('btnSair');
-const btnReiniciar = document.getElementById('btnReiniciar');
-const btnLimparTudo = document.getElementById('btnLimparTudo');
-
-if(btnSair){ btnSair.addEventListener('click', ()=>{ window.location.href='/painel_saida'; }); }
-if(btnReiniciar){ btnReiniciar.addEventListener('click', ()=>{ window.location.reload(); }); }
-if(btnLimparTudo){
-  btnLimparTudo.addEventListener('click', async ()=>{
-    try{
-      await fetch('/api/limpar_alertas', {method:'POST'});
-    }catch(e){}
-    try{ sirene.pause(); sirene.currentTime=0; }catch(e){}
-    window.location.reload();
-  });
-}
-
-// Tocar sirene quando chegar alerta novo
-let lastCount = 0;
-async function checkAlerts(){
-  try{
-    const r = await fetch('/api/alertas');
-    const data = await r.json();
-    const count = (data && data.alertas) ? data.alertas.length : 0;
-    if(count > lastCount){
-      try{ await sirene.play(); }catch(e){}
+      return `<tr>
+        <td>${id}</td>
+        <td>${ts}</td>
+        <td>${motorista}</td>
+        <td>${ocorr}</td>
+        <td>${locHtml}</td>
+      </tr>`;
     }
-    lastCount = count;
-  }catch(e){}
-}
-setInterval(checkAlerts, 2500);
-checkAlerts();
-</script>
+
+    async function atualizarAlertas() {
+      try {
+        const resp = await fetch('{{ url_for("api_alertas") }}', { cache: 'no-store' });
+        const alertas = await resp.json();
+
+        // ordena do mais recente pro mais antigo
+        alertas.sort((a,b) => (b.id ?? b["id"] ?? 0) - (a.id ?? a["id"] ?? 0));
+
+        const tbody = document.querySelector('#tabela-alertas tbody');
+        tbody.innerHTML = alertas.map(montarLinha).join("");
+
+        const topo = alertas[0];
+        const topoId = topo ? (topo.id ?? topo["id"]) : null;
+
+        if (ultimoId !== null && topoId !== null && topoId !== ultimoId) {
+          // alerta novo chegou
+          tocarSirene();
+        }
+        ultimoId = topoId;
+      } catch (e) {
+        // silencioso
+      }
+    }
+
+    // primeira carga e polling
+    atualizarAlertas();
+    setInterval(atualizarAlertas, 3000);
+  </script>
 </body>
 </html>

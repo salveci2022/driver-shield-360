@@ -37,29 +37,6 @@ if not os.path.exists(CONTATOS_PATH):
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, template_folder=os.path.join(BASE_DIR,'templates'), static_folder=os.path.join(BASE_DIR,'static'))
-
-# =========================
-# Arquivos de dados (contatos)
-# =========================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
-CONTATOS_FILE = os.path.join(DATA_DIR, "contatos.json")
-
-def _garantir_data_dir():
-    os.makedirs(DATA_DIR, exist_ok=True)
-    if not os.path.exists(CONTATOS_FILE):
-        with open(CONTATOS_FILE, "w", encoding="utf-8") as f:
-            f.write("[]")
-
-def carregar_contatos():
-    """Retorna lista de pessoas de confiança cadastradas."""
-    _garantir_data_dir()
-    try:
-        with open(CONTATOS_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return data if isinstance(data, list) else []
-    except Exception:
-        return []
 app.secret_key = os.environ.get("SECRET_KEY", "driver_shield_360_super_seguro")
 
 # Produção (blindado)
@@ -115,9 +92,9 @@ def index():
 
 @app.route("/motorista", methods=["GET"])
 def motorista():
-    contatos = carregar_contatos()
+    # Lista as pessoas de confiança cadastradas para aparecer no painel do motorista
+    contatos = _carregar_json(CONTATOS_PATH, [])
     return render_template("motorista.html", contatos=contatos)
-
 @app.route("/api/panico", methods=["POST"])
 def api_panico():
     data = request.get_json(silent=True) or request.form
@@ -142,7 +119,6 @@ def api_limpar_alertas():
 
 # ----- Cadastro de pessoas de confiança -----
 
-@app.route("/cadastro", methods=["GET", "POST"])
 @app.route("/cadastro_contatos", methods=["GET", "POST"])
 def cadastro_contatos():
     contatos = _carregar_json(CONTATOS_PATH, [])
@@ -154,6 +130,12 @@ def cadastro_contatos():
         if not nome or not email or not senha:
             flash("Preencha todos os campos.", "erro")
             return redirect(url_for("cadastro_contatos"))
+
+        # Limite: até 3 pessoas de confiança
+        if len(contatos) >= 3:
+            flash("Limite atingido: você só pode cadastrar até 3 pessoas de confiança. Apague uma para cadastrar outra.", "erro")
+            return redirect(url_for("cadastro_contatos"))
+
 
         # evita duplicados simples
         for c in contatos:
@@ -169,6 +151,9 @@ def cadastro_contatos():
     return render_template("cadastro_contatos.html", contatos=contatos)
 
 # rota atalho /cadastro -> /cadastro_contatos
+@app.route("/cadastro")
+def cadastro_redirect():
+    return redirect(url_for("cadastro_contatos"))
 
 @app.route("/apagar_contato/<email>", methods=["POST"])
 def apagar_contato(email):
@@ -182,43 +167,42 @@ def apagar_contato(email):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # Painel da pessoa de confiança sem senha (sempre aberto)
-    return redirect(url_for("painel"))
+    # Sem senha: mant�m compatibilidade com links antigos.
+    return redirect(url_for("pessoa"))
 
 
 @app.route("/logout")
 def logout():
-    # Não usamos login; "sair" leva para uma tela isolada
-    return redirect(url_for("painel_saida"))
+    session.clear()
+    return redirect(url_for("login"))
 
+@app.route("/pessoa")
+def pessoa():
+    """Painel da pessoa de confiança SEM senha (sempre aberto)."""
+    alertas = _carregar_json(ALERTAS_PATH, [])
+    usuario = {"nome": "Pessoa de Confiança", "email": "aberto@local"}
+    return render_template("painel.html", usuario=usuario, alertas=alertas, modo_aberto=True)
+
+
+@app.route("/pessoa_sair")
+def pessoa_sair():
+    """Tela neutra para encerrar o painel aberto, sem redirecionar para outros painéis."""
+    return render_template("pessoa_sair.html")
 
 @app.route("/painel")
 def painel():
-    user = _usuario_atual()
-    if not user:
-        return redirect(url_for("login"))
+    # Sem senha: painel sempre aberto (evita loop de redirecionamento).
+    return redirect(url_for("pessoa"))
 
-    alertas = _carregar_json(ALERTAS_PATH, [])
-    # por enquanto, todos os alertas são exibidos
-    return render_template("painel.html", usuario=user, alertas=alertas)
-
-# ----- Relatório -----
 
 @app.route("/relatorio")
 def relatorio():
     alertas = _carregar_json(ALERTAS_PATH, [])
     return render_template("relatorio.html", alertas=alertas)
 
-
-
-@app.route("/painel_saida")
-def painel_saida():
-    return render_template("painel_saida.html")
-
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
 
 
 # ---- Erros amigáveis (sem stacktrace no navegador) ----

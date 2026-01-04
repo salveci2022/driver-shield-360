@@ -1,18 +1,18 @@
 {
   "name": "Driver Shield 360",
-  "short_name": "DriverShield360",
+  "short_name": "DS360",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#070b12",
-  "theme_color": "#00ff88",
+  "background_color": "#0a1220",
+  "theme_color": "#00e5ff",
   "icons": [
     {
-      "src": "/static/icons/icon-192x192.png",
+      "src": "/static/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/static/icons/icon-512x512.png",
+      "src": "/static/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

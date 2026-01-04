@@ -3,18 +3,40 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel do Motorista - Driver Shield 360</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-<link rel="icon" href="/static/favicon.ico">
-<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#00ff88">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+  <meta name="theme-color" content="#00e5ff">
+
 </head>
 <body class="tela-escura">
   <header class="topo">
     <h1>🛡️ Driver Shield 360</h1>
     <p class="subtitulo">Painel do Motorista</p>
-  <div class="header-actions"><button id="btnFull" class="btn secondary">Tela cheia</button></div></header>
+  </header>
+  <section class="bloco contatos-bloco">
+    <h2>👥 Pessoas de confiança</h2>
+    {% if contatos and contatos|length > 0 %}
+      <ul class="lista-contatos">
+        {% for c in contatos %}
+          <li><strong>{{ c.get('nome','') }}</strong> <span class="muted">{{ c.get('telefone','') }}</span></li>
+        {% endfor %}
+      </ul>
+      <p class="dica">Limite: até 3 pessoas cadastradas.</p>
+    {% else %}
+      <p class="dica">Nenhuma pessoa cadastrada ainda. <a href="{{ url_for('cadastro') }}">Cadastrar agora</a></p>
+    {% endif %}
+  </section>
+
+  <div class="acoes-painel acoes-motorista">
+    <button type="button" class="btn btn-secundario" onclick="doFullscreen()">⛶ Tela cheia</button>
+    <button type="button" class="btn btn-secundario" onclick="window.location.reload(true)">Reiniciar</button>
+  </div>
+
 
   <main class="container">
     <form id="form-panico">
@@ -53,19 +75,6 @@
         <a href="{{ url_for('index') }}" class="btn btn-secundario">Sair</a>
       </div>
     </form>
-    <section class="box">
-      <h2>👥 Pessoas de confiança cadastradas (máx. 3)</h2>
-      <ul class="contact-list">
-        {% if contatos %}
-          {% for c in contatos %}
-            <li><strong>{{ c.nome }}</strong> — {{ c.telefone }}{% if c.parentesco %} <span class="muted">({{ c.parentesco }})</span>{% endif %}</li>
-          {% endfor %}
-        {% else %}
-          <li class="muted">Nenhuma pessoa cadastrada ainda. Acesse <a href="/cadastro">/cadastro</a> para cadastrar.</li>
-        {% endif %}
-      </ul>
-    </section>
-
 
     <p class="aviso-rodape">
       * Em situação real de risco grave, ligue imediatamente <strong>190</strong> ou atendimento de emergência da sua região.<br>
@@ -148,9 +157,9 @@
         });
       }
     });
-  
-const btnFull=document.getElementById('btnFull');
-if(btnFull){btnFull.addEventListener('click',()=>{const el=document.documentElement; if(!document.fullscreenElement){el.requestFullscreen?.();} else {document.exitFullscreen?.();}})}
+  </script>
+<script>
+function doFullscreen(){ const el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen(); }
 </script>
 </body>
 </html>
