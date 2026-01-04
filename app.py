@@ -182,6 +182,13 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
+@app.route("/pessoa")
+def pessoa():
+    """Painel da pessoa de confiança SEM senha (sempre aberto)."""
+    alertas = _carregar_json(ALERTAS_PATH, [])
+    usuario = {"nome": "Pessoa de Confiança", "email": "aberto@local"}
+    return render_template("painel.html", usuario=usuario, alertas=alertas, modo_aberto=True)
+
 @app.route("/painel")
 def painel():
     user = _usuario_atual()
@@ -190,7 +197,7 @@ def painel():
 
     alertas = _carregar_json(ALERTAS_PATH, [])
     # por enquanto, todos os alertas são exibidos
-    return render_template("painel.html", usuario=user, alertas=alertas)
+    return render_template("painel.html", usuario=user, alertas=alertas, modo_aberto=False)
 
 # ----- Relatório -----
 
@@ -201,7 +208,7 @@ def relatorio():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
 
 
 # ---- Erros amigáveis (sem stacktrace no navegador) ----

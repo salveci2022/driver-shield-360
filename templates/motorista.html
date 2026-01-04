@@ -3,6 +3,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel do Motorista - Driver Shield 360</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -11,6 +12,11 @@
     <h1>🛡️ Driver Shield 360</h1>
     <p class="subtitulo">Painel do Motorista</p>
   </header>
+  <div class="acoes-painel acoes-motorista">
+    <button type="button" class="btn btn-secundario" onclick="doFullscreen()">⛶ Tela cheia</button>
+    <button type="button" class="btn btn-secundario" onclick="window.location.reload(true)">Reiniciar</button>
+  </div>
+
 
   <main class="container">
     <form id="form-panico">
@@ -132,5 +138,8 @@
       }
     });
   </script>
+<script>
+function doFullscreen(){ const el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen(); }
+</script>
 </body>
 </html>
