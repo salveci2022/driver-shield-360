@@ -35,8 +35,15 @@ if not os.path.exists(ALERTAS_PATH):
 if not os.path.exists(CONTATOS_PATH):
     _salvar_json(CONTATOS_PATH, [])
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, template_folder=os.path.join(BASE_DIR,'templates'), static_folder=os.path.join(BASE_DIR,'static'))
 app.secret_key = os.environ.get("SECRET_KEY", "driver_shield_360_super_seguro")
+
+# Produção (blindado)
+app.config['ENV'] = 'production'
+app.config['DEBUG'] = False
+app.config['TESTING'] = False
+app.config['PROPAGATE_EXCEPTIONS'] = False
 
 # ---------- Funções auxiliares ----------
 
@@ -195,3 +202,19 @@ def relatorio():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
+
+# ---- Erros amigáveis (sem stacktrace no navegador) ----
+@app.errorhandler(404)
+def not_found(e):
+    try:
+        return render_template("404.html"), 404
+    except Exception:
+        return "Página não encontrada.", 404
+
+@app.errorhandler(500)
+def server_error(e):
+    try:
+        return render_template("500.html"), 500
+    except Exception:
+        return "Erro interno no servidor.", 500
