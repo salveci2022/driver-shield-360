@@ -5,16 +5,6 @@
     <title>Driver Shield 360 - Motorista</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="/static/style.css" />
-
-  <!-- PWA -->
-  <link rel="manifest" href="/static/manifest.json">
-  <meta name="theme-color" content="#0b1220">
-  <link rel="icon" type="image/png" sizes="192x192" href="/static/driver_shield_360_192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/static/driver_shield_360.png">
-  <link rel="apple-touch-icon" href="/static/driver_shield_360.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
 </head>
 <body class="dark">
     <div class="container motorista-container">
@@ -44,16 +34,6 @@
         <input type="hidden" id="occurrence" value="Abordagem suspeita" />
 
         <p id="selectedOccText" class="selected-occ-text">Ocorrência selecionada: <strong>Abordagem suspeita</strong></p>
-
-        
-        <!-- LGPD / Termos de Uso -->
-        <div class="lgpd-accept" style="margin-top:18px;font-size:14px;">
-            <label>
-                <input type="checkbox" id="acceptTerms">
-                Declaro que li e concordo com os
-                <a href="/termos" target="_blank">Termos de Uso e Política de Privacidade</a>.
-            </label>
-        </div>
 
         <div class="panic-wrapper">
             <button id="panicButton" class="panic-btn-round">
@@ -235,34 +215,6 @@
             window.location.href = "/";
         }
     </script>
-
-
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/static/sw.js").catch(console.error);
-    });
-  }
-</script>
-
-
-<script>
-  const acceptTerms = document.getElementById("acceptTerms");
-  const panicBtn = document.getElementById("panicButton");
-
-  // Bloqueia o botão até aceitar os termos
-  panicBtn.disabled = true;
-  panicBtn.style.opacity = "0.6";
-
-  acceptTerms.addEventListener("change", () => {
-    panicBtn.disabled = !acceptTerms.checked;
-    panicBtn.style.opacity = acceptTerms.checked ? "1" : "0.6";
-
-    if (acceptTerms.checked) {
-      fetch("/api/accept-terms", { method: "POST" }).catch(() => {});
-    }
-  });
-</script>
 
 </body>
 </html>

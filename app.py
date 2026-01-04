@@ -1,116 +1,138 @@
-import os
-import secrets
-from datetime import datetime, timezone
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = "troque-esta-chave-no-servidor"  # chave simples para sessão (MVP)
 
-# ===== Config =====
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY") or secrets.token_hex(16)
-TERMS_VERSION = os.getenv("TERMS_VERSION", "v1.0")
+# Bancos em memória (apenas para demonstração)
+alerts = []
+contacts = []  # cada contato: {"name": ..., "login": ..., "password": ...}
 
-# In-memory storage (free tier friendly). For production, use a DB.
-alerts = []     # newest first
-contacts = []   # list of {name, whatsapp}
 
-# ===== Helpers =====
-def _utc_iso():
-    return datetime.now(timezone.utc).isoformat()
-
-def _client_ip():
-    # Render puts client ip behind proxy. X-Forwarded-For can contain multiple IPs.
-    xff = request.headers.get("X-Forwarded-For", "")
-    if xff:
-        return xff.split(",")[0].strip()
-    return request.remote_addr or ""
-
-# ===== Pages =====
 @app.route("/")
-def index():
-    # main page for driver panel
-    return render_template("motorista.html")
+def home():
+    return "Driver Shield 360 – versão 4 rodando ✅"
+
+
+# ====== MOTORISTA ======
 
 @app.route("/motorista")
 def motorista():
     return render_template("motorista.html")
 
-@app.route("/cadastro")
-def cadastro():
-    return render_template("cadastro_contatos.html")
+
+# ====== CADASTRO DE PESSOAS DE CONFIANÇA ======
+
+@app.route("/cadastro_contatos", methods=["GET", "POST"])
+def cadastro_contatos():
+    global contacts
+    msg = ""
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        login = request.form.get("login", "").strip()
+        password = request.form.get("password", "").strip()
+        if name and login and password:
+            contacts.append({"name": name, "login": login, "password": password})
+            msg = "Contato cadastrado com sucesso."
+        else:
+            msg = "Preencha todos os campos."
+    return render_template("cadastro_contatos.html", contacts=contacts, msg=msg)
+
+
+@app.route("/api/contacts", methods=["GET"])
+def api_contacts():
+    # Não expõe senha
+    public_contacts = [{"name": c["name"], "login": c["login"]} for c in contacts]
+    return jsonify(public_contacts)
+
+
+
+
+@app.route("/api/clear_contacts", methods=["POST"])
+def api_clear_contacts():
+    """Limpa TODAS as pessoas de confiança cadastradas."""
+    contacts.clear()
+    return jsonify({"status": "ok", "message": "Contatos apagados."})
+
+# ====== LOGIN DAS PESSOAS DE CONFIANÇA E PAINEL ======
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        login_input = request.form.get("login", "").strip()
+        password_input = request.form.get("password", "").strip()
+
+        for c in contacts:
+            if c["login"] == login_input and c["password"] == password_input:
+                session["contact_name"] = c["name"]
+                session["contact_login"] = c["login"]
+                return redirect(url_for("painel"))
+
+        return render_template("login.html", error="Login ou senha inválidos.", last_login=login_input)
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 
 @app.route("/painel")
 def painel():
-    # Panel for trusted contact (no password for speed).
-    return render_template("painel.html")
+    if "contact_name" not in session:
+        return redirect(url_for("login"))
+    return render_template("painel.html", contact_name=session.get("contact_name"))
 
-@app.route("/termos")
-def termos():
-    return render_template("termos.html", terms_version=TERMS_VERSION)
+
+# ====== API DE ALERTAS ======
+
+@app.route("/api/panic", methods=["POST"])
+def panic():
+    data = request.get_json() or {}
+
+    driver_name = data.get("driver_name", "Motorista")
+    lat = data.get("lat")
+    lng = data.get("lng")
+    occurrence = data.get("occurrence", "Ocorrência não informada")
+
+    # As pessoas de confiança vêm do cadastro global
+    contact_names = [c["name"] for c in contacts][:3]
+
+    alert = {
+        "driver_name": driver_name,
+        "lat": lat,
+        "lng": lng,
+        "occurrence": occurrence,
+        "contacts": contact_names,
+        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+    }
+    alerts.append(alert)
+    print("🔴 ALERTA RECEBIDO:", alert)
+
+    return jsonify({"status": "ok", "message": "Alerta registrado com sucesso."})
+
+
+@app.route("/api/alerts", methods=["GET"])
+def get_alerts():
+    return jsonify(alerts)
+
+
+@app.route("/api/clear_alerts", methods=["POST"])
+def clear_alerts():
+    alerts.clear()
+    return jsonify({"status": "ok", "message": "Alertas limpos."})
+
+
+# ====== RELATÓRIO DE OCORRÊNCIAS ======
 
 @app.route("/relatorio")
 def relatorio():
-    # simple report (reuse JSON via /api/alerts)
-    return render_template("relatorio.html", alerts=alerts, terms_version=TERMS_VERSION)
+    """Página simples para listar as ocorrências registradas."""
+    return render_template("relatorio.html", alerts=alerts)
 
-# ===== APIs =====
-@app.route("/api/contacts", methods=["GET", "POST"])
-def api_contacts():
-    if request.method == "GET":
-        # Do not expose full whatsapp in public pages; cadastro page masks it.
-        return jsonify({"contacts": contacts})
 
-    data = request.get_json(silent=True) or {}
-    name = (data.get("name") or "").strip()
-    whatsapp = "".join(ch for ch in str(data.get("whatsapp") or "") if ch.isdigit())
 
-    if not name or len(whatsapp) < 10:
-        return jsonify({"status": "error", "message": "Dados inválidos"}), 400
-
-    contacts.append({"name": name, "whatsapp": whatsapp})
-    return jsonify({"status": "ok", "contacts": contacts})
-
-@app.route("/api/contacts_delete", methods=["POST"])
-def api_contacts_delete():
-    data = request.get_json(silent=True) or {}
-    try:
-        idx = int(data.get("index"))
-    except Exception:
-        return jsonify({"status": "error", "message": "Índice inválido"}), 400
-
-    if idx < 0 or idx >= len(contacts):
-        return jsonify({"status": "error", "message": "Fora do intervalo"}), 400
-
-    contacts.pop(idx)
-    return jsonify({"status": "ok", "contacts": contacts})
-
-@app.route("/api/panic", methods=["POST"])
-def api_panic():
-    data = request.get_json(silent=True) or {}
-    driver_name = (data.get("driver_name") or "Motorista").strip()
-    occurrence = (data.get("occurrence") or "Ocorrência não informada").strip()
-    lat = data.get("lat")
-    lng = data.get("lng")
-
-    alert = {
-        "ts": _utc_iso(),
-        "ip": _client_ip(),
-        "driver_name": driver_name,
-        "occurrence": occurrence,
-        "lat": lat,
-        "lng": lng,
-    }
-    alerts.insert(0, alert)
-    return jsonify({"status": "ok", "alert": alert})
-
-@app.route("/api/alerts", methods=["GET"])
-def api_alerts():
-    return jsonify({"alerts": alerts, "terms_version": TERMS_VERSION})
-
-@app.route("/api/clear_alerts", methods=["POST"])
-def api_clear_alerts():
-    alerts.clear()
-    return jsonify({"status": "ok"})
-
-# ===== Run local =====
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=True)
+    app.run(debug=True, host="0.0.0.0")

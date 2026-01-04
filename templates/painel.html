@@ -1,302 +1,135 @@
-<!doctype html>
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Painel – Pessoa de Confiança | Driver Shield 360</title>
-  <style>
-    :root{
-      --bg1:#061014; --bg2:#0b2430;
-      --card:rgba(18,33,41,.78);
-      --text:#eaffff; --muted:#b7c9d3;
-      --ok:#35f0b8; --warn:#ffce3a; --bad:#ff4d67;
-      --shadow: 0 18px 60px rgba(0,0,0,.55);
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text);
-      min-height:100vh;
-      background:
-        radial-gradient(1200px 800px at 15% 10%, rgba(53,240,184,.25), transparent 55%),
-        radial-gradient(900px 600px at 85% 30%, rgba(93,188,255,.18), transparent 60%),
-        linear-gradient(180deg, var(--bg2), var(--bg1));
-      display:flex; align-items:center; justify-content:center; padding:22px;
-    }
-    .wrap{width:min(980px, 100%);}
-    .top{display:flex; align-items:center; gap:14px; margin-bottom:14px}
-    .logo{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.06);display:grid;place-items:center;
-          border:1px solid rgba(255,255,255,.10); box-shadow: var(--shadow)}
-    .ttl{line-height:1.1}
-    .ttl h1{margin:0;font-size:22px}
-    .ttl p{margin:4px 0 0;color:var(--muted);font-size:13px}
-    .card{
-      background:var(--card); border:1px solid rgba(255,255,255,.10);
-      border-radius:var(--radius); box-shadow:var(--shadow); padding:16px;
-      backdrop-filter: blur(10px);
-    }
-    .grid{display:grid; gap:12px; grid-template-columns: 1.2fr .8fr;}
-    @media (max-width:820px){.grid{grid-template-columns:1fr}}
-    .pillrow{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px}
-    .pill{font-size:12px; color:var(--muted); padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.20)}
-    .pill b{color:var(--text)}
-    .alertBox{
-      border-radius:16px; border:1px solid rgba(255,255,255,.10); padding:14px;
-      background:rgba(0,0,0,.20);
-      min-height:150px;
-    }
-    .alertTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-    .badge{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.10)}
-    .badge.ok{background:rgba(53,240,184,.10); color:var(--ok)}
-    .badge.bad{background:rgba(255,77,103,.10); color:var(--bad)}
-    .row{display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:13px}
-    .row span{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); padding:6px 10px; border-radius:999px}
-    .big{font-size:18px; font-weight:800; margin:10px 0 0}
-    .muted{color:var(--muted); font-size:13px; margin-top:6px}
-    .btns{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
-    button{
-      border:0; cursor:pointer; padding:12px 14px; border-radius:14px; font-weight:800;
-      background:rgba(255,255,255,.08); color:var(--text); border:1px solid rgba(255,255,255,.12);
-    }
-    button:hover{filter:brightness(1.06)}
-    .danger{background:rgba(255,77,103,.12); border-color:rgba(255,77,103,.25)}
-    .primary{background:linear-gradient(90deg, rgba(53,240,184,.18), rgba(93,188,255,.18));}
-    .small{font-size:12px;font-weight:700;padding:10px 12px;border-radius:12px}
-    .list{
-      margin:0; padding-left:18px; color:var(--muted); font-size:13px
-    }
-    a{color:#66d6ff}
-  </style>
+    <meta charset="UTF-8" />
+    <title>Painel - Alertas de Motoristas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body>
-  <div class="wrap">
-    <div class="top">
-      <div class="logo">🛡️</div>
-      <div class="ttl">
-        <h1>Painel – Pessoa de Confiança</h1>
-        <p>Fica sempre aberto (sem senha) para resposta rápida. Se houver risco real, ligue <b>190</b>.</p>
-      </div>
+<body class="dark">
+    <audio id="sirenAudio" src="/static/sirene.mp3" preload="auto"></audio>
+
+    <div class="top-bar">
+        <div class="logo-area">
+            <span class="logo-dot"></span>
+            <span class="logo-text">Driver Shield 360</span>
+        </div>
+        <div class="top-actions">
+            <span class="contact-label">👤 {{ contact_name }}</span>
+            <button id="clearBtn" class="top-btn">🧹 Limpar</button>
+            <button id="reloadBtn" class="top-btn">🔄 Reiniciar</button>
+            <a href="/logout" class="top-btn top-exit">⏻ Sair</a>
+        </div>
     </div>
 
-    <div class="card">
-      <div class="pillrow">
-        <div class="pill">Status: <b id="status">conectando…</b></div>
-        <div class="pill">Última atualização: <b id="lastPoll">—</b></div>
-        <div class="pill">Siren: <b id="sirenState">OFF</b></div>
-      </div>
+    <div class="container">
+        <h1>Painel de Emergência</h1>
+        <p class="subtitle">
+            Veja em tempo real os alertas enviados pelos motoristas de aplicativo.<br />
+            Quando um novo alerta chegar, a sirene irá tocar neste celular/computador.
+        </p>
 
-      <div class="grid">
-        <div class="alertBox">
-          <div class="alertTitle">
-            <div><b>Último alerta</b></div>
-            <div class="badge ok" id="badge">aguardando</div>
-          </div>
+        <button id="refreshBtn" class="refresh-main">🔄 Atualizar agora</button>
 
-          <div class="big" id="who">Nenhum alerta ainda.</div>
-          <div class="muted" id="what">Quando o motorista acionar o botão, aparece aqui automaticamente.</div>
-
-          <div class="row" style="margin-top:10px">
-            <span id="when">⏱ —</span>
-            <span id="where">📍 —</span>
-          </div>
-
-          <div class="muted" style="margin-top:10px">
-            Dica: mantenha este painel aberto em segundo plano. O áudio depende do navegador permitir som.
-          </div>
-        </div>
-
-        <div>
-          <div class="alertBox" style="min-height:auto">
-            <b>Ações rápidas</b>
-            <ul class="list" style="margin-top:10px">
-              <li><b>Reenviar</b>: atualiza e toca a sirene novamente (se houver alerta).</li>
-              <li><b>Limpar</b>: limpa o painel (e limpa alertas no servidor, se disponível).</li>
-              <li><b>Sair</b>: fecha/retorna ao painel.</li>
-            </ul>
-
-            <div class="btns" style="margin-top:12px">
-              <button class="primary" id="btnReenviar">🔁 Reenviar</button>
-              <button class="danger" id="btnLimpar">🧹 Limpar</button>
-              <button class="small" id="btnSair">↩ Sair</button>
-            </div>
-
-            <div class="muted" style="margin-top:10px">
-              Sem internet ou celular desligado: o alerta pode não chegar. Este sistema é apoio tecnológico.
-              <a href="/termos" target="_blank" rel="noopener">Ver Termos</a>
-            </div>
-          </div>
-        </div>
-      </div>
+        <div id="alertsList" class="alerts-list"></div>
     </div>
-  </div>
 
-<script>
-(() => {
-  // --- WebAudio Siren (no external files) ---
-  let audioCtx = null;
-  let oscA = null, oscB = null, gain = null;
-  let sirenTimer = null;
-  let sirenOn = false;
+    <script>
+        const alertsList = document.getElementById('alertsList');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
+        const sirenAudio = document.getElementById('sirenAudio');
 
-  function setSirenLabel(){
-    document.getElementById('sirenState').textContent = sirenOn ? "ON" : "OFF";
-  }
+        let lastCount = 0;
 
-  function sirenStart(){
-    try{
-      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if(audioCtx.state === "suspended") audioCtx.resume();
-
-      if(oscA) return; // already running
-
-      gain = audioCtx.createGain();
-      gain.gain.value = 0.001;
-      gain.connect(audioCtx.destination);
-
-      oscA = audioCtx.createOscillator();
-      oscB = audioCtx.createOscillator();
-      oscA.type = "sine";
-      oscB.type = "square";
-      oscA.frequency.value = 880;
-      oscB.frequency.value = 440;
-      oscA.connect(gain);
-      oscB.connect(gain);
-      oscA.start();
-      oscB.start();
-
-      sirenOn = true;
-      setSirenLabel();
-
-      // sweep up/down
-      let up = true;
-      sirenTimer = setInterval(() => {
-        const a = oscA.frequency.value;
-        const b = oscB.frequency.value;
-        const stepA = 40;
-        const stepB = 20;
-        if(up){
-          oscA.frequency.value = Math.min(1400, a + stepA);
-          oscB.frequency.value = Math.min(900, b + stepB);
-          if(oscA.frequency.value >= 1400) up = false;
-        }else{
-          oscA.frequency.value = Math.max(700, a - stepA);
-          oscB.frequency.value = Math.max(350, b - stepB);
-          if(oscA.frequency.value <= 700) up = true;
+        function playSiren() {
+            if (!sirenAudio) return;
+            try {
+                sirenAudio.currentTime = 0;
+                sirenAudio.play().catch((e) => {
+                    console.warn("Navegador bloqueou reprodução automática da sirene. Toque uma vez na tela para liberar o som.");
+                });
+            } catch (e) {
+                console.warn("Erro ao tocar sirene:", e);
+            }
         }
-        // pulse volume
-        gain.gain.value = 0.05;
-        setTimeout(()=>{ if(gain) gain.gain.value = 0.001; }, 120);
-      }, 220);
 
-    }catch(e){
-      console.log("Siren error:", e);
-    }
-  }
+        function renderAlerts(data) {
+            alertsList.innerHTML = "";
 
-  function sirenStop(){
-    if(sirenTimer){ clearInterval(sirenTimer); sirenTimer = null; }
-    if(oscA){ try{ oscA.stop(); }catch(e){} oscA.disconnect(); oscA = null; }
-    if(oscB){ try{ oscB.stop(); }catch(e){} oscB.disconnect(); oscB = null; }
-    if(gain){ try{ gain.disconnect(); }catch(e){} gain = null; }
-    sirenOn = false;
-    setSirenLabel();
-  }
+            if (!data || data.length === 0) {
+                alertsList.innerHTML = "<p>Nenhum alerta registrado até o momento.</p>";
+                return;
+            }
 
-  // --- UI helpers ---
-  const statusEl = document.getElementById("status");
-  const lastPollEl = document.getElementById("lastPoll");
-  const badgeEl = document.getElementById("badge");
+            data.slice().reverse().forEach((alert) => {
+                const item = document.createElement('div');
+                item.className = 'alert-card';
 
-  const whoEl = document.getElementById("who");
-  const whatEl = document.getElementById("what");
-  const whenEl = document.getElementById("when");
-  const whereEl = document.getElementById("where");
+                const mapLink = (alert.lat && alert.lng)
+                    ? `https://www.google.com/maps?q=${alert.lat},${alert.lng}`
+                    : '#';
 
-  let lastTs = null;
+                const contacts = alert.contacts && alert.contacts.length
+                    ? alert.contacts.join(", ")
+                    : "Não informado";
 
-  function fmtLocal(iso){
-    try{
-      const d = new Date(iso);
-      return d.toLocaleString("pt-BR");
-    }catch(e){ return iso; }
-  }
-
-  function setAlert(a){
-    whoEl.textContent = (a.driver_name || "Motorista") + " – " + (a.occurrence || "Ocorrência");
-    whatEl.textContent = "Alerta recebido. Responda rápido e, em risco real, ligue 190.";
-    whenEl.textContent = "⏱ " + (a.ts ? fmtLocal(a.ts) : "—");
-    const hasLoc = (a.lat != null && a.lng != null && a.lat !== "" && a.lng !== "");
-    whereEl.textContent = hasLoc ? `📍 ${a.lat}, ${a.lng}` : "📍 localização não disponível";
-
-    badgeEl.className = "badge bad";
-    badgeEl.textContent = "ALERTA";
-  }
-
-  function clearAlertUI(){
-    whoEl.textContent = "Nenhum alerta ainda.";
-    whatEl.textContent = "Quando o motorista acionar o botão, aparece aqui automaticamente.";
-    whenEl.textContent = "⏱ —";
-    whereEl.textContent = "📍 —";
-    badgeEl.className = "badge ok";
-    badgeEl.textContent = "aguardando";
-    lastTs = null;
-    sirenStop();
-  }
-
-  async function poll(){
-    try{
-      statusEl.textContent = "online";
-      const r = await fetch("/api/alerts", {cache:"no-store"});
-      if(!r.ok) throw new Error("HTTP "+r.status);
-      const j = await r.json();
-      const arr = j.alerts || [];
-      if(arr.length){
-        const a = arr[0]; // newest first
-        if(!lastTs || (a.ts && a.ts !== lastTs)){
-          lastTs = a.ts || lastTs;
-          setAlert(a);
-          // autoplay policy: siren will work if user interacted once;
-          // we also attempt anyway.
-          sirenStart();
+                item.innerHTML = `
+                    <div class="alert-header">
+                        <span class="alert-badge">EMERGÊNCIA</span>
+                        <span class="alert-time">${alert.timestamp}</span>
+                    </div>
+                    <h2>🚗 ${alert.driver_name}</h2>
+                    <p><strong>Ocorrência:</strong> ${alert.occurrence}</p>
+                    <p><strong>Pessoas de confiança:</strong> ${contacts}</p>
+                    <p><strong>Localização:</strong> ${
+                        alert.lat && alert.lng
+                            ? `<a href="${mapLink}" target="_blank">Ver no mapa</a> (lat: ${alert.lat.toFixed ? alert.lat.toFixed(5) : alert.lat}, lng: ${alert.lng.toFixed ? alert.lng.toFixed(5) : alert.lng})`
+                            : "Não foi possível obter a localização do aparelho do motorista."
+                    }</p>
+                `;
+                alertsList.appendChild(item);
+            });
         }
-      }
-      lastPollEl.textContent = new Date().toLocaleTimeString("pt-BR");
-    }catch(e){
-      statusEl.textContent = "offline";
-      lastPollEl.textContent = new Date().toLocaleTimeString("pt-BR");
-      // do not stop siren automatically
-    }
-  }
 
-  // Buttons
-  document.getElementById("btnReenviar").addEventListener("click", async () => {
-    await poll();
-    // always play siren again if there's an alert
-    if(lastTs) sirenStart();
-  });
+        function loadAlerts() {
+            fetch('/api/alerts')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length > lastCount) {
+                        // Novo alerta chegou: toca a sirene
+                        playSiren();
+                    }
+                    lastCount = data.length;
+                    renderAlerts(data);
+                })
+                .catch(err => {
+                    console.error(err);
+                    alertsList.innerHTML = "<p>Erro ao carregar alertas.</p>";
+                });
+        }
 
-  document.getElementById("btnLimpar").addEventListener("click", async () => {
-    // try server clear, then UI
-    try{
-      await fetch("/api/clear_alerts", {method:"POST"});
-    }catch(e){}
-    clearAlertUI();
-  });
+        refreshBtn.addEventListener('click', loadAlerts);
 
-  document.getElementById("btnSair").addEventListener("click", () => {
-    // keep it simple: go back to /painel (self) to avoid other pages
-    window.location.href = "/painel";
-  });
+        clearBtn.addEventListener('click', () => {
+            if (!confirm("Tem certeza que deseja limpar todos os alertas?")) return;
+            fetch('/api/clear_alerts', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    lastCount = 0;
+                    alertsList.innerHTML = "<p>Alertas limpos.</p>";
+                })
+                .catch(err => console.error(err));
+        });
 
-  // First interaction enables audio on mobile browsers:
-  window.addEventListener("pointerdown", () => {
-    if(audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-  }, {once:true});
+        reloadBtn.addEventListener('click', () => {
+            location.reload();
+        });
 
-  // Start polling
-  poll();
-  setInterval(poll, 2000);
-})();
-</script>
+        // Carrega de início e atualiza a cada 15 segundos
+        loadAlerts();
+        setInterval(loadAlerts, 15000);
+    </script>
 </body>
 </html>
