@@ -1,158 +1,116 @@
 import os
-import json
 import secrets
 from datetime import datetime, timezone
-from flask import Flask, render_template, request, jsonify, abort
-
-APP_NAME = "Driver Shield 360"
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-CONTACTS_PATH = os.path.join(DATA_DIR, "contacts.json")
-ALERTS_PATH = os.path.join(DATA_DIR, "alerts.json")
-
-SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change")
-TERMS_VERSION = os.environ.get("TERMS_VERSION", "v1.0")
-TRUST_KEY = os.environ.get("TRUST_KEY", "MUDE-ESTA-CHAVE")
-
-TRUST_TOKENS = {}  # token -> {"created":...}
+from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
-app.secret_key = SECRET_KEY
 
-def _ensure_files():
-    os.makedirs(DATA_DIR, exist_ok=True)
-    if not os.path.exists(CONTACTS_PATH):
-        with open(CONTACTS_PATH, "w", encoding="utf-8") as f:
-            json.dump([], f)
-    if not os.path.exists(ALERTS_PATH):
-        with open(ALERTS_PATH, "w", encoding="utf-8") as f:
-            json.dump([], f)
+# ===== Config =====
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY") or secrets.token_hex(16)
+TERMS_VERSION = os.getenv("TERMS_VERSION", "v1.0")
 
-def _load_json(path):
-    _ensure_files()
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+# In-memory storage (free tier friendly). For production, use a DB.
+alerts = []     # newest first
+contacts = []   # list of {name, whatsapp}
 
-def _save_json(path, data):
-    _ensure_files()
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+# ===== Helpers =====
+def _utc_iso():
+    return datetime.now(timezone.utc).isoformat()
 
-def _ts_human(iso):
-    try:
-        dt = datetime.fromisoformat(iso.replace("Z",""))
-        return dt.strftime("%d/%m/%Y %H:%M:%S")
-    except Exception:
-        return iso
+def _client_ip():
+    # Render puts client ip behind proxy. X-Forwarded-For can contain multiple IPs.
+    xff = request.headers.get("X-Forwarded-For", "")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.remote_addr or ""
 
-@app.get("/motorista")
+# ===== Pages =====
+@app.route("/")
+def index():
+    # main page for driver panel
+    return render_template("motorista.html")
+
+@app.route("/motorista")
 def motorista():
     return render_template("motorista.html")
 
-@app.get("/cadastro")
+@app.route("/cadastro")
 def cadastro():
-    return render_template("cadastro.html")
+    return render_template("cadastro_contatos.html")
 
-@app.get("/relatorio")
-def relatorio():
-    return render_template("relatorio.html")
-
-@app.get("/termos")
-def termos():
-    html = render_template("termos.html")
-    injected = f"<script>window.TERMS_VERSION={json.dumps(TERMS_VERSION)};window.TERMS_DATE={json.dumps(datetime.now().strftime('%d/%m/%Y'))};</script>"
-    return html.replace("</head>", injected + "\n</head>")
-
-@app.get("/painel")
+@app.route("/painel")
 def painel():
-    k = (request.args.get("k") or "").strip()
-    if k != TRUST_KEY:
-        abort(404)
+    # Panel for trusted contact (no password for speed).
     return render_template("painel.html")
 
-# -------- API contatos --------
-@app.get("/api/contacts")
-def api_contacts_get():
-    return jsonify({"contacts": _load_json(CONTACTS_PATH)})
+@app.route("/termos")
+def termos():
+    return render_template("termos.html", terms_version=TERMS_VERSION)
 
-@app.post("/api/contacts")
-def api_contacts_add():
-    payload = request.get_json(silent=True) or {}
-    name = (payload.get("name") or "").strip()
-    pin = (payload.get("pin") or "").strip()
-    if not name or not pin.isdigit() or not (4 <= len(pin) <= 6):
-        return jsonify({"ok": False}), 400
+@app.route("/relatorio")
+def relatorio():
+    # simple report (reuse JSON via /api/alerts)
+    return render_template("relatorio.html", alerts=alerts, terms_version=TERMS_VERSION)
 
-    contacts = _load_json(CONTACTS_PATH)
-    new_id = (max([c.get("id",0) for c in contacts]) + 1) if contacts else 1
-    contacts.append({"id": new_id, "name": name, "pin": pin})
-    _save_json(CONTACTS_PATH, contacts)
-    return jsonify({"ok": True, "id": new_id})
+# ===== APIs =====
+@app.route("/api/contacts", methods=["GET", "POST"])
+def api_contacts():
+    if request.method == "GET":
+        # Do not expose full whatsapp in public pages; cadastro page masks it.
+        return jsonify({"contacts": contacts})
 
-@app.delete("/api/contacts/<int:cid>")
-def api_contacts_del(cid: int):
-    contacts = [c for c in _load_json(CONTACTS_PATH) if c.get("id") != cid]
-    _save_json(CONTACTS_PATH, contacts)
-    return jsonify({"ok": True})
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    whatsapp = "".join(ch for ch in str(data.get("whatsapp") or "") if ch.isdigit())
 
-# -------- API alertas --------
-@app.post("/api/panic")
+    if not name or len(whatsapp) < 10:
+        return jsonify({"status": "error", "message": "Dados inválidos"}), 400
+
+    contacts.append({"name": name, "whatsapp": whatsapp})
+    return jsonify({"status": "ok", "contacts": contacts})
+
+@app.route("/api/contacts_delete", methods=["POST"])
+def api_contacts_delete():
+    data = request.get_json(silent=True) or {}
+    try:
+        idx = int(data.get("index"))
+    except Exception:
+        return jsonify({"status": "error", "message": "Índice inválido"}), 400
+
+    if idx < 0 or idx >= len(contacts):
+        return jsonify({"status": "error", "message": "Fora do intervalo"}), 400
+
+    contacts.pop(idx)
+    return jsonify({"status": "ok", "contacts": contacts})
+
+@app.route("/api/panic", methods=["POST"])
 def api_panic():
-    payload = request.get_json(silent=True) or {}
-    driver_name = (payload.get("driver_name") or "").strip()
-    occurrence = (payload.get("occurrence") or "").strip()
-    location = payload.get("location", None)
-
-    if not driver_name or not occurrence:
-        return jsonify({"ok": False}), 400
-
-    alerts = _load_json(ALERTS_PATH)
-    new_id = (max([a.get("id",0) for a in alerts]) + 1) if alerts else 1
-    iso = datetime.now(timezone.utc).isoformat()
+    data = request.get_json(silent=True) or {}
+    driver_name = (data.get("driver_name") or "Motorista").strip()
+    occurrence = (data.get("occurrence") or "Ocorrência não informada").strip()
+    lat = data.get("lat")
+    lng = data.get("lng")
 
     alert = {
-        "id": new_id,
-        "ts": iso,
-        "ts_human": _ts_human(iso),
+        "ts": _utc_iso(),
+        "ip": _client_ip(),
         "driver_name": driver_name,
         "occurrence": occurrence,
-        "location": location if isinstance(location, dict) else None
+        "lat": lat,
+        "lng": lng,
     }
     alerts.insert(0, alert)
-    _save_json(ALERTS_PATH, alerts)
-    return jsonify({"ok": True, "id": new_id})
+    return jsonify({"status": "ok", "alert": alert})
 
-def _trust_authed():
-    token = request.headers.get("X-Trust-Token", "")
-    return token in TRUST_TOKENS
+@app.route("/api/alerts", methods=["GET"])
+def api_alerts():
+    return jsonify({"alerts": alerts, "terms_version": TERMS_VERSION})
 
-@app.get("/api/alerts")
-def api_alerts_get():
-    if request.headers.get("X-Trust-Token") and not _trust_authed():
-        return jsonify({"ok": False}), 401
-    return jsonify({"alerts": _load_json(ALERTS_PATH)})
+@app.route("/api/clear_alerts", methods=["POST"])
+def api_clear_alerts():
+    alerts.clear()
+    return jsonify({"status": "ok"})
 
-@app.post("/api/alerts/clear")
-def api_alerts_clear():
-    _save_json(ALERTS_PATH, [])
-    return jsonify({"ok": True})
-
-# -------- API login confiança --------
-@app.post("/api/trust/login")
-def api_trust_login():
-    payload = request.get_json(silent=True) or {}
-    pin = (payload.get("pin") or "").strip()
-    if not pin.isdigit():
-        return jsonify({"ok": False}), 400
-
-    contacts = _load_json(CONTACTS_PATH)
-    ok = any(c.get("pin") == pin for c in contacts)
-    if not ok:
-        return jsonify({"ok": False}), 401
-
-    token = secrets.token_urlsafe(24)
-    TRUST_TOKENS[token] = {"created": datetime.now(timezone.utc).isoformat()}
-    return jsonify({"ok": True, "token": token})
-
+# ===== Run local =====
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", "5000"))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=True)

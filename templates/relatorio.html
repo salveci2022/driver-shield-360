@@ -2,81 +2,41 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Relatório — Driver Shield 360</title>
-  <link rel="stylesheet" href="/static/style.css?v=12">
-  <link rel="icon" href="/static/icon-192.png">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Relatório de ocorrências | Driver Shield 360</title>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#07131a;color:#eaffff}
+    .wrap{max-width:980px;margin:0 auto;padding:26px}
+    h1{margin:0 0 8px}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.12);text-align:left;font-size:13px}
+    th{color:#b7c9d3;font-weight:700}
+    a{color:#66d6ff}
+    small{color:#9fb7c4}
+  </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <div class="brand">
-      <div class="logo"><img src="/static/icon-192.png" alt="Logo"></div>
-      <div>
-        <h1 class="h1">Relatório de Ocorrências</h1>
-        <div class="subtitle">Registro técnico de alertas acionados.</div>
-      </div>
-    </div>
+  <div class="wrap">
+    <h1>Relatório de ocorrências</h1>
+    <small>Versão de termos: {{ terms_version }} • <a href="/motorista">Voltar</a></small>
+
+    {% if not alerts %}
+      <p style="color:#b7c9d3;margin-top:14px">Nenhuma ocorrência registrada.</p>
+    {% else %}
+      <table>
+        <thead><tr><th>Data/Hora (UTC)</th><th>Motorista</th><th>Ocorrência</th><th>Local</th></tr></thead>
+        <tbody>
+          {% for a in alerts %}
+          <tr>
+            <td>{{ a.ts }}</td>
+            <td>{{ a.driver_name }}</td>
+            <td>{{ a.occurrence }}</td>
+            <td>{% if a.lat %}{{ a.lat }}, {{ a.lng }}{% else %}—{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
   </div>
-
-  <div class="card">
-    <div class="btnbar">
-      <button class="btn btn-danger" id="limpar">🧹 Limpar alertas</button>
-      <button class="btn" onclick="location.href='/motorista'">Voltar</button>
-    </div>
-
-    <table class="table" style="margin-top:14px">
-      <thead>
-        <tr>
-          <th>Data/Hora</th>
-          <th>Motorista</th>
-          <th>Ocorrência</th>
-          <th>Localização</th>
-        </tr>
-      </thead>
-      <tbody id="tbody">
-        <tr><td colspan="4">Carregando…</td></tr>
-      </tbody>
-    </table>
-
-    <div class="small" style="margin-top:10px;">Localização só aparece se o motorista autorizar no momento do alerta.</div>
-  </div>
-</div>
-
-<script>
-  function fmtLoc(a){
-    if(!a.location) return "—";
-    const {lat, lon, acc} = a.location;
-    const maps = `https://www.google.com/maps?q=${lat},${lon}`;
-    const accTxt = acc ? ` (±${Math.round(acc)}m)` : "";
-    return `<a href="${maps}" target="_blank">${lat.toFixed(5)}, ${lon.toFixed(5)}</a>${accTxt}`;
-  }
-
-  async function load(){
-    const r = await fetch("/api/alerts");
-    const data = await r.json();
-    const tb = document.getElementById("tbody");
-    if(!data.alerts || !data.alerts.length){
-      tb.innerHTML = '<tr><td colspan="4">Nenhum alerta.</td></tr>';
-      return;
-    }
-    tb.innerHTML = data.alerts.slice(0,50).map(a => `
-      <tr>
-        <td>${a.ts_human}</td>
-        <td>${a.driver_name || "—"}</td>
-        <td>${a.occurrence || "—"}</td>
-        <td>${fmtLoc(a)}</td>
-      </tr>
-    `).join("");
-  }
-
-  document.getElementById("limpar").addEventListener("click", async ()=>{
-    if(!confirm("Limpar todos os alertas?")) return;
-    await fetch("/api/alerts/clear", {method:"POST"});
-    load();
-  });
-
-  load();
-</script>
 </body>
 </html>
