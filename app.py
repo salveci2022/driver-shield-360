@@ -37,6 +37,29 @@ if not os.path.exists(CONTATOS_PATH):
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, template_folder=os.path.join(BASE_DIR,'templates'), static_folder=os.path.join(BASE_DIR,'static'))
+
+# =========================
+# Arquivos de dados (contatos)
+# =========================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+CONTATOS_FILE = os.path.join(DATA_DIR, "contatos.json")
+
+def _garantir_data_dir():
+    os.makedirs(DATA_DIR, exist_ok=True)
+    if not os.path.exists(CONTATOS_FILE):
+        with open(CONTATOS_FILE, "w", encoding="utf-8") as f:
+            f.write("[]")
+
+def carregar_contatos():
+    """Retorna lista de pessoas de confiança cadastradas."""
+    _garantir_data_dir()
+    try:
+        with open(CONTATOS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
 app.secret_key = os.environ.get("SECRET_KEY", "driver_shield_360_super_seguro")
 
 # Produção (blindado)
