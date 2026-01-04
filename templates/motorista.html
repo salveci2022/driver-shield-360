@@ -6,12 +6,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel do Motorista - Driver Shield 360</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+  <meta name="theme-color" content="#00e5ff">
+
 </head>
 <body class="tela-escura">
   <header class="topo">
     <h1>🛡️ Driver Shield 360</h1>
     <p class="subtitulo">Painel do Motorista</p>
   </header>
+  <section class="bloco contatos-bloco">
+    <h2>👥 Pessoas de confiança</h2>
+    {% if contatos and contatos|length > 0 %}
+      <ul class="lista-contatos">
+        {% for c in contatos %}
+          <li><strong>{{ c.get('nome','') }}</strong> <span class="muted">{{ c.get('telefone','') }}</span></li>
+        {% endfor %}
+      </ul>
+      <p class="dica">Limite: até 3 pessoas cadastradas.</p>
+    {% else %}
+      <p class="dica">Nenhuma pessoa cadastrada ainda. <a href="{{ url_for('cadastro') }}">Cadastrar agora</a></p>
+    {% endif %}
+  </section>
+
   <div class="acoes-painel acoes-motorista">
     <button type="button" class="btn btn-secundario" onclick="doFullscreen()">⛶ Tela cheia</button>
     <button type="button" class="btn btn-secundario" onclick="window.location.reload(true)">Reiniciar</button>

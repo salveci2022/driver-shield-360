@@ -253,3 +253,10 @@ body.tela-escura {
 #tabela-alertas th, #tabela-alertas td { font-size: 16px; }
 
 .acoes-motorista { justify-content:center; }
+
+
+/* Lista de pessoas de confiança no painel do motorista */
+.contatos-bloco{margin-top:14px}
+.lista-contatos{list-style:none;padding:0;margin:10px 0 0 0;display:grid;gap:10px}
+.lista-contatos li{padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(0,0,0,.20)}
+.lista-contatos .muted{opacity:.8;font-size:.95em;margin-left:8px}

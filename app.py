@@ -92,8 +92,9 @@ def index():
 
 @app.route("/motorista", methods=["GET"])
 def motorista():
-    return render_template("motorista.html")
-
+    # Lista as pessoas de confiança cadastradas para aparecer no painel do motorista
+    contatos = _carregar_json(CONTATOS_PATH, [])
+    return render_template("motorista.html", contatos=contatos)
 @app.route("/api/panico", methods=["POST"])
 def api_panico():
     data = request.get_json(silent=True) or request.form
