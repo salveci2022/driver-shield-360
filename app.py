@@ -130,6 +130,12 @@ def cadastro_contatos():
             flash("Preencha todos os campos.", "erro")
             return redirect(url_for("cadastro_contatos"))
 
+        # Limite: até 3 pessoas de confiança
+        if len(contatos) >= 3:
+            flash("Limite atingido: você só pode cadastrar até 3 pessoas de confiança. Apague uma para cadastrar outra.", "erro")
+            return redirect(url_for("cadastro_contatos"))
+
+
         # evita duplicados simples
         for c in contatos:
             if c["email"] == email:
@@ -188,6 +194,12 @@ def pessoa():
     alertas = _carregar_json(ALERTAS_PATH, [])
     usuario = {"nome": "Pessoa de Confiança", "email": "aberto@local"}
     return render_template("painel.html", usuario=usuario, alertas=alertas, modo_aberto=True)
+
+
+@app.route("/pessoa_sair")
+def pessoa_sair():
+    """Tela neutra para encerrar o painel aberto, sem redirecionar para outros painéis."""
+    return render_template("pessoa_sair.html")
 
 @app.route("/painel")
 def painel():

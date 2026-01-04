@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Painel Encerrado - Driver Shield 360</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .center-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .card{max-width:520px;width:100%;text-align:center;padding:24px;border-radius:18px;border:1px solid #1f2937;background:rgba(15,23,42,0.92);box-shadow:0 18px 60px rgba(0,0,0,.6);}
+    .card h1{margin:0 0 8px;font-size:26px;}
+    .card p{margin:0 0 18px;color:#9ca3af;}
+    .btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  </style>
+</head>
+<body class="tela-escura">
+  <div class="center-wrap">
+    <div class="card">
+      <h1>Painel encerrado</h1>
+      <p>Você saiu do painel da pessoa de confiança. Esta tela não leva para outros painéis.</p>
+      <div class="btn-row">
+        <a class="btn btn-principal" href="{{ url_for('pessoa') }}">Voltar para o painel</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

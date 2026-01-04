@@ -13,7 +13,7 @@
     <p class="subtitulo">Olá, {{ usuario.nome or usuario["nome"] }}. Abaixo você vê os alertas mais recentes.</p>
   </header>
   <audio id="sireneAudio" preload="auto" loop>
-    <source src="{{ url_for('static', filename='sirene.wav') }}" type="audio/wav">
+    <source src="{{ url_for('static', filename='sirene.mp3') }}" type="audio/mpeg">
   </audio>
 
 
@@ -27,11 +27,13 @@
         <button type="submit" class="btn btn-secundario">Limpar alertas</button>
       </form>
 
-      <a href="{{ url_for('relatorio') }}" class="btn btn-secundario">Relatório completo</a>
-
       {% set aberto = (modo_aberto | default(false)) %}
+      {% if not aberto %}
+      <a href="{{ url_for('relatorio') }}" class="btn btn-secundario">Relatório completo</a>
+      {% endif %}
+
       {% if aberto %}
-        <a href="{{ url_for('index') }}" class="btn btn-perigo">Sair</a>
+        <a href="{{ url_for('pessoa_sair') }}" class="btn btn-perigo">Sair</a>
       {% else %}
         <a href="{{ url_for('logout') }}" class="btn btn-perigo">Sair</a>
       {% endif %}
