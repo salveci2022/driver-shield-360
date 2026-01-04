@@ -3,221 +3,133 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Driver Shield 360</title>
+  <title>Driver Shield 360 — Motorista</title>
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#071018">
-  <link rel="icon" href="/static/driver_shield_360.png">
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="/static/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <link rel="stylesheet" href="/static/style.css?v=12">
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="brand">
-        <div class="logo"><img src="/static/driver_shield_360.png" alt="Logo"></div>
-        <div>
-          <h1 class="h1">Driver Shield 360</h1>
-          <div class="subtitle">Sistema de apoio à segurança preventiva para motoristas de aplicativo.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="row">
-        <span class="badge">✅ PWA instalável (atalho com logo)</span>
-        <span class="badge">🔒 LGPD + aceite obrigatório</span>
-        <span class="badge">⚠️ Não substitui 190</span>
-      </div>
-
-      <div class="field">
-        <label for="driverName">Seu nome (ou apelido)</label>
-        <input id="driverName" placeholder="Ex.: João Uber" autocomplete="name">
-      </div>
-
-      <div class="field">
-        <label>Tipo de ocorrência</label>
-        <div class="notice">Toque em uma opção antes de acionar o botão de pânico.</div>
-        <div class="pills" id="pills"></div>
-        <div class="notice" id="selectedInfo">Ocorrência selecionada: <b>nenhuma</b></div>
-      </div>
-
-      <div class="hr"></div>
-
-      <div class="checkbox">
-        <input type="checkbox" id="acceptTerms">
-        <div>
-          Declaro que li e concordo com os <a href="/termos" target="_blank" rel="noopener">Termos de Uso e Política de Privacidade</a>.
-          <div class="small">O sistema depende de internet, do funcionamento do celular e permissões do navegador. Em risco real, ligue 190.</div>
-        </div>
-      </div>
-
-      <div class="field">
-        <button class="btn btn-primary big-panic" id="panicBtn" disabled>🚨 BOTÃO DE PÂNICO — TOQUE PARA ENVIAR ALERTA</button>
-        <div class="small" id="panicHint">Para habilitar: selecione ocorrência + preencha nome + aceite os termos.</div>
-      </div>
-
-      <div class="hr"></div>
-
-      <div class="field">
-        <label>Pessoas de confiança cadastradas</label>
-        <ul class="list" id="contactsList"><li>Carregando…</li></ul>
-        <div class="small">Cadastre/edite em <a href="/cadastro">/cadastro</a>.</div>
-      </div>
-
-      <div class="footerbar">
-        <a class="btn btn-secondary" href="/relatorio">Relatório de ocorrências</a>
-        <button class="btn btn-secondary" id="reloadBtn">Reiniciar painel</button>
-        <button class="btn btn-danger" id="clearBtn">Limpar alertas</button>
+<div class="container">
+  <div class="header">
+    <div class="brand">
+      <div class="logo"><img src="/static/icon-192.png" alt="Logo"></div>
+      <div>
+        <h1 class="h1">Driver Shield 360</h1>
+        <div class="subtitle">Painel do motorista (PWA instalável)</div>
       </div>
     </div>
   </div>
 
+  <div class="card">
+    <div class="badges">
+      <span class="badge">🛡️ Apoio preventivo</span>
+      <span class="badge">🔐 LGPD + aceite</span>
+      <span class="badge">⚠️ Não substitui 190</span>
+    </div>
+
+    <div class="field">
+      <label>Seu nome (ou apelido)</label>
+      <input id="nome" placeholder="Ex: João Uber">
+      <div class="small">Sem número de celular. Apenas identificação no alerta.</div>
+    </div>
+
+    <div class="field">
+      <label>Tipo de ocorrência</label>
+      <div class="pills" id="ocorrencias">
+        <div class="pill">Abordagem suspeita</div>
+        <div class="pill">Tentativa de assalto</div>
+        <div class="pill">Passageiro agressivo</div>
+        <div class="pill">Emergência de saúde</div>
+        <div class="pill">Outro risco</div>
+      </div>
+      <div class="notice">Ocorrência selecionada: <b id="sel">nenhuma</b></div>
+    </div>
+
+    <div class="checkbox">
+      <input type="checkbox" id="aceite">
+      <label>
+        Li e concordo com os <a href="/termos" target="_blank">Termos de Uso e LGPD</a>.
+        <div class="small">A localização é enviada somente se você autorizar e se houver internet/GPS no momento do alerta.</div>
+      </label>
+    </div>
+
+    <div class="panic-area">
+      <button id="panicBtn" class="panic-button" disabled>🚨</button>
+      <div class="panic-label">BOTÃO DE PÂNICO</div>
+      <div class="panic-sub">Toque para enviar alerta</div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="btnbar">
+      <button class="btn btn-secondary" onclick="location.href='/cadastro'">👥 Cadastrar pessoa de confiança</button>
+      <button class="btn" onclick="location.href='/relatorio'">📄 Relatório</button>
+    </div>
+
+    <div class="notice">Em risco real, ligue imediatamente <b>190</b>. Este sistema é apoio complementar.</div>
+  </div>
+</div>
+
 <script>
-const OCC = [
-  "Abordagem suspeita",
-  "Tentativa de assalto",
-  "Passageiro agressivo",
-  "Conflito com outro veículo",
-  "Emergência de saúde",
-  "Outro risco"
-];
-
-let selectedOcc = null;
-
-function $(id){ return document.getElementById(id); }
-
-function renderPills(){
-  const wrap = $("pills");
-  wrap.innerHTML = "";
-  OCC.forEach((name)=>{
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "pill";
-    b.textContent = name;
-    b.onclick = ()=>{
-      selectedOcc = name;
-      [...wrap.querySelectorAll(".pill")].forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      $("selectedInfo").innerHTML = 'Ocorrência selecionada: <b>'+name+'</b>';
-      updateButtonState();
-    };
-    wrap.appendChild(b);
-  });
-}
-
-function updateButtonState(){
-  const ok = $("acceptTerms").checked && ($("driverName").value||"").trim().length >= 2 && !!selectedOcc;
-  $("panicBtn").disabled = !ok;
-
-  // Mantém o botão redondo (FAB) sincronizado com as regras de aceite/nome/ocorrência
-  const fab = document.getElementById("panicFab");
-  if(fab){
-    fab.setAttribute("aria-disabled", String(!ok));
-    fab.style.pointerEvents = ok ? "auto" : "none";
-    fab.style.opacity = ok ? "1" : ".35";
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/static/sw.js").catch(()=>{});
   }
-}
 
-async function loadContacts(){
-  const ul = $("contactsList");
-  ul.innerHTML = "<li>Carregando…</li>";
-  try{
-    const r = await fetch("/api/contacts");
-    const data = await r.json();
-    if(!data.ok) throw new Error(data.error || "Falha ao carregar");
-    if(!data.contacts.length){
-      ul.innerHTML = "<li>Nenhum contato cadastrado ainda.</li>";
-      return;
-    }
-    ul.innerHTML = "";
-    data.contacts.forEach(c=>{
-      const li = document.createElement("li");
-      li.textContent = c.name + " — " + c.phone;
-      ul.appendChild(li);
+  let ocorrencia = null;
+  function validar(){
+    const nome = document.getElementById("nome").value.trim();
+    const aceite = document.getElementById("aceite").checked;
+    document.getElementById("panicBtn").disabled = !(nome && ocorrencia && aceite);
+  }
+
+  document.querySelectorAll(".pill").forEach(p=>{
+    p.addEventListener("click", ()=>{
+      document.querySelectorAll(".pill").forEach(x=>x.classList.remove("active"));
+      p.classList.add("active");
+      ocorrencia = p.textContent.trim();
+      document.getElementById("sel").textContent = ocorrencia;
+      validar();
     });
-  }catch(e){
-    ul.innerHTML = "<li>Erro ao carregar contatos.</li>";
-  }
-}
-
-async function acceptTerms(){
-  try{
-    await fetch("/api/accept-terms", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({accepted:true})});
-  }catch(e){}
-}
-
-async function getLocation(){
-  return await new Promise((resolve)=>{
-    if(!navigator.geolocation) return resolve(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos)=>resolve({lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy}),
-      ()=>resolve(null),
-      {enableHighAccuracy:true, timeout:8000, maximumAge:0}
-    );
   });
-}
 
-async function sendPanic(){
-  const payload = {
-    driver_name: $("driverName").value.trim(),
-    occurrence: selectedOcc,
-    accepted_terms: $("acceptTerms").checked
-  };
-  const loc = await getLocation();
-  if(loc) payload.location = loc;
+  document.getElementById("nome").addEventListener("input", validar);
+  document.getElementById("aceite").addEventListener("change", validar);
 
-  const btn = $("panicBtn");
-  btn.disabled = true;
-  btn.textContent = "Enviando alerta…";
-
-  try{
-    const r = await fetch("/api/panic", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
-    const data = await r.json();
-    if(!data.ok) throw new Error(data.error || "Falha no envio");
-
-    btn.textContent = "✅ Alerta registrado!";
-    $("panicHint").textContent = "Alerta registrado e salvo no relatório. Em risco real, ligue 190.";
-    setTimeout(()=>{ btn.textContent = "🚨 BOTÃO DE PÂNICO — TOQUE PARA ENVIAR ALERTA"; updateButtonState(); }, 2200);
-  }catch(e){
-    btn.textContent = "❌ Erro ao enviar. Tente de novo.";
-    setTimeout(()=>{ btn.textContent = "🚨 BOTÃO DE PÂNICO — TOQUE PARA ENVIAR ALERTA"; updateButtonState(); }, 2400);
+  async function postAlert(payload){
+    const r = await fetch("/api/panic", {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    return r.ok;
   }
-}
 
-async function clearAlerts(){
-  if(!confirm("Limpar todos os alertas registrados?")) return;
-  try{
-    const r = await fetch("/api/clear_alerts", {method:"POST"});
-    const data = await r.json();
-    if(!data.ok) throw new Error("Falha");
-    alert("Alertas limpos.");
-  }catch(e){
-    alert("Erro ao limpar.");
+  async function enviarAlerta(){
+    const nome = document.getElementById("nome").value.trim();
+    const payload = { driver_name: nome, occurrence: ocorrencia };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (pos)=>{
+        payload.location = {
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+          acc: pos.coords.accuracy
+        };
+        await postAlert(payload);
+        alert("🚨 Alerta enviado.");
+      }, async ()=>{
+        await postAlert(payload);
+        alert("🚨 Alerta enviado (sem localização).");
+      }, { enableHighAccuracy:true, timeout:10000, maximumAge:0 });
+    } else {
+      await postAlert(payload);
+      alert("🚨 Alerta enviado.");
+    }
   }
-}
 
-$("acceptTerms").addEventListener("change", ()=>{ updateButtonState(); if($("acceptTerms").checked) acceptTerms(); });
-$("driverName").addEventListener("input", updateButtonState);
-$("panicBtn").addEventListener("click", sendPanic);
-const panicFab=document.getElementById("panicFab");
-if(panicFab){ panicFab.addEventListener("click", ()=> $("panicBtn").click()); }
-
-$("reloadBtn").addEventListener("click", ()=>location.reload());
-$("clearBtn").addEventListener("click", clearAlerts);
-
-renderPills();
-loadContacts();
-updateButtonState();
-
-// Service Worker (PWA)
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("/static/sw.js").catch(()=>{});
-}
+  document.getElementById("panicBtn").addEventListener("click", enviarAlerta);
 </script>
-
-<button id="panicFab" class="panic-fab" type="button" aria-label="Botão de pânico" aria-disabled="true">
-  <span class="fab-icon">🚨</span>
-  <span class="fab-label">Pânico</span>
-</button>
-
 </body>
 </html>

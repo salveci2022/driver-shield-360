@@ -4,91 +4,79 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Relatório — Driver Shield 360</title>
-  <link rel="stylesheet" href="/static/style.css">
-  <link rel="icon" href="/static/driver_shield_360.png">
+  <link rel="stylesheet" href="/static/style.css?v=12">
+  <link rel="icon" href="/static/icon-192.png">
 </head>
 <body>
 <div class="container">
   <div class="header">
     <div class="brand">
-      <div class="logo"><img src="/static/driver_shield_360.png" alt="Logo"></div>
+      <div class="logo"><img src="/static/icon-192.png" alt="Logo"></div>
       <div>
         <h1 class="h1">Relatório de Ocorrências</h1>
-        <div class="subtitle">Registros técnicos dos alertas acionados.</div>
+        <div class="subtitle">Registro técnico de alertas acionados.</div>
       </div>
     </div>
   </div>
 
   <div class="card">
     <div class="btnbar">
-      <a class="btn btn-secondary" href="/motorista">Voltar</a>
-      <a class="btn btn-secondary" href="/cadastro">Cadastro</a>
-      <a class="btn btn-secondary" href="/termos" target="_blank" rel="noopener">Termos (LGPD)</a>
-      <button class="btn btn-danger" id="clearBtn">Limpar tudo</button>
+      <button class="btn btn-danger" id="limpar">🧹 Limpar alertas</button>
+      <button class="btn" onclick="location.href='/motorista'">Voltar</button>
     </div>
 
-    <div class="hr"></div>
+    <table class="table" style="margin-top:14px">
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Motorista</th>
+          <th>Ocorrência</th>
+          <th>Localização</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="4">Carregando…</td></tr>
+      </tbody>
+    </table>
 
-    <div class="field">
-      <table class="table" id="tbl">
-        <thead>
-          <tr>
-            <th>Data/Hora</th>
-            <th>Motorista</th>
-            <th>Ocorrência</th>
-            <th>Localização</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <tr><td colspan="4">Carregando…</td></tr>
-        </tbody>
-      </table>
-      <div class="notice">Observação: este relatório é um registro técnico do acionamento. Não é garantia de atendimento de emergência.</div>
-    </div>
+    <div class="small" style="margin-top:10px;">Localização só aparece se o motorista autorizar no momento do alerta.</div>
   </div>
 </div>
 
 <script>
-function fmtLoc(a){
-  if(!a || !a.location) return "—";
-  const {lat,lon,acc} = a.location;
-  return lat.toFixed(5)+", "+lon.toFixed(5)+" (±"+Math.round(acc||0)+"m)";
-}
-async function load(){
-  const body = document.getElementById("tbody");
-  body.innerHTML = '<tr><td colspan="4">Carregando…</td></tr>';
-  try{
+  function fmtLoc(a){
+    if(!a.location) return "—";
+    const {lat, lon, acc} = a.location;
+    const maps = `https://www.google.com/maps?q=${lat},${lon}`;
+    const accTxt = acc ? ` (±${Math.round(acc)}m)` : "";
+    return `<a href="${maps}" target="_blank">${lat.toFixed(5)}, ${lon.toFixed(5)}</a>${accTxt}`;
+  }
+
+  async function load(){
     const r = await fetch("/api/alerts");
     const data = await r.json();
-    if(!data.ok) throw new Error();
-    const rows = data.alerts;
-    if(!rows.length){
-      body.innerHTML = '<tr><td colspan="4">Nenhum alerta registrado.</td></tr>';
+    const tb = document.getElementById("tbody");
+    if(!data.alerts || !data.alerts.length){
+      tb.innerHTML = '<tr><td colspan="4">Nenhum alerta.</td></tr>';
       return;
     }
-    body.innerHTML = "";
-    rows.slice().reverse().forEach(a=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${a.ts_human || a.ts}</td>
-        <td>${(a.driver_name||"—")}</td>
-        <td>${(a.occurrence||"—")}</td>
+    tb.innerHTML = data.alerts.slice(0,50).map(a => `
+      <tr>
+        <td>${a.ts_human}</td>
+        <td>${a.driver_name || "—"}</td>
+        <td>${a.occurrence || "—"}</td>
         <td>${fmtLoc(a)}</td>
-      `;
-      body.appendChild(tr);
-    });
-  }catch(e){
-    body.innerHTML = '<tr><td colspan="4">Erro ao carregar.</td></tr>';
+      </tr>
+    `).join("");
   }
-}
-async function clearAll(){
-  if(!confirm("Tem certeza que deseja apagar todos os registros?")) return;
-  const r = await fetch("/api/clear_alerts", {method:"POST"});
-  const data = await r.json();
-  if(data.ok){ load(); } else { alert("Falha"); }
-}
-document.getElementById("clearBtn").onclick = clearAll;
-load();
+
+  document.getElementById("limpar").addEventListener("click", async ()=>{
+    if(!confirm("Limpar todos os alertas?")) return;
+    await fetch("/api/alerts/clear", {method:"POST"});
+    load();
+  });
+
+  load();
 </script>
 </body>
 </html>

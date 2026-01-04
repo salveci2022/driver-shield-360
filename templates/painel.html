@@ -3,50 +3,46 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Painel — Driver Shield 360</title>
-
-  <link rel="stylesheet" href="/static/style.css">
-  <link rel="icon" href="/static/driver_shield_360.png">
+  <title>Painel — Pessoa de Confiança</title>
+  <link rel="stylesheet" href="/static/style.css?v=12">
+  <link rel="icon" href="/static/icon-192.png">
 </head>
-
 <body>
 <div class="container">
-
   <div class="header">
     <div class="brand">
-      <div class="logo">
-        <img src="/static/driver_shield_360.png" alt="Logo">
-      </div>
+      <div class="logo"><img src="/static/icon-192.png" alt="Logo"></div>
       <div>
         <h1 class="h1">Painel da Pessoa de Confiança</h1>
-        <div class="subtitle">
-          Alertas aparecem somente quando o motorista aciona o botão.
-        </div>
+        <div class="subtitle">Sem acesso aos outros painéis • foco em resposta rápida.</div>
       </div>
     </div>
   </div>
 
   <div class="card">
+    <div class="badges">
+      <span class="badge">🔊 Sirene (1 toque)</span>
+      <span class="badge">📍 Localização no alerta</span>
+      <span class="badge">⚠️ Não substitui 190</span>
+    </div>
 
-    <!-- 🔊 CONTROLE DE SOM -->
+    <div class="field">
+      <label>PIN (4–6 números)</label>
+      <input id="pinConf" inputmode="numeric" maxlength="6" placeholder="Digite o PIN cadastrado">
+      <div class="small">Sem telefone. Sem e-mail. PIN apenas para acesso rápido.</div>
+    </div>
+
     <div class="btnbar">
-      <button id="enableSound" class="btn btn-secondary">
-        🔊 Ativar Sirene
-      </button>
-
-      <button onclick="stopSiren()" class="btn btn-danger">
-        ⛔ Parar Sirene
-      </button>
+      <button class="btn btn-secondary" id="entrar">Acessar painel</button>
+      <button class="btn btn-secondary" id="enableSound" disabled>🔊 Ativar Sirene</button>
+      <button class="btn btn-danger" id="stopSound" disabled>⛔ Parar Sirene</button>
     </div>
 
-    <div id="soundStatus" class="small" style="margin-bottom:10px;">
-      Som: <b>desativado</b>
-    </div>
+    <div class="small" id="soundStatus" style="margin-top:10px">Som: <b>desativado</b></div>
 
     <div class="hr"></div>
 
-    <!-- TABELA DE ALERTAS -->
-    <table class="table" id="tbl">
+    <table class="table">
       <thead>
         <tr>
           <th>Data/Hora</th>
@@ -56,109 +52,129 @@
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr><td colspan="4">Carregando…</td></tr>
+        <tr><td colspan="4">Digite o PIN para visualizar alertas.</td></tr>
       </tbody>
     </table>
 
-    <div class="small">Atualização automática a cada 5 segundos.</div>
-
+    <div class="small" style="margin-top:10px">Em risco real, ligue imediatamente <b>190</b>. Este painel é apoio de comunicação.</div>
   </div>
 </div>
 
-<!-- 🔊 SIRENE -->
 <audio id="siren" preload="auto" loop>
-  <source src="/static/sirene.mp3" type="audio/mpeg">
+  <source src="/static/sirene.wav" type="audio/wav">
 </audio>
 
 <script>
-const siren = document.getElementById("siren");
-const enableBtn = document.getElementById("enableSound");
-const soundStatus = document.getElementById("soundStatus");
+  // Bloqueia links internos (se alguém inserir por engano)
+  document.addEventListener("click", (e)=>{
+    const a = e.target.closest("a");
+    if(!a) return;
+    const href = (a.getAttribute("href") || "").trim();
+    const allowed = href === "/termos" || href.startsWith("tel:") || href.startsWith("http");
+    if(!allowed){ e.preventDefault(); alert("Acesso restrito: este painel é apenas para alertas."); }
+  });
 
-let soundEnabled = localStorage.getItem("ds360_sound") === "1";
-let sirenPlaying = false;
-let lastAlertId = null;
+  const siren = document.getElementById("siren");
+  const enableBtn = document.getElementById("enableSound");
+  const stopBtn = document.getElementById("stopSound");
+  const statusEl = document.getElementById("soundStatus");
 
-function setSoundStatus(){
-  soundStatus.innerHTML =
-    "Som: <b>" + (soundEnabled ? "ativado ✅" : "desativado") + "</b>";
-}
+  let soundEnabled = localStorage.getItem("ds360_sound") === "1";
+  let sirenPlaying = false;
+  let lastAlertId = null;
+  let sessionToken = null;
 
-async function enableSound(){
-  try{
-    await siren.play();
+  function setStatus(){
+    statusEl.innerHTML = "Som: <b>" + (soundEnabled ? "ativado ✅" : "desativado") + "</b>";
+  }
+  setStatus();
+
+  async function enableSoundOnce(){
+    try{
+      await siren.play();
+      siren.pause();
+      siren.currentTime = 0;
+      soundEnabled = true;
+      localStorage.setItem("ds360_sound", "1");
+      enableBtn.textContent = "🔊 Sirene habilitada";
+      enableBtn.disabled = true;
+      setStatus();
+    }catch(e){
+      alert("Toque novamente em 'Ativar Sirene' para liberar o áudio.");
+    }
+  }
+
+  function startSiren(){
+    if(!soundEnabled || sirenPlaying) return;
+    sirenPlaying = true;
+    siren.play().catch(()=>{});
+  }
+  function stopSiren(){
     siren.pause();
     siren.currentTime = 0;
-    soundEnabled = true;
-    localStorage.setItem("ds360_sound", "1");
-    enableBtn.innerText = "🔊 Sirene habilitada";
-    enableBtn.disabled = true;
-    setSoundStatus();
-  }catch(e){
-    alert("Toque novamente em 'Ativar Sirene' para liberar o áudio.");
+    sirenPlaying = false;
   }
-}
 
-function startSiren(){
-  if(!soundEnabled || sirenPlaying) return;
-  sirenPlaying = true;
-  siren.play().catch(()=>{});
-}
+  enableBtn.addEventListener("click", enableSoundOnce);
+  stopBtn.addEventListener("click", stopSiren);
 
-function stopSiren(){
-  siren.pause();
-  siren.currentTime = 0;
-  sirenPlaying = false;
-}
+  function fmtLoc(a){
+    if(!a.location) return "—";
+    const {lat, lon, acc} = a.location;
+    const maps = `https://www.google.com/maps?q=${lat},${lon}`;
+    const accTxt = acc ? ` (±${Math.round(acc)}m)` : "";
+    return `<a href="${maps}" target="_blank">${lat.toFixed(5)}, ${lon.toFixed(5)}</a>${accTxt}`;
+  }
 
-enableBtn.addEventListener("click", enableSound);
-setSoundStatus();
+  async function doLogin(){
+    const pin = document.getElementById("pinConf").value.trim();
+    if(!/^[0-9]{4,6}$/.test(pin)){ alert("PIN inválido. Use 4 a 6 números."); return; }
 
-/* ====== ALERTAS ====== */
-
-function fmtLoc(a){
-  if(!a || !a.location) return "—";
-  const {lat,lon,acc} = a.location;
-  return lat.toFixed(5)+", "+lon.toFixed(5)+" (±"+Math.round(acc||0)+"m)";
-}
-
-async function loadAlerts(){
-  const body = document.getElementById("tbody");
-  try{
-    const r = await fetch("/api/alerts");
-    const data = await r.json();
-
-    if(!data.alerts || !data.alerts.length){
-      body.innerHTML = '<tr><td colspan="4">Nenhum alerta.</td></tr>';
+    const r = await fetch("/api/trust/login", {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({pin})
+    });
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok || !data.token){
+      alert("PIN incorreto ou não cadastrado.");
       return;
     }
+    sessionToken = data.token;
+    document.getElementById("entrar").disabled = true;
+    document.getElementById("pinConf").disabled = true;
+    enableBtn.disabled = false;
+    stopBtn.disabled = false;
+    loadAlerts();
+    setInterval(loadAlerts, 5000);
+  }
 
+  async function loadAlerts(){
+    if(!sessionToken) return;
+    const r = await fetch("/api/alerts", { headers: {"X-Trust-Token": sessionToken} });
+    const data = await r.json().catch(()=>({alerts:[] }));
+    const tb = document.getElementById("tbody");
+
+    if(!data.alerts || !data.alerts.length){
+      tb.innerHTML = '<tr><td colspan="4">Nenhum alerta.</td></tr>';
+      return;
+    }
     const newest = data.alerts[0];
     if(lastAlertId !== newest.id){
       lastAlertId = newest.id;
-      startSiren(); // 🔴 TOCA A SIRENE NO ALERTA NOVO
+      startSiren();
     }
-
-    body.innerHTML = "";
-    data.alerts.slice(0,10).forEach(a=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${a.ts_human || a.ts}</td>
+    tb.innerHTML = data.alerts.slice(0,20).map(a => `
+      <tr>
+        <td>${a.ts_human}</td>
         <td>${a.driver_name || "—"}</td>
         <td>${a.occurrence || "—"}</td>
         <td>${fmtLoc(a)}</td>
-      `;
-      body.appendChild(tr);
-    });
-
-  }catch(e){
-    body.innerHTML = '<tr><td colspan="4">Erro ao carregar.</td></tr>';
+      </tr>
+    `).join("");
   }
-}
 
-loadAlerts();
-setInterval(loadAlerts, 5000);
+  document.getElementById("entrar").addEventListener("click", doLogin);
 </script>
-
 </body>
 </html>

@@ -3,84 +3,69 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Termos de Uso e Privacidade (LGPD) — Driver Shield 360</title>
+  <title>Termos de Uso e LGPD — Driver Shield 360</title>
   <link rel="stylesheet" href="/static/style.css">
-  <link rel="icon" href="/static/driver_shield_360.png">
 </head>
 <body>
 <div class="container">
   <div class="header">
     <div class="brand">
-      <div class="logo"><img src="/static/driver_shield_360.png" alt="Logo"></div>
+      <div class="logo"><img src="/static/icon-192.png" alt="Logo"></div>
       <div>
-        <h1 class="h1">Termos de Uso + Aviso Legal + Política de Privacidade (LGPD)</h1>
-        <div class="subtitle">Driver Shield 360</div>
+        <h1 class="h1">Termos de Uso, Aviso Legal e LGPD</h1>
+        <div class="subtitle">Driver Shield 360 — versão <b id="v"></b></div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="termobox">
-      <p><b>Última atualização:</b> {{ updated_at }}</p>
-
-      <h3>1. O que é o Driver Shield 360</h3>
-      <p>O <b>Driver Shield 360</b> é um sistema digital de <b>apoio à segurança preventiva</b> para motoristas de aplicativo, criado para facilitar o envio de alertas voluntários a <b>pessoas de confiança cadastradas pelo usuário</b> e registrar tecnicamente ocorrências informadas.</p>
-
-      <h3>2. Aceite</h3>
-      <p>Ao acessar, instalar, criar atalho (PWA) ou utilizar o sistema, o usuário declara que leu e concorda com estes Termos. Caso não concorde, não deve utilizar o sistema.</p>
-
-      <h3>3. Limitações importantes (internet / aparelho / permissões)</h3>
-      <p>O funcionamento depende de: (i) conexão com internet, (ii) funcionamento do aparelho do usuário, (iii) permissões do navegador (ex.: localização), e (iv) disponibilidade da rede/serviço. <b>Se o celular estiver sem internet, desligado, com falha de rede, sem permissões ou com restrições do sistema operacional</b>, o alerta pode não ser enviado e/ou o registro pode não ocorrer.</p>
-
-      <h3>4. Não substitui serviços de emergência</h3>
-      <p>O Driver Shield 360 <b>não substitui</b> serviços oficiais (ex.: <b>190</b>, <b>192</b>, <b>193</b>). Em risco real, procure imediatamente as autoridades.</p>
-
-      <h3>5. Isenção de responsabilidade / sem garantia de resultado</h3>
-      <p>O controlador <b>não garante resultado</b>, resposta de terceiros, prevenção de crimes ou atendimento por órgãos externos. O controlador não se responsabiliza por falhas de internet, aparelho, operadora, navegador, sistema operacional, permissões, ou por ações/omissões de terceiros.</p>
-
-      <h3>6. Dados pessoais tratados (mínimos)</h3>
-      <p>O sistema trata <b>apenas os dados mínimos necessários</b> ao funcionamento, conforme o princípio da necessidade (LGPD, art. 6º):</p>
-      <ul>
-        <li>Nome/apelido informado voluntariamente</li>
-        <li>Tipo de ocorrência selecionada</li>
-        <li>Data e hora do acionamento</li>
-        <li>Localização aproximada <b>somente</b> se o usuário autorizar no navegador</li>
-      </ul>
-      <p><b>O sistema NÃO coleta</b> áudio, vídeo, mensagens privadas, dados bancários, contatos do aparelho ou dados sensíveis (LGPD, art. 5º, II).</p>
-
-      <h3>7. Geolocalização</h3>
-      <p>A geolocalização, quando autorizada, é coletada <b>apenas no momento do acionamento</b> e depende das permissões do navegador. O sistema <b>não realiza rastreamento contínuo</b> em tempo real.</p>
-
-      <h3>8. Base legal (LGPD)</h3>
-      <p>O tratamento se baseia em: (i) <b>consentimento</b> do titular (LGPD, art. 7º, I) e/ou (ii) <b>legítimo interesse</b> voltado à segurança e registro técnico do próprio titular (LGPD, art. 7º, IX), sempre limitado à finalidade declarada.</p>
-
-      <h3>9. Compartilhamento</h3>
-      <p>Os dados do alerta são compartilhados <b>somente</b> com as pessoas de confiança cadastradas pelo usuário, no momento do acionamento. Não há venda ou comercialização de dados.</p>
-
-      <h3>10. Armazenamento</h3>
-      <p>Os registros são armazenados de forma limitada para fins de histórico/relatório do próprio usuário. O usuário pode solicitar exclusão ou limpeza pelo painel, quando aplicável.</p>
-
-      <h3>11. Direitos do titular</h3>
-      <p>O usuário pode solicitar confirmação de tratamento, acesso, correção e exclusão, bem como revogar consentimento, nos termos da LGPD.</p>
-
-      <h3>12. Alterações</h3>
-      <p>Estes Termos podem ser atualizados a qualquer momento. Recomenda-se revisar periodicamente.</p>
-
-      <h3>13. Controlador / Contato</h3>
-      <p><b>SpyNEt – Investigação Digital & Soluções em Segurança Preventiva</b><br/>
-      Responsável pelo sistema e pelo tratamento de dados.<br/>
-      Contato: <b>{{ contact }}</b></p>
-
-      <hr/>
-      <p><b>Declaração final:</b> O usuário reconhece que o Driver Shield 360 é um sistema de apoio preventivo sujeito a limitações técnicas, que trata apenas dados mínimos, mediante aceite, e não substitui serviços oficiais de emergência.</p>
+    <div class="badges">
+      <span class="badge">✅ Apoio preventivo</span>
+      <span class="badge">⚠️ Depende de internet/celular</span>
+      <span class="badge">🔒 Sem rastreamento contínuo</span>
     </div>
 
-    <div class="footerbar">
-      <a class="btn btn-secondary" href="/motorista">Voltar</a>
-      <a class="btn btn-secondary" href="/cadastro">Cadastro</a>
-      <a class="btn btn-secondary" href="/relatorio">Relatório</a>
-    </div>
+    <p class="small"><b>Última atualização:</b> <span id="dt"></span></p>
+
+    <h3>1. Finalidade</h3>
+    <p>O Driver Shield 360 é um sistema de <b>apoio à segurança preventiva</b>, destinado a facilitar o envio de alertas para pessoas de confiança indicadas pelo usuário.</p>
+
+    <h3>2. Não substitui emergência</h3>
+    <p>O sistema <b>não substitui</b> serviços oficiais (190/192/193). Em risco real, acione imediatamente os serviços de emergência.</p>
+
+    <h3>3. Limitações técnicas</h3>
+    <p>O funcionamento depende de <b>internet</b>, <b>GPS</b>, permissões do navegador e funcionamento do aparelho. Falhas de conexão, bateria, permissões negadas ou indisponibilidades podem impedir o envio/recebimento de alertas.</p>
+
+    <h3>4. Geolocalização</h3>
+    <p>A geolocalização é coletada <b>apenas no acionamento voluntário do alerta</b> e somente se o usuário autorizar. O sistema <b>não realiza rastreamento em tempo real</b> e <b>não monitora</b> o usuário continuamente.</p>
+
+    <h3>5. Dados tratados (LGPD)</h3>
+    <ul>
+      <li>Nome/apelido informado pelo usuário</li>
+      <li>Tipo de ocorrência selecionada</li>
+      <li>Data e hora do acionamento</li>
+      <li>Localização aproximada (somente se autorizada)</li>
+    </ul>
+    <p><b>O sistema não coleta</b> áudio, vídeo, mensagens privadas, contatos do aparelho, dados bancários ou dados sensíveis.</p>
+
+    <h3>6. Base legal</h3>
+    <p>O tratamento ocorre por <b>consentimento</b> do titular e para a finalidade de apoio preventivo e registro técnico do evento, observando os princípios de necessidade e finalidade.</p>
+
+    <h3>7. Isenção de responsabilidade</h3>
+    <p>Não há garantia de resultado, prevenção de crimes ou resposta imediata de terceiros. O controlador não se responsabiliza por falhas de internet, aparelho, navegador, ou ações/omissões de terceiros.</p>
+
+    <h3>8. Contato do responsável</h3>
+    <p class="small"><b>SpyNEt – Investigação Digital & Soluções em Segurança Preventiva</b><br>
+    WhatsApp: (61) 9 9939-2090</p>
+
+    <div class="hr"></div>
+    <p class="small">Ao utilizar o sistema, o usuário declara ciência e concordância com estes termos.</p>
   </div>
 </div>
+
+<script>
+  document.getElementById("v").textContent = (window.TERMS_VERSION || "v1.0");
+  document.getElementById("dt").textContent = (window.TERMS_DATE || new Date().toLocaleDateString("pt-BR"));
+</script>
 </body>
 </html>
