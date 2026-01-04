@@ -1,115 +1,55 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <title>Relatório de Ocorrências - Driver Shield 360</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/static/style.css" />
-    <style>
-        body.dark {
-            padding: 24px;
-        }
-        .relatorio-header {
-            margin-bottom: 16px;
-        }
-        .relatorio-header h1 {
-            margin: 0 0 8px 0;
-        }
-        .relatorio-actions {
-            margin-bottom: 16px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .rel-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 8px;
-        }
-        .rel-table th,
-        .rel-table td {
-            border-bottom: 1px solid rgba(148, 163, 184, 0.4);
-            padding: 8px;
-            font-size: 14px;
-            text-align: left;
-        }
-        .rel-table th {
-            background: rgba(15, 23, 42, 0.9);
-        }
-        .map-link {
-            color: #38bdf8;
-            text-decoration: none;
-            font-size: 13px;
-        }
-        .map-link:hover {
-            text-decoration: underline;
-        }
-        .btn {
-            padding: 8px 14px;
-            border-radius: 999px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .btn-primary {
-            background: #22c55e;
-            color: #0f172a;
-        }
-        .btn-secondary {
-            background: #0f172a;
-            color: #e2e8f0;
-            border: 1px solid #334155;
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>Relatório de Ocorrências - Driver Shield 360</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="dark">
-    <div class="relatorio-header">
-        <h1>Relatório de Ocorrências</h1>
-        <p>Visualize os últimos alertas enviados pelos motoristas.</p>
+<body class="tela-escura">
+  <header class="topo">
+    <h1>Relatório de Ocorrências</h1>
+    <p class="subtitulo">Visualize os últimos alertas enviados pelos motoristas.</p>
+  </header>
+
+  <main class="container">
+    <div class="acoes-painel">
+      <a href="{{ url_for('painel') }}" class="btn btn-secundario">Voltar para painel</a>
+      <button class="btn btn-principal" onclick="window.print()">Salvar / Imprimir em PDF</button>
     </div>
 
-    <div class="relatorio-actions">
-        <button class="btn btn-secondary" onclick="window.location.href='/painel'">
-            ⬅ Voltar para painel
-        </button>
-        <button class="btn btn-primary" onclick="window.print()">
-            🖨 Salvar / Imprimir em PDF
-        </button>
-    </div>
-
-    {% if alerts and alerts|length > 0 %}
-    <table class="rel-table">
+    <section class="lista-alertas">
+      <table>
         <thead>
-            <tr>
-                <th>#</th>
-                <th>Data / Hora</th>
-                <th>Motorista</th>
-                <th>Ocorrência</th>
-                <th>Localização</th>
-            </tr>
+          <tr>
+            <th>#</th>
+            <th>Data / Hora (Brasília)</th>
+            <th>Motorista</th>
+            <th>Ocorrência</th>
+            <th>Localização</th>
+          </tr>
         </thead>
         <tbody>
-            {% for item in alerts %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ item.timestamp }}</td>
-                <td>{{ item.driver_name }}</td>
-                <td>{{ item.occurrence }}</td>
-                <td>
-                    {% if item.lat is not none and item.lng is not none %}
-                    <a class="map-link" href="https://www.google.com/maps?q={{ item.lat }},{{ item.lng }}" target="_blank">
-                        Ver no mapa ({{ item.lat }}, {{ item.lng }})
-                    </a>
-                    {% else %}
-                    Sem localização
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
+          {% for a in alertas %}
+          <tr>
+            <td>{{ a.id or a["id"] }}</td>
+            <td>{{ a.timestamp_brt or a["timestamp_brt"] }}</td>
+            <td>{{ a.motorista or a["motorista"] }}</td>
+            <td>{{ a.ocorrencia or a["ocorrencia"] }}</td>
+            <td>
+              {% if a.latitude and a.longitude %}
+                <a href="https://www.google.com/maps?q={{ a.latitude }},{{ a.longitude }}" target="_blank">
+                  Ver no mapa ({{ a.latitude }}, {{ a.longitude }})
+                </a>
+              {% else %}
+                Sem localização
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
         </tbody>
-    </table>
-    {% else %}
-    <p>Nenhuma ocorrência registrada ainda.</p>
-    {% endif %}
+      </table>
+    </section>
+  </main>
 </body>
 </html>
