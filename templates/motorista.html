@@ -3,8 +3,46 @@
   <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0014">
-<meta charset="utf-8"><title>Motorista - Driver Shield 360</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body><div class="container"><div class="card"><div class="header"><div class="title">🚕 Painel do Motorista</div><div class="row"><button class="btn small" onclick="goFull()">⛶ Tela cheia</button><button class="btn small" onclick="location.reload()">Reiniciar</button><button class="btn small danger" onclick="limpar()">Limpar alertas</button><a class="btn small" href="/">Sair</a></div></div><div class="grid"><div class="card"><div class="title" style="font-size:18px">Tipo de ocorrência</div><label>Selecione</label><select id="ocorrencia" class="input"><option value="Abordagem suspeita">Abordagem suspeita</option><option value="Tentativa de assalto">Tentativa de assalto</option><option value="Ameaça / intimidação">Ameaça / intimidação</option><option value="Passageiro agressivo">Passageiro agressivo</option><option value="Seguimento / perseguição">Seguimento / perseguição</option><option value="Emergência médica">Emergência médica</option><option value="Outro">Outro</option></select><label>Seu nome (opcional)</label><input id="motoristaNome" class="input" placeholder="Ex: João (Uber)"><hr><div class="title" style="font-size:18px">Pessoas de confiança cadastradas</div>{% if contacts and contacts|length > 0 %}<ul>{% for c in contacts %}<li><b>{{ c.nome }}</b> — {{ c.telefone }}</li>{% endfor %}</ul>{% else %}<div class="notice">Nenhuma pessoa cadastrada ainda. Vá em “Cadastro”.</div>{% endif %}</div><div class="card"><div class="title" style="font-size:18px">Botão de Pânico</div><div class="sos-wrap"><button id="sosBtn" class="sos-btn" onclick="enviar()">SOS</button></div><div id="status" class="notice">Clique em SOS para enviar alerta com localização e ocorrência.</div><hr><div class="title" style="font-size:18px">Localização</div><div class="notice" id="locTxt">Aguardando localização…</div></div></div></div></div><script>
+<meta charset="utf-8"><title>Motorista - Driver Shield 360</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body><div class="container"><div class="card"><div class="header"><div class="title">🚕 Painel do Motorista</div><div class="row"><button class="btn small" onclick="goFull()">⛶ Tela cheia</button><button class="btn small" onclick="location.reload()">Reiniciar</button><button class="btn small danger" onclick="limpar()">Limpar alertas</button><a class="btn small" href="/">Sair</a></div></div><div class="grid"><div class="card"><div class="title" style="font-size:18px">Tipo de ocorrência</div><label>Ocorrência (1 toque)</label>
+<div class="occ-quick" id="occQuick">
+  <button type="button" class="chip" data-v="Abordagem suspeita">Abordagem suspeita</button>
+  <button type="button" class="chip" data-v="Tentativa de assalto">Tentativa de assalto</button>
+  <button type="button" class="chip" data-v="Ameaça / intimidação">Ameaça / intimidação</button>
+  <button type="button" class="chip" data-v="Passageiro agressivo">Passageiro agressivo</button>
+  <button type="button" class="chip" data-v="Seguimento / perseguição">Seguimento / perseguição</button>
+  <button type="button" class="chip" data-v="Emergência médica">Emergência médica</button>
+  <button type="button" class="chip" data-v="Outro">Outro</button>
+</div>
+<div class="occ-current">Selecionado: <span id="occSel">Abordagem suspeita</span></div>
+<select id="ocorrencia" class="input" style="margin-top:10px">
+  <option value="Abordagem suspeita" selected>Abordagem suspeita</option>
+  <option value="Tentativa de assalto">Tentativa de assalto</option>
+  <option value="Ameaça / intimidação">Ameaça / intimidação</option>
+  <option value="Passageiro agressivo">Passageiro agressivo</option>
+  <option value="Seguimento / perseguição">Seguimento / perseguição</option>
+  <option value="Emergência médica">Emergência médica</option>
+  <option value="Outro">Outro</option>
+</select><label>Seu nome (opcional)</label><input id="motoristaNome" class="input" placeholder="Ex: João (Uber)"><hr><div class="title" style="font-size:18px">Pessoas de confiança cadastradas</div>{% if contacts and contacts|length > 0 %}<ul>{% for c in contacts %}<li><b>{{ c.nome }}</b> — {{ c.telefone }}</li>{% endfor %}</ul>{% else %}<div class="notice">Nenhuma pessoa cadastrada ainda. Vá em “Cadastro”.</div>{% endif %}</div><div class="card"><div class="title" style="font-size:18px">Botão de Pânico</div><div class="sos-wrap"><button id="sosBtn" class="sos-btn" onclick="enviar()">SOS</button></div><div id="status" class="notice">Clique em SOS para enviar alerta com localização e ocorrência.</div><hr><div class="title" style="font-size:18px">Localização</div><div class="notice" id="locTxt">Aguardando localização…</div></div></div></div></div><script>
 function goFull(){const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();}
+
+// --- Ocorr�ncia em 1 toque (chips) ---
+const occSelect = document.getElementById("ocorrencia");
+const occValue = document.getElementById("occValue");
+const occQuick = document.getElementById("occQuick");
+function setOcc(v){
+  occSelect.value = v;
+  occValue.textContent = v;
+  occQuick.querySelectorAll(".chip").forEach(b=>{
+    b.classList.toggle("active", b.dataset.v===v);
+  });
+}
+occQuick.querySelectorAll(".chip").forEach(btn=>{
+  btn.addEventListener("click", ()=>setOcc(btn.dataset.v));
+});
+occSelect.addEventListener("change", ()=>setOcc(occSelect.value));
+// For�a uma sele��o padr�o
+setOcc(occSelect.value || "Abordagem suspeita");
+
 let lastPos=null;
 function getLocation(){if(!navigator.geolocation){document.getElementById('locTxt').textContent='Geolocalização não disponível neste dispositivo.';return;}
 navigator.geolocation.getCurrentPosition((pos)=>{lastPos={lat:pos.coords.latitude,lng:pos.coords.longitude};document.getElementById('locTxt').textContent=`Lat: ${lastPos.lat.toFixed(6)} | Lng: ${lastPos.lng.toFixed(6)} (precisão: ~${Math.round(pos.coords.accuracy)}m)`;},()=>{document.getElementById('locTxt').textContent='Permita o acesso à localização no navegador/celular.';},{enableHighAccuracy:true,timeout:8000,maximumAge:5000});}

@@ -10,3 +10,13 @@ font-weight:700;letter-spacing:.2px;cursor:pointer;transition:transform .08s eas
 .hint{display:block;color:rgba(255,255,255,.7);margin:0 0 10px;font-size:.9rem}
 @media(max-width:900px){.quick-occ{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+
+/* Quick occurrence chips */
+.occ-quick{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 14px}
+.chip{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;padding:10px 12px;border-radius:14px;font-weight:700;cursor:pointer;transition:transform .08s ease, background .2s ease, border-color .2s ease}
+.chip:hover{transform:translateY(-1px)}
+.chip.active{background:rgba(255,79,200,.18);border-color:rgba(255,79,200,.55);box-shadow:0 10px 24px rgba(255,79,200,.14)}
+.small-note{margin-top:8px;opacity:.9}
+
+select.input{color:#fff;background:rgba(0,0,0,.22)}
+select.input option{color:#111;background:#f2f2f2}
