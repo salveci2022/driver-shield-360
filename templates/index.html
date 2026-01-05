@@ -1,6 +1,51 @@
-<!doctype html><html lang="pt-BR"><head>
-<link rel="manifest" href="/static/manifest.json">
-  <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
-  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-  <meta name="theme-color" content="#0a0014">
-<meta charset="utf-8"><title>Driver Shield 360</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body><div class="container"><div class="card"><div class="header"><div class="title">Driver Shield 360</div><div class="badge">✅ Sistema rodando</div></div><div class="grid"><a class="btn hot" href="{{ url_for('motorista') }}">🚕 Painel do Motorista</a><a class="btn" href="{{ url_for('cadastro') }}">👥 Cadastro (até 3)</a><a class="btn" href="{{ url_for('painel') }}">🧑‍🤝‍🧑 Painel Pessoa de Confiança</a><a class="btn" href="{{ url_for('relatorio') }}">📊 Relatório</a></div><hr><div class="notice">Dica: no celular, use “Adicionar à tela inicial” para criar um atalho.</div></div></div></body></html>
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{{ app_name }}</title>
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <span style="font-size:20px">🛡️</span>
+        <div>
+          <div style="font-size:18px">{{ app_name }}</div>
+          <div class="small">Sistema de botão de pânico e comunicação com pessoas de confiança</div>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="btn ghost" href="/motorista">🚗 Painel do Motorista</a>
+        <a class="btn ghost" href="/painel">👥 Painel Pessoa de Confiança</a>
+        <a class="btn ghost" href="/cadastro">➕ Cadastro (até 3)</a>
+        <a class="btn ghost" href="/relatorio">📄 Relatório</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Atalho rápido</h2>
+      <div class="kv">
+        <span class="pill">Motorista: /motorista</span>
+        <span class="pill">Pessoa de confiança: /painel</span>
+        <span class="pill">Cadastro: /cadastro</span>
+        <span class="pill">Relatório: /relatorio</span>
+      </div>
+      <div class="hr"></div>
+      <div class="small">
+        Dica: no celular, abra <b>/motorista</b> e use “Adicionar à tela inicial” (PWA).
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}').catch(()=>{});
+    }
+  </script>
+</body>
+</html>

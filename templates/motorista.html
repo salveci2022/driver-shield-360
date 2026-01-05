@@ -1,256 +1,156 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Motorista - Driver Shield 360</title>
-
-  <link rel="manifest" href="/static/manifest.json">
-  <meta name="theme-color" content="#12001f" />
-
-  <link rel="icon" href="/static/driver_shield_360.png" />
-  <link rel="apple-touch-icon" href="/static/driver_shield_360.png" />
-  <link rel="stylesheet" href="/static/style.css" />
-
-  <style>
-    /* Ajustes finos (sem quebrar o style global) */
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .brand img{width:42px;height:42px;border-radius:14px;box-shadow:0 12px 35px rgba(0,0,0,.35)}
-    .brand h1{margin:0;font-size:22px;letter-spacing:.2px}
-    .btns{display:flex;gap:10px;flex-wrap:wrap}
-
-    .occ-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    @media (min-width: 900px){.occ-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
-
-    .occ-btn{appearance:none;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06);color:#f3e9ff;
-             padding:12px 12px;border-radius:16px;cursor:pointer;font-weight:700;letter-spacing:.2px;
-             transition:.15s transform, .15s filter, .15s background;}
-    .occ-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
-    .occ-btn.active{background:linear-gradient(135deg, rgba(164,92,255,.55), rgba(255,79,200,.35));border-color:rgba(255,255,255,.18)}
-
-    .contacts ul{margin:0;padding-left:18px}
-    .contacts li{margin:8px 0}
-
-    .sos-note{margin:12px 0 0;opacity:.9}
-  </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Motorista | {{ app_name }}</title>
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
-  <div class="shell">
-    <div class="card wide">
-      <div class="topbar">
-        <div class="brand">
-          <img src="/static/driver_shield_360.png" alt="Driver Shield 360" />
-          <h1>🚖 Painel do Motorista</h1>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <span style="font-size:20px">🚗</span>
+        <div>
+          <div style="font-size:20px">Painel do Motorista</div>
+          <div class="small">Um toque para enviar alerta com ocorrência e localização.</div>
         </div>
-        <div class="btns">
-          <button class="btn" id="btnFullscreen">⛶ Tela cheia</button>
-          <button class="btn" id="btnReload">Reiniciar</button>
-          <button class="btn danger" id="btnClear">Limpar alertas</button>
-          <button class="btn" id="btnExit">Sair</button>
-        </div>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" onclick="setFullScreen()">⛶ Tela cheia</button>
+        <button class="btn ghost" onclick="location.reload()">↻ Reiniciar</button>
+        <button class="btn danger" onclick="clearLocal()">🧹 Limpar</button>
+        <a class="btn" href="/">⟵ Sair</a>
       </div>
     </div>
 
     <div class="grid">
       <div class="card">
-        <h2>Tipo de ocorrência</h2>
-        <p class="muted">Já vem pré-selecionado para você apertar o SOS mais rápido.</p>
+        <h2>Configuração rápida</h2>
 
-        <div class="occ-grid" id="occGrid"></div>
+        <div class="label">Tipo de ocorrência (pré-selecionado)</div>
+        <select id="occ">
+          <option value="Abordagem suspeita" selected>Abordagem suspeita</option>
+          <option value="Tentativa de assalto">Tentativa de assalto</option>
+          <option value="Ameaça / intimidação">Ameaça / intimidação</option>
+          <option value="Passageiro agressivo">Passageiro agressivo</option>
+          <option value="Seguimento / perseguição">Seguimento / perseguição</option>
+          <option value="Emergência médica">Emergência médica</option>
+          <option value="Outro">Outro</option>
+        </select>
 
-        <div style="margin-top:14px">
-          <label class="label" for="driverName">Seu nome (opcional)</label>
-          <input class="input" id="driverName" type="text" placeholder="Ex.: João (Uber)" />
-        </div>
+        <div class="label">Seu nome (opcional)</div>
+        <input id="driverName" class="input" placeholder="Ex.: Salveci (Motorista)"/>
 
-        <div class="card inner contacts" style="margin-top:16px">
-          <h3>Pessoas de confiança cadastradas</h3>
-          {% if contacts and contacts|length > 0 %}
-            <ul>
-              {% for c in contacts %}
-                <li><strong>{{ c.nome }}</strong> — {{ c.telefone }}</li>
-              {% endfor %}
-            </ul>
-          {% else %}
-            <p class="muted">Nenhuma pessoa cadastrada ainda.</p>
-          {% endif %}
-        </div>
+        <div class="hr"></div>
+
+        <h2>Pessoas de confiança cadastradas</h2>
+        <ul id="contactsList" class="list"></ul>
+        <div class="small">Cadastre até 3 em <b>/cadastro</b>.</div>
       </div>
 
       <div class="card">
         <h2>Botão de Pânico</h2>
-
-        <div class="sosWrap">
-          <button class="sos" id="btnSOS">SOS</button>
+        <div class="sos-wrap">
+          <button id="sosBtn" class="sos-btn">SOS</button>
+          <div class="small" style="text-align:center;max-width:520px">
+            Clique em <b>SOS</b> para enviar alerta com localização e ocorrência.
+            <br>⚠️ A sirene toca <b>somente</b> no painel da pessoa de confiança.
+          </div>
         </div>
 
-        <p class="sos-note">Ocorrência selecionada: <strong id="occSelected">Abordagem suspeita</strong></p>
+        <div class="hr"></div>
 
-        <div class="divider"></div>
-
-        <div>
-          <h3>Localização</h3>
-          <p id="locText" class="muted">Permita o acesso à localização no navegador/celular.</p>
-        </div>
-
-        <audio id="siren" preload="auto">
-          <source src="/static/sirene.mp3" type="audio/mpeg" />
-        </audio>
-
-        <div class="divider"></div>
-        <p class="muted" style="margin:0">Dica: instale como app (PWA) para ficar 1 toque na tela inicial.</p>
+        <h2>Localização</h2>
+        <div id="loc" class="small">Permita o acesso à localização no navegador/celular.</div>
       </div>
     </div>
   </div>
 
+  <div id="toast" class="toast"></div>
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
   <script>
-    // Ocorrências (pré-selecionadas)
-    const OCCURRENCES = [
-      'Abordagem suspeita',
-      'Tentativa de assalto',
-      'Ameaça / intimidação',
-      'Passageiro agressivo',
-      'Seguimento / perseguição',
-      'Emergência médica',
-      'Outro'
-    ];
+    let lastLoc = {lat:null,lng:null,accuracy:null};
 
-    const occGrid = document.getElementById('occGrid');
-    const occSelected = document.getElementById('occSelected');
-    let currentOcc = OCCURRENCES[0];
-
-    function renderOccButtons(){
-      occGrid.innerHTML = '';
-      OCCURRENCES.forEach((label, idx) => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'occ-btn' + (idx===0 ? ' active' : '');
-        b.textContent = label;
-        b.addEventListener('click', () => {
-          currentOcc = label;
-          occSelected.textContent = label;
-          [...occGrid.querySelectorAll('.occ-btn')].forEach(x=>x.classList.remove('active'));
-          b.classList.add('active');
+    async function loadContacts(){
+      try{
+        const j = await jget("/api/contacts");
+        const ul = document.getElementById("contactsList");
+        ul.innerHTML = "";
+        (j.contacts||[]).forEach(c=>{
+          const li = document.createElement("li");
+          li.innerHTML = `<b>${c.name}</b> — ${c.phone}`;
+          ul.appendChild(li);
         });
-        occGrid.appendChild(b);
-      });
-      occSelected.textContent = currentOcc;
-    }
-
-    renderOccButtons();
-
-    // Fullscreen
-    document.getElementById('btnFullscreen').addEventListener('click', async () => {
-      try{
-        if (!document.fullscreenElement) {
-          await document.documentElement.requestFullscreen();
-        } else {
-          await document.exitFullscreen();
+        if((j.contacts||[]).length===0){
+          const li = document.createElement("li");
+          li.textContent = "Nenhuma pessoa cadastrada ainda.";
+          ul.appendChild(li);
         }
-      }catch(e){console.warn(e)}
-    });
-
-    document.getElementById('btnReload').addEventListener('click', () => location.reload());
-
-    document.getElementById('btnExit').addEventListener('click', () => {
-      // Mantém este painel isolado: sai para o início
-      window.location.href = '/';
-    });
-
-    document.getElementById('btnClear').addEventListener('click', async () => {
-      try{
-        await fetch('/api/clear_alerts', {method:'POST'});
-        alert('Alertas limpos!');
-      }catch(e){alert('Não foi possível limpar agora.')}
-    });
-
-    // Localização
-    const locText = document.getElementById('locText');
-    let lastLat = null, lastLng = null, lastAcc = null;
-
-    function updateLocText(){
-      if (lastLat===null || lastLng===null) {
-        locText.textContent = 'Permita o acesso à localização no navegador/celular.';
-        return;
+      }catch(e){
+        toast("Falha ao carregar contatos");
       }
-      locText.textContent = `Lat: ${lastLat.toFixed(6)} | Lng: ${lastLng.toFixed(6)} (precisão: ~${Math.round(lastAcc||0)}m)`;
     }
 
-    function startGeo(){
-      if (!navigator.geolocation) {
-        locText.textContent = 'Geolocalização não suportada neste dispositivo.';
+    function clearLocal(){
+      localStorage.removeItem("driver_name");
+      toast("Campos limpos");
+      document.getElementById("driverName").value = "";
+    }
+
+    function geo(){
+      const el = document.getElementById("loc");
+      if(!("geolocation" in navigator)){
+        el.textContent = "Geolocalização não suportada.";
         return;
       }
-
-      navigator.geolocation.watchPosition(
-        (pos) => {
-          lastLat = pos.coords.latitude;
-          lastLng = pos.coords.longitude;
-          lastAcc = pos.coords.accuracy;
-          updateLocText();
+      navigator.geolocation.getCurrentPosition(
+        (pos)=>{
+          lastLoc.lat = pos.coords.latitude;
+          lastLoc.lng = pos.coords.longitude;
+          lastLoc.accuracy = pos.coords.accuracy;
+          el.textContent = `Lat: ${lastLoc.lat.toFixed(6)} | Lng: ${lastLoc.lng.toFixed(6)} (precisão ~${Math.round(lastLoc.accuracy)}m)`;
         },
-        (err) => {
-          locText.textContent = 'Permita o acesso à localização no navegador/celular.';
-          console.warn(err);
+        ()=>{
+          el.textContent = "Permita o acesso à localização no navegador/celular.";
         },
-        { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+        {enableHighAccuracy:true, timeout:8000, maximumAge:15000}
       );
     }
 
-    startGeo();
+    async function sendAlert(){
+      const occ = document.getElementById("occ").value;
+      const driverName = document.getElementById("driverName").value.trim();
+      localStorage.setItem("driver_name", driverName);
+      geo(); // refresh location best-effort
 
-    // SOS
-    const siren = document.getElementById('siren');
-    const btnSOS = document.getElementById('btnSOS');
-
-    async function playSiren(){
       try{
-        siren.currentTime = 0;
-        await siren.play();
-      }catch(e){console.warn('autoplay bloqueado', e)}
+        await jpost("/api/alerts", {
+          occurrence: occ,
+          driver_name: driverName,
+          lat: lastLoc.lat,
+          lng: lastLoc.lng,
+          accuracy: lastLoc.accuracy
+        });
+        toast("✅ Alerta enviado!");
+      }catch(e){
+        toast("❌ Falha ao enviar alerta: " + e.message);
+      }
     }
 
-    btnSOS.addEventListener('click', async () => {
-      btnSOS.disabled = true;
-      btnSOS.classList.add('pulse');
-      await playSiren();
-
-      const driverName = (document.getElementById('driverName').value || '').trim();
-
-      const payload = {
-        occurrence: currentOcc,
-        driver_name: driverName,
-        lat: lastLat,
-        lng: lastLng,
-        accuracy: lastAcc
-      };
-
-      try{
-        const res = await fetch('/api/alert', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data && data.ok) {
-          alert('✅ Alerta enviado para as pessoas de confiança!');
-        } else {
-          alert('⚠️ Não consegui enviar agora. Tente novamente.');
-        }
-      }catch(e){
-        alert('⚠️ Falha de rede ao enviar alerta.');
-      }finally{
-        btnSOS.disabled = false;
-        btnSOS.classList.remove('pulse');
-      }
+    document.getElementById("sosBtn").addEventListener("click", ()=>{
+      sendAlert();
     });
 
-    // Service worker (PWA)
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/static/sw.js').catch(()=>{});
-    }
+    // restore name
+    document.getElementById("driverName").value = localStorage.getItem("driver_name") || "";
+
+    loadContacts();
+    geo();
+    setInterval(geo, 15000);
   </script>
 </body>
 </html>

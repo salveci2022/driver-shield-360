@@ -1,6 +1,70 @@
-<!doctype html><html lang="pt-BR"><head>
-<link rel="manifest" href="/static/manifest.json">
-  <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
-  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-  <meta name="theme-color" content="#0a0014">
-<meta charset="utf-8"><title>Relatório - Driver Shield 360</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body><div class="container"><div class="card"><div class="header"><div class="title">📊 Relatório de Ocorrências</div><div class="row"><button class="btn small" onclick="goFull()">⛶ Tela cheia</button><button class="btn small danger" onclick="limpar()">Limpar</button><a class="btn small" href="/">Sair</a></div></div>{% if alerts and alerts|length > 0 %}<table class="table"><thead><tr><th>Data/Hora</th><th>Motorista</th><th>Ocorrência</th><th>Lat</th><th>Lng</th></tr></thead><tbody>{% for a in alerts %}<tr><td><b>{{ a.ts }}</b></td><td>{{ a.motorista }}</td><td>{{ a.ocorrencia }}</td><td>{{ a.lat }}</td><td>{{ a.lng }}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="notice">Nenhuma ocorrência registrada.</div>{% endif %}</div></div><script>function goFull(){const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();}async function limpar(){if(!confirm('Limpar todos os alertas?'))return;const res=await fetch('/api/clear_alerts',{method:'POST'});const j=await res.json();if(j.ok){alert('Alertas limpos!');location.reload();}}</script></body></html>
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Relatório | {{ app_name }}</title>
+  <link rel="icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <span style="font-size:20px">📄</span>
+        <div>
+          <div style="font-size:20px">Relatório de Alertas</div>
+          <div class="small">Histórico de SOS registrados no sistema.</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn danger" onclick="clearAlerts()">🧹 Limpar</button>
+        <a class="btn ghost" href="/painel">👥 Painel</a>
+        <a class="btn ghost" href="/motorista">🚗 Motorista</a>
+        <a class="btn" href="/">⟵ Sair</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Registros</h2>
+      <div id="rows" class="small">Carregando...</div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+  <script>
+    function row(a){
+      return `
+        <div class="card" style="margin:10px 0">
+          <div class="kv">
+            <span class="pill">🚨 ${a.occurrence||"SOS"}</span>
+            ${a.driver_name?`<span class="pill">👤 ${a.driver_name}</span>`:""}
+            ${(a.lat && a.lng)?`<span class="pill">📍 ${Number(a.lat).toFixed(6)}, ${Number(a.lng).toFixed(6)}</span>`:""}
+            ${a.accuracy?`<span class="pill">±${Math.round(a.accuracy)}m</span>`:""}
+          </div>
+          <div class="small" style="margin-top:10px">⏱ ${a.created_at}</div>
+        </div>
+      `;
+    }
+
+    async function load(){
+      const j = await jget("/api/alerts");
+      const arr = j.alerts||[];
+      const box = document.getElementById("rows");
+      if(arr.length===0){ box.textContent = "Nenhum alerta registrado."; return; }
+      box.innerHTML = arr.map(row).join("");
+    }
+
+    async function clearAlerts(){
+      try{
+        await jpost("/api/alerts/clear",{});
+        toast("Limpo");
+        load();
+      }catch(e){ toast("Falha ao limpar"); }
+    }
+
+    load();
+  </script>
+</body>
+</html>
