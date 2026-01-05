@@ -29,6 +29,35 @@
     .sos:active{transform:scale(.98)}
     .hint{opacity:.9}
     .warn{opacity:.85;font-size:.95rem}
+
+    /* Ocorrências visíveis (mais rápido em situação de risco) */
+    .occ-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap:10px;
+      margin-top:10px;
+    }
+    .occ-btn{
+      width:100%;
+      text-align:left;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      font-weight:650;
+    }
+    .occ-btn:hover{ background:rgba(255,255,255,.10); }
+    .occ-btn:active{ transform:scale(.99); }
+    .occ-btn.active{
+      background:rgba(255,79,200,.18);
+      border-color:rgba(255,79,200,.45);
+      box-shadow:0 0 0 3px rgba(255,79,200,.14);
+    }
+    .occ-note{opacity:.8;font-size:.9rem;margin-top:6px}
+    .sr-only{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;}
   </style>
 </head>
 <body class="aurora-bg">
@@ -51,12 +80,20 @@
       <section class="card">
         <h2>Configuração rápida</h2>
 
-        <label class="label">Tipo de ocorrência (pré-selecionado)</label>
-        <select id="occurrence">
+        <label class="label">Tipo de ocorrência (toque em 1 opção)</label>
+        <!-- Mantém o select como fallback (invisível) -->
+        <select id="occurrence" aria-hidden="true" tabindex="-1" style="display:none">
           {% for o in occurrences %}
             <option value="{{o}}" {% if loop.index0==0 %}selected{% endif %}>{{o}}</option>
           {% endfor %}
         </select>
+
+        <!-- Opções visíveis (mais rápido) -->
+        <div class="occ-grid" id="occGrid">
+          {% for o in occurrences %}
+            <button type="button" class="btn occ-btn {% if loop.index0==0 %}occ-active{% endif %}" data-occ="{{o}}">{{o}}</button>
+          {% endfor %}
+        </div>
 
         <label class="label">Seu nome (opcional)</label>
         <input id="driverName" placeholder="Ex: João (Uber)" />
@@ -119,8 +156,22 @@
   }
   getLocationOnce();
 
+  // Ocorrências em botões (rápido, sem abrir dropdown)
+  const occSelect = document.getElementById('occurrence');
+  const occBtns = Array.from(document.querySelectorAll('.occ-btn'));
+  function setOccurrence(val){
+    if (occSelect) occSelect.value = val;
+    occBtns.forEach(b => b.classList.toggle('active', b.dataset.value === val));
+  }
+  if (occBtns.length) {
+    // valor inicial
+    const initial = (occSelect && occSelect.value) ? occSelect.value : occBtns[0].dataset.value;
+    setOccurrence(initial);
+    occBtns.forEach(b => b.addEventListener('click', ()=>setOccurrence(b.dataset.value)));
+  }
+
   async function sendSOS() {
-    const occurrence = document.getElementById('occurrence').value || 'Abordagem suspeita';
+    const occurrence = (document.getElementById('occurrence')?.value) || 'Abordagem suspeita';
     const driverName = document.getElementById('driverName').value || '';
 
     // tenta atualizar a localização rapidinho antes do envio
