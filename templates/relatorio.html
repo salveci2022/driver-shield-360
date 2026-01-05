@@ -1,70 +1,64 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
   <title>Relatório | {{ app_name }}</title>
-  <link rel="icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="/static/icons/icon-192x192.png">
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.1);text-align:left}
+    th{opacity:.9}
+    .small{opacity:.85;font-size:.95rem}
+  </style>
 </head>
-<body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand">
-        <span style="font-size:20px">📄</span>
-        <div>
-          <div style="font-size:20px">Relatório de Alertas</div>
-          <div class="small">Histórico de SOS registrados no sistema.</div>
-        </div>
+<body class="aurora-bg">
+  <div class="wrap">
+    <header class="topbar">
+      <div>
+        <h1>📄 Relatório de Alertas</h1>
+        <p class="small">Últimos alertas registrados.</p>
       </div>
-      <div class="actions">
-        <button class="btn danger" onclick="clearAlerts()">🧹 Limpar</button>
-        <a class="btn ghost" href="/painel">👥 Painel</a>
-        <a class="btn ghost" href="/motorista">🚗 Motorista</a>
-        <a class="btn" href="/">⟵ Sair</a>
+      <div class="top-actions">
+        <button class="btn" onclick="location.href='/'">← Voltar</button>
+        <button class="btn" onclick="location.href='/painel'">Painel</button>
       </div>
-    </div>
+    </header>
 
-    <div class="card">
-      <h2>Registros</h2>
-      <div id="rows" class="small">Carregando...</div>
-    </div>
+    <section class="card">
+      {% if alerts and alerts|length > 0 %}
+      <table>
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Ocorrência</th>
+            <th>Motorista</th>
+            <th>Localização</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in alerts %}
+          <tr>
+            <td>{{ a.ts }}</td>
+            <td><strong>{{ a.occurrence }}</strong></td>
+            <td>{{ a.driver_name or '—' }}</td>
+            <td>
+              {% if a.lat is not none and a.lng is not none %}
+                <a target="_blank" rel="noopener" href="https://maps.google.com/?q={{a.lat}},{{a.lng}}">{{a.lat}}, {{a.lng}}</a>
+                <span class="small">(±{{a.accuracy or 0}}m)</span>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="small">Ainda não há alertas registrados.</p>
+      {% endif %}
+    </section>
   </div>
-
-  <div id="toast" class="toast"></div>
-  <script src="{{ url_for('static', filename='main.js') }}"></script>
-  <script>
-    function row(a){
-      return `
-        <div class="card" style="margin:10px 0">
-          <div class="kv">
-            <span class="pill">🚨 ${a.occurrence||"SOS"}</span>
-            ${a.driver_name?`<span class="pill">👤 ${a.driver_name}</span>`:""}
-            ${(a.lat && a.lng)?`<span class="pill">📍 ${Number(a.lat).toFixed(6)}, ${Number(a.lng).toFixed(6)}</span>`:""}
-            ${a.accuracy?`<span class="pill">±${Math.round(a.accuracy)}m</span>`:""}
-          </div>
-          <div class="small" style="margin-top:10px">⏱ ${a.created_at}</div>
-        </div>
-      `;
-    }
-
-    async function load(){
-      const j = await jget("/api/alerts");
-      const arr = j.alerts||[];
-      const box = document.getElementById("rows");
-      if(arr.length===0){ box.textContent = "Nenhum alerta registrado."; return; }
-      box.innerHTML = arr.map(row).join("");
-    }
-
-    async function clearAlerts(){
-      try{
-        await jpost("/api/alerts/clear",{});
-        toast("Limpo");
-        load();
-      }catch(e){ toast("Falha ao limpar"); }
-    }
-
-    load();
-  </script>
 </body>
 </html>

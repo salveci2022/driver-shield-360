@@ -1,156 +1,178 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
   <title>Motorista | {{ app_name }}</title>
-  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  <link rel="icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="/static/icons/icon-192x192.png">
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    /* garantir legibilidade do select/option em todos os browsers */
+    select, option { color:#fff; background:#120016; }
+    option { background:#16002b; }
+    .top-actions button{min-width:120px}
+    .pill{display:inline-flex;gap:.5rem;align-items:center;padding:.45rem .8rem;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+    .contacts{margin-top:10px}
+    .contacts ul{margin:8px 0 0 18px}
+    .contacts li{margin:6px 0}
+    .sos{
+      width:220px;height:220px;border-radius:50%;
+      display:grid;place-items:center;
+      font-size:54px;font-weight:800;letter-spacing:2px;
+      border:none; cursor:pointer;
+      box-shadow: 0 22px 60px rgba(0,0,0,.55);
+      background: radial-gradient(circle at 30% 30%, #ff78df, #b84bff 60%, #5e2a86);
+      color:#fff;
+      transition: transform .08s ease;
+    }
+    .sos:active{transform:scale(.98)}
+    .hint{opacity:.9}
+    .warn{opacity:.85;font-size:.95rem}
+  </style>
 </head>
-<body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand">
-        <span style="font-size:20px">🚗</span>
-        <div>
-          <div style="font-size:20px">Painel do Motorista</div>
-          <div class="small">Um toque para enviar alerta com ocorrência e localização.</div>
-        </div>
+<body class="aurora-bg">
+  <div class="wrap">
+    <header class="topbar">
+      <div>
+        <h1>🚗 Painel do Motorista</h1>
+        <p class="hint">Um toque para enviar alerta com ocorrência e localização.</p>
       </div>
-      <div class="actions">
-        <button class="btn ghost" onclick="setFullScreen()">⛶ Tela cheia</button>
-        <button class="btn ghost" onclick="location.reload()">↻ Reiniciar</button>
-        <button class="btn danger" onclick="clearLocal()">🧹 Limpar</button>
-        <a class="btn" href="/">⟵ Sair</a>
-      </div>
-    </div>
 
-    <div class="grid">
-      <div class="card">
+      <div class="top-actions">
+        <button class="btn" id="btnFull">⛶ Tela cheia</button>
+        <button class="btn" id="btnReload">↻ Reiniciar</button>
+        <button class="btn btn-danger" id="btnClear">🧹 Limpar alertas</button>
+        <button class="btn" id="btnExit">← Sair</button>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card">
         <h2>Configuração rápida</h2>
 
-        <div class="label">Tipo de ocorrência (pré-selecionado)</div>
-        <select id="occ">
-          <option value="Abordagem suspeita" selected>Abordagem suspeita</option>
-          <option value="Tentativa de assalto">Tentativa de assalto</option>
-          <option value="Ameaça / intimidação">Ameaça / intimidação</option>
-          <option value="Passageiro agressivo">Passageiro agressivo</option>
-          <option value="Seguimento / perseguição">Seguimento / perseguição</option>
-          <option value="Emergência médica">Emergência médica</option>
-          <option value="Outro">Outro</option>
+        <label class="label">Tipo de ocorrência (pré-selecionado)</label>
+        <select id="occurrence">
+          {% for o in occurrences %}
+            <option value="{{o}}" {% if loop.index0==0 %}selected{% endif %}>{{o}}</option>
+          {% endfor %}
         </select>
 
-        <div class="label">Seu nome (opcional)</div>
-        <input id="driverName" class="input" placeholder="Ex.: Salveci (Motorista)"/>
+        <label class="label">Seu nome (opcional)</label>
+        <input id="driverName" placeholder="Ex: João (Uber)" />
 
-        <div class="hr"></div>
+        <div class="contacts">
+          <div class="pill">👥 Pessoas de confiança cadastradas</div>
+          {% if contacts and contacts|length > 0 %}
+            <ul>
+              {% for c in contacts %}
+                <li><strong>{{c.name}}</strong> — {{c.phone}}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="warn">Nenhuma pessoa cadastrada. Vá em <strong>/cadastro</strong> e cadastre até 3 contatos.</p>
+          {% endif %}
+        </div>
+      </section>
 
-        <h2>Pessoas de confiança cadastradas</h2>
-        <ul id="contactsList" class="list"></ul>
-        <div class="small">Cadastre até 3 em <b>/cadastro</b>.</div>
-      </div>
-
-      <div class="card">
+      <section class="card">
         <h2>Botão de Pânico</h2>
-        <div class="sos-wrap">
-          <button id="sosBtn" class="sos-btn">SOS</button>
-          <div class="small" style="text-align:center;max-width:520px">
-            Clique em <b>SOS</b> para enviar alerta com localização e ocorrência.
-            <br>⚠️ A sirene toca <b>somente</b> no painel da pessoa de confiança.
-          </div>
+
+        <div class="center">
+          <button class="sos" id="btnSOS">SOS</button>
         </div>
 
+        <p class="hint">Clique em <strong>SOS</strong> para enviar alerta com localização e ocorrência.</p>
+        <p class="warn">⚠️ A sirene toca <strong>somente</strong> no painel da pessoa de confiança.</p>
+
         <div class="hr"></div>
 
-        <h2>Localização</h2>
-        <div id="loc" class="small">Permita o acesso à localização no navegador/celular.</div>
-      </div>
-    </div>
+        <div>
+          <h3>Localização</h3>
+          <div id="locText" class="muted">Permita o acesso à localização no navegador/celular.</div>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <div id="toast" class="toast"></div>
+<script>
+  // PWA
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/service-worker.js').catch(()=>{}); }
 
-  <script src="{{ url_for('static', filename='main.js') }}"></script>
-  <script>
-    let lastLoc = {lat:null,lng:null,accuracy:null};
+  const locText = document.getElementById('locText');
+  let lastLoc = null;
 
-    async function loadContacts(){
-      try{
-        const j = await jget("/api/contacts");
-        const ul = document.getElementById("contactsList");
-        ul.innerHTML = "";
-        (j.contacts||[]).forEach(c=>{
-          const li = document.createElement("li");
-          li.innerHTML = `<b>${c.name}</b> — ${c.phone}`;
-          ul.appendChild(li);
-        });
-        if((j.contacts||[]).length===0){
-          const li = document.createElement("li");
-          li.textContent = "Nenhuma pessoa cadastrada ainda.";
-          ul.appendChild(li);
-        }
-      }catch(e){
-        toast("Falha ao carregar contatos");
-      }
-    }
+  function getLocationOnce() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        lastLoc = {
+          lat: +pos.coords.latitude.toFixed(6),
+          lng: +pos.coords.longitude.toFixed(6),
+          accuracy: Math.round(pos.coords.accuracy || 0)
+        };
+        locText.textContent = `Lat: ${lastLoc.lat} | Lng: ${lastLoc.lng} (precisão ~${lastLoc.accuracy}m)`;
+      },
+      () => { locText.textContent = 'Permita o acesso à localização no navegador/celular.'; },
+      { enableHighAccuracy:true, timeout:8000, maximumAge:10000 }
+    );
+  }
+  getLocationOnce();
 
-    function clearLocal(){
-      localStorage.removeItem("driver_name");
-      toast("Campos limpos");
-      document.getElementById("driverName").value = "";
-    }
+  async function sendSOS() {
+    const occurrence = document.getElementById('occurrence').value || 'Abordagem suspeita';
+    const driverName = document.getElementById('driverName').value || '';
 
-    function geo(){
-      const el = document.getElementById("loc");
-      if(!("geolocation" in navigator)){
-        el.textContent = "Geolocalização não suportada.";
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        (pos)=>{
-          lastLoc.lat = pos.coords.latitude;
-          lastLoc.lng = pos.coords.longitude;
-          lastLoc.accuracy = pos.coords.accuracy;
-          el.textContent = `Lat: ${lastLoc.lat.toFixed(6)} | Lng: ${lastLoc.lng.toFixed(6)} (precisão ~${Math.round(lastLoc.accuracy)}m)`;
-        },
-        ()=>{
-          el.textContent = "Permita o acesso à localização no navegador/celular.";
-        },
-        {enableHighAccuracy:true, timeout:8000, maximumAge:15000}
-      );
-    }
+    // tenta atualizar a localização rapidinho antes do envio
+    try { await new Promise((res)=>{ 
+      if(!navigator.geolocation){res();return;}
+      navigator.geolocation.getCurrentPosition((pos)=>{
+        lastLoc = {
+          lat: +pos.coords.latitude.toFixed(6),
+          lng: +pos.coords.longitude.toFixed(6),
+          accuracy: Math.round(pos.coords.accuracy || 0)
+        };
+        locText.textContent = `Lat: ${lastLoc.lat} | Lng: ${lastLoc.lng} (precisão ~${lastLoc.accuracy}m)`;
+        res();
+      }, ()=>res(), { enableHighAccuracy:true, timeout:5000, maximumAge:0 });
+    }); } catch(e){}
 
-    async function sendAlert(){
-      const occ = document.getElementById("occ").value;
-      const driverName = document.getElementById("driverName").value.trim();
-      localStorage.setItem("driver_name", driverName);
-      geo(); // refresh location best-effort
+    const payload = {
+      occurrence,
+      driver_name: driverName,
+      lat: lastLoc ? lastLoc.lat : null,
+      lng: lastLoc ? lastLoc.lng : null,
+      accuracy: lastLoc ? lastLoc.accuracy : null,
+    };
 
-      try{
-        await jpost("/api/alerts", {
-          occurrence: occ,
-          driver_name: driverName,
-          lat: lastLoc.lat,
-          lng: lastLoc.lng,
-          accuracy: lastLoc.accuracy
-        });
-        toast("✅ Alerta enviado!");
-      }catch(e){
-        toast("❌ Falha ao enviar alerta: " + e.message);
-      }
-    }
-
-    document.getElementById("sosBtn").addEventListener("click", ()=>{
-      sendAlert();
+    const r = await fetch('/api/alert', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
     });
 
-    // restore name
-    document.getElementById("driverName").value = localStorage.getItem("driver_name") || "";
+    if (r.ok) {
+      const btn = document.getElementById('btnSOS');
+      btn.textContent = 'ENVIADO';
+      setTimeout(()=>btn.textContent='SOS', 1200);
+    } else {
+      alert('Não foi possível enviar o alerta. Tente novamente.');
+    }
+  }
 
-    loadContacts();
-    geo();
-    setInterval(geo, 15000);
-  </script>
+  document.getElementById('btnSOS').addEventListener('click', sendSOS);
+
+  document.getElementById('btnFull').addEventListener('click', ()=>{
+    const el = document.documentElement;
+    if (!document.fullscreenElement) el.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  });
+  document.getElementById('btnReload').addEventListener('click', ()=>location.reload());
+  document.getElementById('btnExit').addEventListener('click', ()=>location.href='/');
+  document.getElementById('btnClear').addEventListener('click', async ()=>{
+    await fetch('/api/alerts', {method:'DELETE'});
+    alert('Alertas limpos.');
+  });
+</script>
 </body>
 </html>

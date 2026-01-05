@@ -1,102 +1,147 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
   <title>Pessoa de Confiança | {{ app_name }}</title>
-  <link rel="icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="/static/icons/icon-192x192.png">
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    .siren-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#ff4fc8;box-shadow:0 0 18px rgba(255,79,200,.9)}
+    .alerts{max-height:520px;overflow:auto;padding-right:6px}
+    .alert{padding:14px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);margin:10px 0}
+    .alert .meta{opacity:.85;font-size:.95rem}
+    .alert .big{font-size:1.2rem;font-weight:800}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+  </style>
 </head>
-<body>
-  <audio id="sireneAudio" src="{{ url_for('static', filename='sirene.mp3') }}" preload="auto"></audio>
-
-  <div class="container">
-    <div class="topbar">
-      <div class="brand">
-        <span style="font-size:20px">👥</span>
-        <div>
-          <div style="font-size:20px">Painel da Pessoa de Confiança</div>
-          <div class="small">Aqui a sirene toca quando chega um SOS.</div>
-        </div>
+<body class="aurora-bg">
+  <div class="wrap">
+    <header class="topbar">
+      <div>
+        <h1>🛡️ Painel da Pessoa de Confiança <span class="siren-dot" title="sirene ativa"></span></h1>
+        <p class="hint">Este painel fica sempre aberto (sem senha) para agir rápido.</p>
       </div>
-      <div class="actions">
-        <button class="btn ghost" onclick="setFullScreen()">⛶ Tela cheia</button>
-        <button class="btn ghost" onclick="location.reload()">↻ Reiniciar</button>
-        <button class="btn danger" onclick="clearAlerts()">🧹 Limpar alertas</button>
-        <a class="btn" href="/">⟵ Sair</a>
-      </div>
-    </div>
 
-    <div class="grid" style="grid-template-columns: 1fr;">
-      <div class="card">
-        <h2>Alertas em tempo real</h2>
-        <div class="small">Atualiza automaticamente a cada 3 segundos.</div>
+      <div class="top-actions">
+        <button class="btn" id="btnFull">⛶ Tela cheia</button>
+        <button class="btn" id="btnReload">↻ Reiniciar</button>
+        <button class="btn btn-danger" id="btnClear">🧹 Limpar alertas</button>
+        <button class="btn" id="btnExit">← Sair</button>
+      </div>
+    </header>
+
+    <main class="grid" style="grid-template-columns:1fr .9fr">
+      <section class="card">
+        <h2>Alertas (tempo real)</h2>
+        <div class="alerts" id="alerts"></div>
+        <div class="mini">Dica: deixe em <strong>tela cheia</strong> e com o som do celular ligado.</div>
+      </section>
+
+      <section class="card">
+        <h2>Ações rápidas</h2>
+        <div class="pill">🔊 Sirene: <strong>somente aqui</strong></div>
         <div class="hr"></div>
-        <div id="alerts"></div>
-      </div>
-    </div>
+        <p class="mini">Quando chegar um alerta novo, a sirene toca automaticamente.</p>
+
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" onclick="location.href='/motorista'">Ir para Motorista</button>
+          <button class="btn" onclick="location.href='/cadastro'">Cadastrar contatos</button>
+          <button class="btn" onclick="location.href='/relatorio'">Ver relatório</button>
+        </div>
+
+        <div class="hr"></div>
+        <p class="mini mono" id="lastPing">Aguardando…</p>
+      </section>
+    </main>
   </div>
 
-  <div id="toast" class="toast"></div>
+<audio id="siren" src="/static/sirene.mp3" preload="auto"></audio>
 
-  <script src="{{ url_for('static', filename='main.js') }}"></script>
-  <script>
-    let lastTopId = null;
+<script>
+  // PWA
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/service-worker.js').catch(()=>{}); }
 
-    function fmt(a){
-      const parts = [];
-      parts.push(`<div class="pill">🚨 ${a.occurrence || "SOS"}</div>`);
-      if(a.driver_name) parts.push(`<div class="pill">👤 ${a.driver_name}</div>`);
-      if(a.lat && a.lng) parts.push(`<div class="pill">📍 ${Number(a.lat).toFixed(6)}, ${Number(a.lng).toFixed(6)}</div>`);
-      if(a.accuracy) parts.push(`<div class="pill">±${Math.round(a.accuracy)}m</div>`);
-      return `<div class="card" style="margin:10px 0">
-        <div class="kv">${parts.join("")}</div>
-        <div class="small" style="margin-top:10px">⏱ ${a.created_at}</div>
-      </div>`;
-    }
+  const siren = document.getElementById('siren');
+  const alertsBox = document.getElementById('alerts');
+  const lastPing = document.getElementById('lastPing');
 
-    async function refresh(){
-      try{
-        const j = await jget("/api/alerts");
-        const arr = j.alerts || [];
-        const box = document.getElementById("alerts");
-        if(arr.length===0){
-          box.innerHTML = `<div class="small">Nenhum alerta ainda.</div>`;
-          lastTopId = null;
-          return;
+  let lastCount = 0;
+  let lastHash = '';
+
+  function hashAlert(a){
+    return (a.ts||'')+'|'+(a.occurrence||'')+'|'+(a.driver_name||'')+'|'+(a.lat||'')+'|'+(a.lng||'');
+  }
+
+  function render(alerts){
+    alertsBox.innerHTML = '';
+    const reversed = [...alerts].slice().reverse();
+    reversed.forEach(a=>{
+      const div = document.createElement('div');
+      div.className = 'alert';
+      const coords = (a.lat!=null && a.lng!=null) ? `${a.lat}, ${a.lng} (±${a.accuracy||0}m)` : 'Sem localização';
+      const maps = (a.lat!=null && a.lng!=null) ? `https://maps.google.com/?q=${a.lat},${a.lng}` : null;
+      div.innerHTML = `
+        <div class="big">🚨 ${a.occurrence || 'Alerta'}</div>
+        <div class="meta">👤 Motorista: <strong>${(a.driver_name||'—')}</strong></div>
+        <div class="meta">🕒 ${a.ts || ''}</div>
+        <div class="meta">📍 ${coords} ${maps ? `• <a target="_blank" rel="noopener" href="${maps}">Abrir no Maps</a>`:''}</div>
+      `;
+      alertsBox.appendChild(div);
+    });
+  }
+
+  async function poll(){
+    try{
+      const r = await fetch('/api/alerts', {cache:'no-store'});
+      const j = await r.json();
+      const alerts = j.alerts || [];
+      lastPing.textContent = 'Última atualização: ' + new Date().toLocaleString();
+
+      // detect new
+      if (alerts.length > lastCount){
+        const last = alerts[alerts.length-1];
+        const h = hashAlert(last);
+        if (h !== lastHash){
+          lastHash = h;
+          // try play siren
+          try{
+            siren.currentTime = 0;
+            await siren.play();
+          }catch(e){
+            // some browsers require user interaction; show hint
+            console.log('Siren blocked:', e);
+          }
         }
-        box.innerHTML = arr.map(fmt).join("");
-        const topId = arr[0].id;
-        if(lastTopId && topId !== lastTopId){
-          playSirene();
-          toast("🚨 Novo alerta!");
-        }
-        if(!lastTopId) lastTopId = topId;
-        else lastTopId = topId;
-      }catch(e){
-        // ignore occasional failures
       }
+      lastCount = alerts.length;
+      render(alerts);
+    }catch(e){
+      lastPing.textContent = 'Erro ao atualizar: ' + e;
     }
+  }
 
-    function playSirene(){
-      const a = document.getElementById("sireneAudio");
-      a.currentTime = 0;
-      a.play().catch(()=>{});
-    }
+  poll();
+  setInterval(poll, 2000);
 
-    async function clearAlerts(){
-      try{
-        await jpost("/api/alerts/clear", {});
-        toast("Alertas limpos");
-        lastTopId = null;
-        refresh();
-      }catch(e){
-        toast("Falha ao limpar");
-      }
-    }
+  document.getElementById('btnFull').addEventListener('click', ()=>{
+    const el = document.documentElement;
+    if (!document.fullscreenElement) el.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  });
+  document.getElementById('btnReload').addEventListener('click', ()=>location.reload());
+  document.getElementById('btnExit').addEventListener('click', ()=>location.href='/');
+  document.getElementById('btnClear').addEventListener('click', async ()=>{
+    if (!confirm('Limpar todos os alertas?')) return;
+    await fetch('/api/alerts', {method:'DELETE'});
+    lastCount = 0; lastHash = '';
+    await poll();
+  });
 
-    refresh();
-    setInterval(refresh, 3000);
-  </script>
+  // first user interaction unlock audio on mobile
+  document.addEventListener('click', async ()=>{
+    try{ await siren.play(); siren.pause(); siren.currentTime=0; }catch(e){}
+  }, {once:true});
+</script>
 </body>
 </html>

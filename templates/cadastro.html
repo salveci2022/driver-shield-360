@@ -1,6 +1,112 @@
-<!doctype html><html lang="pt-BR"><head>
-<link rel="manifest" href="/static/manifest.json">
-  <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
-  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-  <meta name="theme-color" content="#0a0014">
-<meta charset="utf-8"><title>Cadastro - Driver Shield 360</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body><div class="container"><div class="card"><div class="header"><div class="title">👥 Cadastro de Pessoas de Confiança (máx. 3)</div><div class="row"><button class="btn small" onclick="goFull()">⛶ Tela cheia</button><button class="btn small" onclick="location.reload()">Reiniciar</button><a class="btn small" href="/">Sair</a></div></div>{% with messages = get_flashed_messages(with_categories=true) %}{% for cat, msg in messages %}<div class="flash {{cat}}">{{ msg }}</div>{% endfor %}{% endwith %}<div class="grid"><div class="card"><div class="title" style="font-size:18px">Adicionar contato</div><form method="post"><input type="hidden" name="acao" value="add"><label>Nome</label><input class="input" name="nome" placeholder="Ex: Maria" required><label>Telefone (WhatsApp)</label><input class="input" name="telefone" placeholder="Ex: (61) 99999-9999" required><div style="margin-top:14px"><button class="btn hot" type="submit">Cadastrar</button></div><div class="notice" style="margin-top:10px">Limite: 3 pessoas. Para cadastrar outra, apague uma.</div></form></div><div class="card"><div class="title" style="font-size:18px">Cadastrados</div>{% if contacts and contacts|length > 0 %}<table class="table"><thead><tr><th>Nome</th><th>Telefone</th><th>Ação</th></tr></thead><tbody>{% for c in contacts %}<tr><td><b>{{c.nome}}</b></td><td>{{c.telefone}}</td><td><form method="post" style="margin:0"><input type="hidden" name="acao" value="delete"><input type="hidden" name="idx" value="{{ loop.index0 }}"><button class="btn small danger" type="submit">Apagar</button></form></td></tr>{% endfor %}</tbody></table>{% else %}<div class="notice">Nenhum contato cadastrado ainda.</div>{% endif %}</div></div></div></div></div><script>function goFull(){const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();}</script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Cadastro | {{ app_name }}</title>
+  <link rel="icon" href="/static/icons/icon-192x192.png">
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:900px){.row{grid-template-columns:1fr}}
+    .mini{opacity:.85}
+    .tag{display:inline-flex;gap:.5rem;align-items:center;padding:.35rem .7rem;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+    .list{margin:8px 0 0 18px}
+    .list li{margin:6px 0}
+  </style>
+</head>
+<body class="aurora-bg">
+  <div class="wrap">
+    <header class="topbar">
+      <div>
+        <h1>👥 Cadastro de Pessoas de Confiança</h1>
+        <p class="mini">Limite de {{ max_contacts }} contatos por sistema (para ficar rápido e seguro).</p>
+      </div>
+      <div class="top-actions">
+        <button class="btn" onclick="location.href='/'">← Voltar</button>
+        <button class="btn" onclick="location.href='/motorista'">Ir para Motorista</button>
+        <button class="btn" onclick="location.href='/painel'">Ir para Painel</button>
+      </div>
+    </header>
+
+    <main class="grid" style="grid-template-columns:1.2fr .8fr">
+      <section class="card">
+        <h2>Adicionar contato</h2>
+
+        <div class="row">
+          <div>
+            <label class="label">Nome</label>
+            <input id="name" placeholder="Ex: Salveci"/>
+          </div>
+          <div>
+            <label class="label">Telefone</label>
+            <input id="phone" placeholder="Ex: 61999999999"/>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-hot" id="btnAdd">Salvar contato</button>
+          <button class="btn btn-danger" id="btnClearContacts">Limpar contatos</button>
+        </div>
+
+        <p class="mini" style="margin-top:10px">Dica: use números (DDD + telefone). Ex.: <strong>61993962090</strong></p>
+      </section>
+
+      <section class="card">
+        <h2>Contatos cadastrados</h2>
+        <div class="tag">📌 Total: <span id="count">{{ contacts|length }}</span> / {{ max_contacts }}</div>
+
+        <ul class="list" id="list">
+          {% for c in contacts %}
+            <li><strong>{{c.name}}</strong> — {{c.phone}}</li>
+          {% endfor %}
+        </ul>
+
+        {% if contacts|length == 0 %}
+          <p class="mini">Nenhum contato cadastrado ainda.</p>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+
+<script>
+  async function refresh(){
+    const r = await fetch('/api/contacts');
+    const j = await r.json();
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+    (j.contacts || []).forEach(c=>{
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${c.name}</strong> — ${c.phone}`;
+      list.appendChild(li);
+    });
+    document.getElementById('count').textContent = (j.contacts||[]).length;
+  }
+
+  document.getElementById('btnAdd').addEventListener('click', async ()=>{
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const r = await fetch('/api/contacts', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name, phone})
+    });
+    const j = await r.json().catch(()=>({}));
+    if (!r.ok) { alert(j.error || 'Erro ao salvar'); return; }
+    document.getElementById('name').value='';
+    document.getElementById('phone').value='';
+    await refresh();
+    alert('Contato salvo!');
+  });
+
+  document.getElementById('btnClearContacts').addEventListener('click', async ()=>{
+    if (!confirm('Tem certeza que deseja apagar todos os contatos?')) return;
+    await fetch('/api/contacts', {method:'DELETE'});
+    await refresh();
+  });
+
+  // PWA
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/service-worker.js').catch(()=>{}); }
+</script>
+</body>
+</html>
