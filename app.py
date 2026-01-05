@@ -2,7 +2,12 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 from datetime import datetime, timezone, timedelta
 import json, os
 
-app = Flask(__name__)
+# Garante que o Flask encontre corretamente /templates e /static em qualquer ambiente (Render, Windows, etc.)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__,
+            template_folder=os.path.join(BASE_DIR, "templates"),
+            static_folder=os.path.join(BASE_DIR, "static"),
+            static_url_path="/static")
 app.secret_key = os.environ.get("SECRET_KEY", "driver-shield-360-secret")
 
 BR_TZ = timezone(timedelta(hours=-3))
