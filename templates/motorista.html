@@ -1,149 +1,184 @@
-
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <title>Painel do Motorista - Driver Shield 360</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Driver Shield 360 • Painel do Motorista</title>
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body class="tela-escura">
-  <header class="topo">
-    <h1>🛡️ Driver Shield 360</h1>
-      <div class="card">
-        <h2>Pessoas de confiança cadastradas ({{ contatos|length }}/{{ max_contatos }})</h2>
-        {% if contatos and contatos|length > 0 %}
-          <ul class="list">
-            {% for c in contatos %}
-              <li><strong>{{ c.nome }}</strong><br><span class="muted">{{ c.email }}</span></li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p class="muted">Nenhuma pessoa de confiança cadastrada ainda. Use o link de cadastro para adicionar até 3.</p>
-        {% endif %}
+<body>
+  <div class="fullscreen">
+    <div class="panel" role="application" aria-label="Painel do Motorista">
+      <div class="header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2l8 4v6c0 5-3.4 9.4-8 10-4.6-.6-8-5-8-10V6l8-4z" stroke="white" stroke-width="2"/>
+              <path d="M8 12h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M10 16h4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="title">
+            <b>Driver Shield 360</b>
+            <span>Painel do Motorista • sem login • sem redirects</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="btn-full">Tela cheia</button>
+          <button class="btn" id="btn-clear">Limpar</button>
+          <button class="btn hot" id="btn-sirene">Tocar Sirene</button>
+        </div>
       </div>
 
-    <p class="subtitulo">Painel do Motorista</p>
-  </header>
+      <div class="content">
+        <div class="card">
+          <h3>Ações rápidas</h3>
+          <div class="grid">
+            <button class="btn hot bigbtn" id="btn-sos">
+              <span>🚨 SOS Emergência<br><small>Disparo rápido</small></span>
+              <span class="tag">1 clique</span>
+            </button>
 
-  <main class="container">
-    <form id="form-panico">
-      <label for="nome_motorista">Seu nome (ou apelido):</label>
-      <input type="text" id="nome_motorista" name="nome_motorista" placeholder="Ex: João Uber">
+            <button class="btn bigbtn" id="btn-local">
+              <span>📍 Atualizar Local<br><small>GPS (browser)</small></span>
+              <span class="tag">GPS</span>
+            </button>
 
-      <h2>Tipo de ocorrência</h2>
-      <p class="texto-explicativo">
-        Toque em uma das opções abaixo antes de apertar o botão de pânico.
-      </p>
+            <button class="btn bigbtn" id="btn-msg">
+              <span>💬 Enviar Mensagem<br><small>Simulação</small></span>
+              <span class="tag">Aviso</span>
+            </button>
 
-      <div class="lista-ocorrencias">
-        <button type="button" class="chip-ocorrencia selecionado" data-ocorrencia="Abordagem suspeita">Abordagem suspeita</button>
-        <button type="button" class="chip-ocorrencia" data-ocorrencia="Tentativa de assalto">Tentativa de assalto</button>
-        <button type="button" class="chip-ocorrencia" data-ocorrencia="Passageiro agressivo">Passageiro agressivo</button>
-        <button type="button" class="chip-ocorrencia" data-ocorrencia="Conflito com outro veículo">Conflito com outro veículo</button>
-        <button type="button" class="chip-ocorrencia" data-ocorrencia="Emergência de saúde">Emergência de saúde</button>
-        <button type="button" class="chip-ocorrencia" data-ocorrencia="Outro risco">Outro risco</button>
+            <button class="btn bigbtn" id="btn-stop">
+              <span>🛑 Parar Sirene<br><small>Silenciar</small></span>
+              <span class="tag">STOP</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="rightcol">
+          <div class="card">
+            <h3>Status</h3>
+            <div class="kpis">
+              <div class="kpi"><b id="k1">OK</b><span>Servidor</span></div>
+              <div class="kpi"><b id="k2">—</b><span>Local</span></div>
+              <div class="kpi"><b id="k3">0</b><span>Eventos</span></div>
+            </div>
+          </div>
+
+          <div class="card contacts">
+            <h3>Pessoas de confiança (nomes aparecem aqui)</h3>
+            <div class="contact"><div><b id="c1n">—</b><br><span id="c1p">—</span></div><div class="pill">#1</div></div>
+            <div class="contact"><div><b id="c2n">—</b><br><span id="c2p">—</span></div><div class="pill">#2</div></div>
+            <div class="contact"><div><b id="c3n">—</b><br><span id="c3p">—</span></div><div class="pill">#3</div></div>
+          </div>
+
+          <div class="card" style="min-height:0;height:100%;">
+            <h3>Log</h3>
+            <div class="log" id="log" aria-live="polite"></div>
+          </div>
+        </div>
       </div>
 
-      <input type="hidden" id="ocorrencia" name="ocorrencia" value="Abordagem suspeita">
-      <input type="hidden" id="latitude" name="latitude">
-      <input type="hidden" id="longitude" name="longitude">
-
-      <section class="area-botao-panico">
-        <p id="status-localizacao" class="texto-explicativo">Tentando obter localização atual...</p>
-        <button id="botao-panico" type="submit" class="botao-panico">
-          <span class="icone-sirene">🚨</span><br>
-          BOTÃO DE PÂNICO<br>
-          <small>Toque para enviar alerta</small>
-        </button>
-      </section>
-
-      <div class="acoes-motorista">
-        <button type="button" id="btn-limpar" class="btn btn-secundario">Limpar</button>
-        <a href="{{ url_for('index') }}" class="btn btn-secundario">Sair</a>
+      <div class="footer">
+        <div>✅ Rotas: / e /motorista</div>
+        <div id="clock">—</div>
       </div>
-    </form>
+    </div>
+  </div>
 
-    <p class="aviso-rodape">
-      * Em situação real de risco grave, ligue imediatamente <strong>190</strong> ou atendimento de emergência da sua região.<br>
-      Este sistema é um apoio extra de proteção e registro técnico.
-    </p>
-  </main>
+  <audio id="sirene" src="/static/sirene.mp3" preload="auto"></audio>
 
   <script>
-    // seleção de ocorrência visual
-    document.querySelectorAll('.chip-ocorrencia').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.chip-ocorrencia').forEach(function(b) {
-          b.classList.remove('selecionado');
-        });
-        btn.classList.add('selecionado');
-        document.getElementById('ocorrencia').value = btn.dataset.ocorrencia;
-      });
-    });
+    const logEl = document.getElementById('log');
+    const sirene = document.getElementById('sirene');
+    const k2 = document.getElementById('k2');
+    const k3 = document.getElementById('k3');
+    let events = 0;
 
-    // obter localização
-    function atualizarStatus(msg) {
-      document.getElementById('status-localizacao').textContent = msg;
+    function addLog(msg){
+      events++;
+      k3.textContent = String(events);
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.textContent = `[${new Date().toLocaleTimeString('pt-BR')}] ${msg}`;
+      logEl.prepend(row);
     }
 
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(function(pos) {
-        document.getElementById('latitude').value = pos.coords.latitude.toFixed(6);
-        document.getElementById('longitude').value = pos.coords.longitude.toFixed(6);
-        atualizarStatus('Localização capturada com sucesso.');
-      }, function(err) {
-        atualizarStatus('Não foi possível obter a localização automática. Você ainda pode enviar o alerta.');
-      });
-    } else {
-      atualizarStatus('Seu navegador não suporta geolocalização. Você ainda pode enviar o alerta.');
+    function setClock(){
+      document.getElementById('clock').textContent = new Date().toLocaleString('pt-BR');
     }
+    setClock();
+    setInterval(setClock, 1000);
 
-    // envio do formulário (botão de pânico)
-    document.getElementById('form-panico').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const btn = document.getElementById('botao-panico');
-      btn.disabled = true;
-      btn.classList.add('ativo');
+    function loadContacts(){
+      const data = JSON.parse(localStorage.getItem('trusted_contacts') || '[]');
+      const def = [{n:'—',p:'—'},{n:'—',p:'—'},{n:'—',p:'—'}];
+      for(let i=0;i<3;i++){
+        const item = data[i] || def[i];
+        document.getElementById(`c${i+1}n`).textContent = item.n || '—';
+        document.getElementById(`c${i+1}p`).textContent = item.p || '—';
+      }
+    }
+    loadContacts();
 
-      const payload = {
-        nome_motorista: document.getElementById('nome_motorista').value,
-        ocorrencia: document.getElementById('ocorrencia').value,
-        latitude: document.getElementById('latitude').value,
-        longitude: document.getElementById('longitude').value
-      };
-
-      try {
-        const resp = await fetch('{{ url_for("api_panico") }}', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await resp.json();
-        alert('🚨 Alerta enviado com sucesso!');
-      } catch (err) {
-        alert('Erro ao enviar alerta. Verifique sua conexão.');
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove('ativo');
+    document.getElementById('btn-full').addEventListener('click', async ()=>{
+      try{
+        const el = document.documentElement;
+        if (!document.fullscreenElement) await el.requestFullscreen();
+        else await document.exitFullscreen();
+      }catch(e){
+        addLog('Tela cheia não disponível neste navegador.');
       }
     });
 
-    // limpar campos
-    document.getElementById('btn-limpar').addEventListener('click', function() {
-      document.getElementById('nome_motorista').value = '';
-      document.getElementById('latitude').value = '';
-      document.getElementById('longitude').value = '';
-      atualizarStatus('Campos limpos. Tentando obter localização novamente...');
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(function(pos) {
-          document.getElementById('latitude').value = pos.coords.latitude.toFixed(6);
-          document.getElementById('longitude').value = pos.coords.longitude.toFixed(6);
-          atualizarStatus('Localização capturada com sucesso.');
-        }, function(err) {
-          atualizarStatus('Não foi possível obter a localização automática.');
-        });
+    document.getElementById('btn-clear').addEventListener('click', ()=>{
+      logEl.innerHTML = '';
+      events = 0;
+      k3.textContent = '0';
+      addLog('Log limpo.');
+    });
+
+    document.getElementById('btn-sirene').addEventListener('click', async ()=>{
+      try{
+        sirene.currentTime = 0;
+        await sirene.play();
+        addLog('Sirene tocando.');
+      }catch(e){
+        addLog('Navegador bloqueou áudio. Clique novamente para permitir.');
       }
     });
+
+    document.getElementById('btn-stop').addEventListener('click', ()=>{
+      sirene.pause();
+      sirene.currentTime = 0;
+      addLog('Sirene parada.');
+    });
+
+    document.getElementById('btn-sos').addEventListener('click', ()=>{
+      addLog('🚨 SOS acionado (simulação).');
+    });
+
+    document.getElementById('btn-msg').addEventListener('click', ()=>{
+      addLog('💬 Mensagem enviada (simulação).');
+    });
+
+    document.getElementById('btn-local').addEventListener('click', ()=>{
+      if (!navigator.geolocation){
+        addLog('Geolocalização não suportada.');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition((pos)=>{
+        const {latitude, longitude} = pos.coords;
+        k2.textContent = latitude.toFixed(5)+', '+longitude.toFixed(5);
+        addLog(`📍 Local atualizado: ${k2.textContent}`);
+      }, ()=>{
+        addLog('Permissão de localização negada.');
+      }, {enableHighAccuracy:true, timeout:8000});
+    });
+
+    addLog('Painel carregado com sucesso.');
   </script>
 </body>
 </html>
