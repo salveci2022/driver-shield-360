@@ -1,16 +1,220 @@
-<!doctype html><html lang="pt-BR"><head>
-<link rel="manifest" href="/static/manifest.json">
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <link rel="manifest" href="/static/manifest.json">
   <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0014">
-<meta charset="utf-8"><title>Pessoa de Confiança - Driver Shield 360</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body><div class="container"><div class="card"><div class="header"><div class="title">🧑‍🤝‍🧑 Painel da Pessoa de Confiança</div><div class="row"><button class="btn small" onclick="goFull()">⛶ Tela cheia</button><button class="btn small" onclick="location.reload()">Reiniciar</button><button class="btn small danger" onclick="limpar()">Limpar</button><button class="btn small danger" onclick="toggleSirene()">🔊 Sirene</button><a class="btn small" href="{{ url_for('pessoa_sair') }}">Sair</a></div></div><div class="notice">Este painel é <b>aberto</b> (sem senha). Para o som da sirene funcionar no celular, toque no botão “Sirene” uma vez para liberar o áudio.</div><hr><div class="grid"><div class="card"><div class="title" style="font-size:18px">Último alerta</div><div id="ultimo" class="notice">Aguardando alerta…</div><hr><div class="title" style="font-size:18px">Mapa</div><iframe id="mapa" class="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="card"><div class="title" style="font-size:18px">Lista de alertas</div><div id="lista" class="notice">—</div></div></div><audio id="sireneAudio" preload="auto" loop><source src="{{ url_for('static', filename='sirene.mp3') }}" type="audio/mpeg"></audio></div></div><script>
-function goFull(){const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();}
-let sireneOn=false;function toggleSirene(){const audio=document.getElementById('sireneAudio');if(!sireneOn){audio.volume=1.0;audio.play().then(()=>{sireneOn=true;}).catch(()=>{alert('O Chrome bloqueou o áudio. Clique novamente no botão Sirene.');});}else{audio.pause();audio.currentTime=0;sireneOn=false;}}
-let lastCount=0;
-function setMapa(lat,lng){const iframe=document.getElementById('mapa');if(!lat||!lng){iframe.srcdoc="<div style='padding:14px;color:#cdb7e6;font-family:system-ui'>Sem localização neste alerta.</div>";return;}iframe.src=`https://www.google.com/maps?q=${lat},${lng}&z=16&output=embed`;}
-function renderAlert(a){const el=document.getElementById('ultimo');const lat=a.lat,lng=a.lng;el.innerHTML=`<div><b>Horário:</b> ${a.ts}</div><div><b>Motorista:</b> ${a.motorista}</div><div><b>Ocorrência:</b> ${a.ocorrencia}</div><div><b>Local:</b> ${lat&&lng?lat+", "+lng:"—"}</div>`;setMapa(lat,lng);} 
-function renderLista(alerts){const box=document.getElementById('lista');if(!alerts.length){box.textContent='Nenhum alerta ainda.';return;}box.innerHTML=alerts.slice().reverse().map(a=>`<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.10)"><div><b>${a.ts}</b> — ${a.ocorrencia}</div><div style="color:#cdb7e6">Motorista: ${a.motorista}</div></div>`).join('');}
-async function poll(){const res=await fetch('/api/alerts',{cache:'no-store'});const alerts=await res.json();renderLista(alerts);if(alerts.length)renderAlert(alerts[alerts.length-1]);lastCount=alerts.length;}
-poll();setInterval(poll,3000);
-async function limpar(){if(!confirm('Limpar todos os alertas?'))return;const res=await fetch('/api/clear_alerts',{method:'POST'});const j=await res.json();if(j.ok){lastCount=0;alert('Alertas limpos!');location.reload();}else{alert('Falha ao limpar.');}}
-</script></body></html>
+  <meta charset="utf-8">
+  <title>Pessoa de Confiança - Driver Shield 360</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div class="title">🧑‍🤝‍🧑 Painel da Pessoa de Confiança</div>
+        <div class="row">
+          <button class="btn small" onclick="goFull()">⛶ Tela cheia</button>
+          <button class="btn small" onclick="location.reload()">🔄 Atualizar</button>
+          <button class="btn small danger" onclick="limpar()">🧹 Limpar</button>
+          <button class="btn small danger" onclick="toggleSirene()">🔊 Sirene</button>
+          <a class="btn small" href="{{ url_for('pessoa_sair') }}">Sair</a>
+        </div>
+      </div>
+
+      <div class="notice" id="audioHint">
+        Este painel é <b>aberto</b> (sem senha).
+        Para o som funcionar no celular, toque em <b>Sirene</b> 1 vez para liberar o áudio.
+        Depois disso, quando chegar um novo alerta a sirene pode tocar automaticamente.
+      </div>
+
+      <hr>
+
+      <div class="grid">
+        <div class="card">
+          <div class="title" style="font-size:18px">Último alerta</div>
+          <div id="ultimo" class="notice">Aguardando alerta…</div>
+
+          <hr>
+
+          <div class="title" style="font-size:18px">Mapa</div>
+          <iframe id="mapa" class="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+          <div id="mapLinkWrap" style="margin-top:10px; display:none">
+            <a id="mapLink" class="btn small" target="_blank">🗺️ Abrir no Google Maps</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="title" style="font-size:18px">Lista de alertas</div>
+          <div id="lista" class="notice">—</div>
+        </div>
+      </div>
+
+      <audio id="sireneAudio" preload="auto" loop>
+        <source src="{{ url_for('static', filename='sirene.mp3') }}" type="audio/mpeg">
+      </audio>
+    </div>
+  </div>
+
+  <script>
+    function goFull(){
+      const el=document.documentElement;
+      if(el.requestFullscreen) el.requestFullscreen();
+    }
+
+    // Sirene: precisa de interação do usuário pelo menos 1x no celular.
+    let sireneOn=false;
+    let audioLiberado=false;
+
+    function _playSirene(){
+      const audio=document.getElementById('sireneAudio');
+      audio.volume=1.0;
+      return audio.play().then(()=>{
+        sireneOn=true;
+      }).catch(()=>{
+        // Se não liberar áudio, pede novamente.
+        document.getElementById('audioHint').innerHTML =
+          '⚠️ O navegador bloqueou o áudio. Toque no botão <b>Sirene</b> uma vez para liberar.';
+        throw new Error('Audio bloqueado');
+      });
+    }
+
+    function _stopSirene(){
+      const audio=document.getElementById('sireneAudio');
+      audio.pause();
+      audio.currentTime=0;
+      sireneOn=false;
+    }
+
+    function toggleSirene(){
+      const audio=document.getElementById('sireneAudio');
+      if(!audioLiberado){
+        // Primeiro toque: libera áudio (e já toca 1x como teste)
+        _playSirene().then(()=>{
+          audioLiberado=true;
+          // Para não ficar tocando sem necessidade, já desliga e deixa pronto pro automático.
+          setTimeout(()=>{ _stopSirene(); }, 1200);
+          document.getElementById('audioHint').innerHTML =
+            '✅ Áudio liberado. A sirene poderá tocar automaticamente quando chegar um novo alerta.';
+        }).catch(()=>{});
+        return;
+      }
+
+      // Depois de liberado: vira liga/desliga manual
+      if(!sireneOn){
+        _playSirene().catch(()=>{});
+      } else {
+        _stopSirene();
+      }
+    }
+
+    let lastCount = -1; // força comparar no primeiro poll
+
+    function setMapa(lat,lng){
+      const iframe=document.getElementById('mapa');
+      const linkWrap=document.getElementById('mapLinkWrap');
+      const link=document.getElementById('mapLink');
+
+      if(lat==null || lng==null || lat==="" || lng===""){
+        iframe.srcdoc="<div style='padding:14px;color:#cdb7e6;font-family:system-ui'>Sem localização neste alerta.</div>";
+        linkWrap.style.display="none";
+        return;
+      }
+
+      iframe.src=`https://www.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
+      link.href=`https://www.google.com/maps?q=${lat},${lng}&z=16`;
+      linkWrap.style.display="block";
+    }
+
+    function renderAlert(a){
+      const el=document.getElementById('ultimo');
+      const lat=a.lat, lng=a.lng;
+
+      const localTxt = (lat!=null && lng!=null && lat!=="" && lng!=="") ? (lat + ", " + lng) : "—";
+      el.innerHTML = `
+        <div><b>Horário:</b> ${a.ts}</div>
+        <div><b>Motorista:</b> ${a.motorista}</div>
+        <div><b>Ocorrência:</b> ${a.ocorrencia}</div>
+        <div><b>Local:</b> ${localTxt}</div>
+      `;
+
+      setMapa(lat,lng);
+      document.title = `ALERTA - ${a.ocorrencia}`;
+    }
+
+    function renderLista(alerts){
+      const box=document.getElementById('lista');
+      if(!alerts.length){
+        box.textContent='Nenhum alerta ainda.';
+        return;
+      }
+      box.innerHTML = alerts.slice().reverse().map(a=>`
+        <div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.10)">
+          <div><b>${a.ts}</b> — ${a.ocorrencia}</div>
+          <div style="color:#cdb7e6">Motorista: ${a.motorista}</div>
+        </div>
+      `).join('');
+    }
+
+    async function poll(){
+      try{
+        const res=await fetch('/api/alerts',{cache:'no-store'});
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+
+        const alerts=await res.json();
+        renderLista(alerts);
+
+        if(alerts.length){
+          renderAlert(alerts[alerts.length-1]);
+        } else {
+          document.title = 'Pessoa de Confiança - Driver Shield 360';
+        }
+
+        // Auto-sirene: toca quando chegar novo alerta (se áudio já liberado)
+        if(lastCount !== -1 && alerts.length > lastCount){
+          if(audioLiberado){
+            _playSirene().catch(()=>{});
+          } else {
+            document.getElementById('audioHint').innerHTML =
+              '🚨 Chegou um alerta! Toque em <b>Sirene</b> para liberar o áudio e atender mais rápido.';
+          }
+        }
+
+        lastCount = alerts.length;
+      }catch(e){
+        // Mostra estado de falha sem travar
+        document.getElementById('ultimo').innerHTML =
+          "<b>⚠️ Falha ao buscar alertas.</b><br>Verifique se o servidor está online no Render e tente atualizar.";
+      }
+    }
+
+    poll();
+    setInterval(poll, 3000);
+
+    async function limpar(){
+      if(!confirm('Limpar todos os alertas?')) return;
+
+      try{
+        const res=await fetch('/api/clear_alerts',{method:'POST'});
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        const j=await res.json();
+
+        if(j.ok){
+          lastCount = 0;
+          _stopSirene();
+          alert('✅ Alertas limpos!');
+          location.reload();
+        } else {
+          alert('❌ Falha ao limpar. Tente novamente.');
+        }
+      }catch(e){
+        alert('❌ Erro ao comunicar com o servidor (Render).');
+      }
+    }
+  </script>
+</body>
+</html>

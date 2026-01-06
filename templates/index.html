@@ -1,6 +1,38 @@
-<!doctype html><html lang="pt-BR"><head>
-<link rel="manifest" href="/static/manifest.json">
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <link rel="manifest" href="/static/manifest.json">
   <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0014">
-<meta charset="utf-8"><title>Driver Shield 360</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body><div class="container"><div class="card"><div class="header"><div class="title">Driver Shield 360</div><div class="badge">✅ Sistema rodando</div></div><div class="grid"><a class="btn hot" href="{{ url_for('motorista') }}">🚕 Painel do Motorista</a><a class="btn" href="{{ url_for('cadastro') }}">👥 Cadastro (até 3)</a><a class="btn" href="{{ url_for('painel') }}">🧑‍🤝‍🧑 Painel Pessoa de Confiança</a><a class="btn" href="{{ url_for('relatorio') }}">📊 Relatório</a></div><hr><div class="notice">Dica: no celular, use “Adicionar à tela inicial” para criar um atalho.</div></div></div></body></html>
+  <meta charset="utf-8">
+  <title>Driver Shield 360</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div class="title">Driver Shield 360</div>
+        <div class="badge">✅ Sistema rodando</div>
+      </div>
+
+      <div class="grid">
+        <a class="btn hot" href="{{ url_for('motorista') }}">🚕 Painel do Motorista</a>
+        <a class="btn" href="{{ url_for('cadastro') }}">👥 Cadastro (até 3)</a>
+        <a class="btn" href="{{ url_for('painel') }}">🧑‍🤝‍🧑 Pessoa de Confiança</a>
+        <a class="btn" href="{{ url_for('relatorio') }}">📊 Relatório</a>
+      </div>
+
+      <hr>
+
+      <div class="notice">
+        Dica: no celular, use <b>Adicionar à tela inicial</b> para criar um atalho (PWA).
+        <br>Importante: a <b>sirene</b> toca somente no painel da <b>Pessoa de Confiança</b>.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

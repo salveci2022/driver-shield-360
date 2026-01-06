@@ -5,6 +5,7 @@ import json, os
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "driver-shield-360-secret")
 
+# Horário Brasil (Brasília)
 BR_TZ = timezone(timedelta(hours=-3))
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -55,8 +56,10 @@ def motorista():
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
     contacts = load_contacts()
+
     if request.method == "POST":
         acao = request.form.get("acao", "add")
+
         if acao == "delete":
             idx = request.form.get("idx")
             try:
@@ -98,7 +101,7 @@ def painel():
 
 @app.route("/login")
 def login():
-    # Atalho sem redirecionamento (evita loop)
+    # Mantém compatibilidade com links antigos
     return render_template("painel.html", modo_aberto=True)
 
 @app.route("/pessoa_sair")
@@ -118,6 +121,7 @@ def api_contacts():
 @app.route("/api/panic", methods=["POST"])
 def api_panic():
     data = request.get_json(force=True, silent=True) or {}
+
     lat = data.get("lat")
     lng = data.get("lng")
     ocorrencia = (data.get("ocorrencia") or "Emergência").strip()
@@ -132,6 +136,7 @@ def api_panic():
         "lng": lng,
     })
     save_alerts(alerts)
+
     return jsonify({"ok": True})
 
 @app.route("/api/alerts")
