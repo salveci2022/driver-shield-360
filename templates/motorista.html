@@ -9,6 +9,32 @@
   <title>Motorista - Driver Shield 360</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    /* Estilos adicionais para os botões de ocorrência */
+    .ocorrencia-btn.active {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
+      opacity: 1 !important;
+    }
+    
+    .ocorrencia-btn:hover {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+    
+    .ocorrencia-btn {
+      transition: all 0.3s;
+      font-size: 14px;
+      text-align: left;
+    }
+    
+    @media (max-width: 480px) {
+      .ocorrencia-btn {
+        font-size: 12px;
+        padding: 10px !important;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -25,10 +51,10 @@
 
       <div class="grid">
         <div class="card">
-          <div class="title" style="font-size:18px">Tipo de ocorrência</div>
-
-          <label>Selecione</label>
-          <select id="ocorrencia" class="input">
+          <div class="title" style="font-size:18px">🚨 Tipo de ocorrência</div>
+          
+          <!-- Select original oculto (mantido para compatibilidade) -->
+          <select id="ocorrencia" class="input" style="display: none;">
             <option value="Abordagem suspeita">Abordagem suspeita</option>
             <option value="Tentativa de assalto">Tentativa de assalto</option>
             <option value="Ameaça / intimidação">Ameaça / intimidação</option>
@@ -37,6 +63,31 @@
             <option value="Emergência médica">Emergência médica</option>
             <option value="Outro">Outro</option>
           </select>
+
+          <!-- Botões visíveis de ocorrência -->
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px;">
+            <button type="button" class="ocorrencia-btn active" data-value="Abordagem suspeita" style="background: #4a6fa5; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+              🚶 Abordagem suspeita
+            </button>
+            <button type="button" class="ocorrencia-btn" data-value="Tentativa de assalto" style="background: #c44536; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+              🔫 Tentativa de assalto
+            </button>
+            <button type="button" class="ocorrencia-btn" data-value="Ameaça / intimidação" style="background: #c44536; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+              😠 Ameaça / intimidação
+            </button>
+            <button type="button" class="ocorrencia-btn" data-value="Passageiro agressivo" style="background: #c44536; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+              👤 Passageiro agressivo
+            </button>
+            <button type="button" class="ocorrencia-btn" data-value="Seguimento / perseguição" style="background: #4a6fa5; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+              🚗 Seguimento / perseguição
+            </button>
+            <button type="button" class="ocorrencia-btn" data-value="Emergência médica" style="background: #2a9d8f; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+              🏥 Emergência médica
+            </button>
+            <button type="button" class="ocorrencia-btn" data-value="Outro" style="background: #6c757d; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; grid-column: span 2;">
+              ❓ Outro (especificar)
+            </button>
+          </div>
 
           <label>Seu nome (opcional)</label>
           <input id="motoristaNome" class="input" placeholder="Ex: João (Uber)">
@@ -169,6 +220,36 @@
         btn.textContent = 'SOS';
       }, 6000);
     }
+
+    // NOVO CÓDIGO: Sincronizar botões com o select original
+    document.querySelectorAll('.ocorrencia-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Remove active de todos
+        document.querySelectorAll('.ocorrencia-btn').forEach(b => {
+          b.classList.remove('active');
+          b.style.opacity = '0.8';
+        });
+        
+        // Ativa o clicado
+        this.classList.add('active');
+        this.style.opacity = '1';
+        
+        // Atualiza o select original
+        const select = document.getElementById('ocorrencia');
+        select.value = this.dataset.value;
+        
+        // Dispara evento de change (caso alguém esteja ouvindo)
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+
+    // Garantir que o primeiro botão esteja ativo ao carregar
+    window.addEventListener('load', function() {
+      const primeiroBotao = document.querySelector('.ocorrencia-btn');
+      if (primeiroBotao) {
+        primeiroBotao.click();
+      }
+    });
   </script>
 </body>
 </html>
