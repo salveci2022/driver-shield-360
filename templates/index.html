@@ -1,38 +1,62 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <link rel="manifest" href="/static/manifest.json">
-  <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
-  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-  <meta name="theme-color" content="#0a0014">
   <meta charset="utf-8">
-  <title>Driver Shield 360</title>
+  <title>Driver Shield 360 Premium</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="theme-color" content="#060d1a">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#060d1a;color:#fff;font-family:Arial,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .container{max-width:480px;width:100%}
+    .logo{text-align:center;margin-bottom:32px}
+    .logo h1{font-size:28px;font-weight:900;color:#fff;letter-spacing:1px}
+    .logo span{color:#00aaff}
+    .logo .sub{font-size:13px;color:#667;margin-top:4px}
+    .shield{font-size:64px;margin-bottom:8px}
+    .card{background:#0d1a2e;border:1px solid #1a2a3a;border-radius:16px;padding:24px;margin-bottom:16px}
+    .btn{display:block;width:100%;padding:16px;border-radius:12px;border:none;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;margin-bottom:12px;transition:all .2s}
+    .btn-sos{background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;font-size:20px;padding:20px;border-radius:16px;letter-spacing:1px}
+    .btn-blue{background:#00aaff22;color:#00aaff;border:1px solid #00aaff55}
+    .btn-green{background:#00e67622;color:#00e676;border:1px solid #00e67655}
+    .btn-ia{background:#a45cff22;color:#a45cff;border:1px solid #a45cff55;font-weight:700}
+    .btn-gray{background:#1a2a3a;color:#aaa;border:1px solid #2a3a4a}
+    .btn:hover{opacity:.85;transform:scale(.98)}
+    .badge{display:inline-block;background:#00e67622;color:#00e676;border:1px solid #00e67655;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:16px}
+    .divider{border:none;border-top:1px solid #1a2a3a;margin:16px 0}
+    .notice{font-size:12px;color:#556;text-align:center;line-height:1.6;margin-top:8px}
+    .version{text-align:center;font-size:11px;color:#334;margin-top:24px}
+    .top-bar{height:4px;background:linear-gradient(90deg,#00aaff,#00e676);border-radius:16px 16px 0 0;margin:-24px -24px 20px -24px}
+  </style>
 </head>
-
 <body>
   <div class="container">
+    <div class="logo">
+      <div class="shield">🛡️</div>
+      <h1>DRIVER<span>SHIELD</span>360</h1>
+      <div class="sub">Sistema de Segurança Premium para Motoristas</div>
+    </div>
+
     <div class="card">
-      <div class="header">
-        <div class="title">Driver Shield 360</div>
-        <div class="badge">✅ Sistema rodando</div>
+      <div class="top-bar"></div>
+      <div style="text-align:center;margin-bottom:20px">
+        <div class="badge">✅ Sistema ativo e protegendo</div>
       </div>
 
-      <div class="grid">
-        <a class="btn hot" href="{{ url_for('motorista') }}">🚕 Painel do Motorista</a>
-        <a class="btn" href="{{ url_for('cadastro') }}">👥 Cadastro (até 3)</a>
-        <a class="btn" href="{{ url_for('painel') }}">🧑‍🤝‍🧑 Pessoa de Confiança</a>
-        <a class="btn" href="{{ url_for('relatorio') }}">📊 Relatório</a>
-      </div>
+      <a class="btn btn-sos" href="/motorista">🚨 PAINEL DO MOTORISTA</a>
+      <a class="btn btn-blue" href="/cadastro">👥 Cadastrar Contatos de Confiança</a>
+      <a class="btn btn-green" href="/painel/login">🧑‍🤝‍🧑 Painel da Pessoa de Confiança</a>
+      <a class="btn btn-ia" href="/ia">🤖 IA de Segurança — SHIELD AI</a>
+      <a class="btn btn-gray" href="/relatorio">📊 Relatório de Ocorrências</a>
 
-      <hr>
-
+      <hr class="divider">
       <div class="notice">
-        Dica: no celular, use <b>Adicionar à tela inicial</b> para criar um atalho (PWA).
-        <br>Importante: a <b>sirene</b> toca somente no painel da <b>Pessoa de Confiança</b>.
+        💡 Dica: no celular, use <b>Adicionar à tela inicial</b> para acesso rápido.<br>
+        A sirene toca no painel da Pessoa de Confiança quando um alerta chegar.
       </div>
     </div>
+
+    <div class="version">DRIVER-SHIELD-360 PREMIUM • Brasília-DF • 2026</div>
   </div>
 </body>
 </html>

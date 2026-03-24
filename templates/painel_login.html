@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Login - Driver Shield 360</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#060d1a">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#060d1a;color:#fff;font-family:Arial,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .card{background:#0d1a2e;border:1px solid #1a2a3a;border-radius:20px;padding:32px;max-width:400px;width:100%;text-align:center}
+    .top-bar{height:4px;background:linear-gradient(90deg,#00aaff,#00e676);border-radius:20px 20px 0 0;margin:-32px -32px 28px -32px}
+    .icon{font-size:56px;margin-bottom:12px}
+    h1{font-size:22px;font-weight:900;margin-bottom:4px}
+    .sub{font-size:13px;color:#667;margin-bottom:24px}
+    .input{width:100%;padding:14px;background:#1a2a3a;border:1px solid #2a3a4a;border-radius:12px;color:#fff;font-size:16px;margin-bottom:16px;text-align:center;letter-spacing:2px}
+    .input:focus{outline:none;border-color:#00aaff}
+    .btn{width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,#00aaff,#0077cc);color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s}
+    .btn:hover{opacity:.85}
+    .flash{padding:10px;border-radius:8px;margin-bottom:16px;font-size:13px;background:#6a1a1a;color:#ffaaaa}
+    .back{display:block;margin-top:16px;color:#445;font-size:13px;text-decoration:none}
+    .back:hover{color:#667}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="top-bar"></div>
+    <div class="icon">🧑‍🤝‍🧑</div>
+    <h1>Painel de Confiança</h1>
+    <div class="sub">Driver Shield 360 — Acesso restrito</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash">⚠️ {{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post">
+      <input class="input" type="password" name="senha" placeholder="••••••••" autofocus required>
+      <button class="btn" type="submit">🔐 Entrar</button>
+    </form>
+
+    <a class="back" href="/">← Voltar ao início</a>
+  </div>
+</body>
+</html>

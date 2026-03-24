@@ -1,194 +1,150 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <link rel="manifest" href="/static/manifest.json">
-  <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
-  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-  <meta name="theme-color" content="#0a0014">
   <meta charset="utf-8">
   <title>Motorista - Driver Shield 360</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="theme-color" content="#060d1a">
   <style>
-    /* Estilos adicionais para os botões de ocorrência */
-    .ocorrencia-btn.active {
-      transform: scale(1.02);
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
-      opacity: 1 !important;
-    }
-    
-    .ocorrencia-btn:hover {
-      opacity: 0.9;
-      transform: scale(0.98);
-    }
-    
-    .ocorrencia-btn {
-      transition: all 0.3s;
-      font-size: 14px;
-      text-align: left;
-    }
-    
-    @media (max-width: 480px) {
-      .ocorrencia-btn {
-        font-size: 12px;
-        padding: 10px !important;
-      }
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#060d1a;color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding:16px}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:12px 16px;background:#0d1a2e;border-radius:12px;border:1px solid #1a2a3a}
+    .header h1{font-size:18px;font-weight:900;color:#fff}
+    .header a{color:#667;font-size:13px;text-decoration:none;padding:6px 12px;background:#1a2a3a;border-radius:8px}
+    .card{background:#0d1a2e;border:1px solid #1a2a3a;border-radius:16px;padding:20px;margin-bottom:16px}
+    .card-title{font-size:15px;font-weight:700;color:#aaa;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+    .sos-wrap{text-align:center;padding:20px 0}
+    .sos-btn{width:180px;height:180px;border-radius:50%;border:6px solid #c0392b;background:radial-gradient(circle,#c0392b,#7b1c13);color:#fff;font-size:42px;font-weight:900;cursor:pointer;letter-spacing:2px;transition:all .2s;box-shadow:0 0 40px #c0392b66}
+    .sos-btn:active{transform:scale(.93)}
+    .sos-btn.sent{background:radial-gradient(circle,#27ae60,#1a7a40);border-color:#27ae60;box-shadow:0 0 40px #27ae6066}
+    .sos-btn:disabled{opacity:.7;cursor:not-allowed}
+    .status{text-align:center;padding:12px;background:#1a2a3a;border-radius:10px;font-size:14px;color:#aaa;margin-top:12px}
+    .input{width:100%;padding:12px;background:#1a2a3a;border:1px solid #2a3a4a;border-radius:10px;color:#fff;font-size:14px;margin-bottom:12px}
+    .input:focus{outline:none;border-color:#00aaff}
+    .oc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+    .oc-btn{padding:12px 8px;border:2px solid transparent;border-radius:10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center}
+    .oc-btn.active{border-color:#fff;transform:scale(1.03);box-shadow:0 0 12px rgba(255,255,255,.2)}
+    .oc-btn:hover{opacity:.85}
+    .loc-box{background:#1a2a3a;border-radius:10px;padding:12px;font-size:12px;color:#00aaff;margin-top:8px}
+    .contacts-list{margin-top:8px}
+    .contact-item{display:flex;align-items:center;gap:10px;padding:10px;background:#1a2a3a;border-radius:10px;margin-bottom:8px}
+    .contact-icon{font-size:20px}
+    .contact-info{flex:1}
+    .contact-name{font-weight:700;font-size:14px}
+    .contact-tel{font-size:12px;color:#667}
+    .notice{font-size:12px;color:#556;padding:10px;background:#1a2a3a;border-radius:8px;line-height:1.6}
+    .divider{border:none;border-top:1px solid #1a2a3a;margin:16px 0}
+    .top-bar{height:4px;background:linear-gradient(90deg,#c0392b,#e74c3c);border-radius:16px 16px 0 0;margin:-20px -20px 16px -20px}
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <div class="card">
-      <div class="header">
-        <div class="title">🚕 Painel do Motorista</div>
-        <div class="row">
-          <button class="btn small" onclick="goFull()">⛶ Tela cheia</button>
-          <button class="btn small" onclick="location.reload()">🔄 Atualizar</button>
-          <a class="btn small" href="/">Sair</a>
-        </div>
-      </div>
+  <div class="header">
+    <h1>🚕 Painel do Motorista</h1>
+    <a href="/">← Início</a>
+  </div>
 
-      <div class="grid">
-        <div class="card">
-          <div class="title" style="font-size:18px">🚨 Tipo de ocorrência</div>
-          
-          <!-- Select original oculto (mantido para compatibilidade) -->
-          <select id="ocorrencia" class="input" style="display: none;">
-            <option value="Abordagem suspeita">Abordagem suspeita</option>
-            <option value="Tentativa de assalto">Tentativa de assalto</option>
-            <option value="Ameaça / intimidação">Ameaça / intimidação</option>
-            <option value="Passageiro agressivo">Passageiro agressivo</option>
-            <option value="Seguimento / perseguição">Seguimento / perseguição</option>
-            <option value="Emergência médica">Emergência médica</option>
-            <option value="Outro">Outro</option>
-          </select>
-
-          <!-- Botões visíveis de ocorrência -->
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px;">
-            <button type="button" class="ocorrencia-btn active" data-value="Abordagem suspeita" style="background: #4a6fa5; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-              🚶 Abordagem suspeita
-            </button>
-            <button type="button" class="ocorrencia-btn" data-value="Tentativa de assalto" style="background: #c44536; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-              🔫 Tentativa de assalto
-            </button>
-            <button type="button" class="ocorrencia-btn" data-value="Ameaça / intimidação" style="background: #c44536; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-              😠 Ameaça / intimidação
-            </button>
-            <button type="button" class="ocorrencia-btn" data-value="Passageiro agressivo" style="background: #c44536; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-              👤 Passageiro agressivo
-            </button>
-            <button type="button" class="ocorrencia-btn" data-value="Seguimento / perseguição" style="background: #4a6fa5; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-              🚗 Seguimento / perseguição
-            </button>
-            <button type="button" class="ocorrencia-btn" data-value="Emergência médica" style="background: #2a9d8f; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-              🏥 Emergência médica
-            </button>
-            <button type="button" class="ocorrencia-btn" data-value="Outro" style="background: #6c757d; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; grid-column: span 2;">
-              ❓ Outro (especificar)
-            </button>
-          </div>
-
-          <label>Seu nome (opcional)</label>
-          <input id="motoristaNome" class="input" placeholder="Ex: João (Uber)">
-
-          <hr>
-
-          <div class="title" style="font-size:18px">Pessoas de confiança cadastradas</div>
-          {% if contacts and contacts|length > 0 %}
-            <ul>
-              {% for c in contacts %}
-                <li><b>{{ c.nome }}</b> — {{ c.telefone }}</li>
-              {% endfor %}
-            </ul>
-          {% else %}
-            <div class="notice">Nenhuma pessoa cadastrada ainda. Vá em “Cadastro”.</div>
-          {% endif %}
-        </div>
-
-        <div class="card">
-          <div class="title" style="font-size:18px">Botão de Pânico</div>
-
-          <div class="sos-wrap">
-            <button id="sosBtn" class="sos-btn" onclick="enviar()">SOS</button>
-          </div>
-
-          <div id="status" class="notice">
-            Clique em <b>SOS</b> para enviar alerta com localização e ocorrência.
-          </div>
-
-          <hr>
-
-          <div class="title" style="font-size:18px">Localização</div>
-          <div class="notice" id="locTxt">Aguardando localização…</div>
-          <div class="notice" style="margin-top:8px" id="locHint">
-            Dica: se o GPS estiver errado, ative “Alta Precisão” nas configurações do celular.
-          </div>
-        </div>
-      </div>
+  <div class="card">
+    <div class="top-bar" style="background:linear-gradient(90deg,#c0392b,#e74c3c)"></div>
+    <div class="card-title">Botão de Pânico</div>
+    <div class="sos-wrap">
+      <button id="sosBtn" class="sos-btn" onclick="enviar()">SOS</button>
+    </div>
+    <div id="status" class="status">
+      Selecione a ocorrência e pressione <b>SOS</b>
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-title">Tipo de Ocorrência</div>
+    <select id="ocorrencia" style="display:none"></select>
+    <div class="oc-grid">
+      <button class="oc-btn active" data-value="Abordagem suspeita" style="background:#1a3a6a">🚶 Abordagem suspeita</button>
+      <button class="oc-btn" data-value="Tentativa de assalto" style="background:#6a1a1a">🔫 Tentativa de assalto</button>
+      <button class="oc-btn" data-value="Ameaça / intimidação" style="background:#6a1a1a">😠 Ameaça / intimidação</button>
+      <button class="oc-btn" data-value="Passageiro agressivo" style="background:#6a3a1a">👤 Passageiro agressivo</button>
+      <button class="oc-btn" data-value="Seguimento / perseguição" style="background:#1a3a6a">🚗 Perseguição</button>
+      <button class="oc-btn" data-value="Emergência médica" style="background:#1a4a3a">🏥 Emergência médica</button>
+      <button class="oc-btn" data-value="Acidente de trânsito" style="background:#4a3a1a">💥 Acidente de trânsito</button>
+      <button class="oc-btn" data-value="Outro" style="background:#2a2a3a">❓ Outro</button>
+    </div>
+
+    <label style="font-size:13px;color:#aaa;margin-bottom:6px;display:block">Seu nome (opcional)</label>
+    <input id="motoristaNome" class="input" placeholder="Ex: João — Uber">
+
+    <div class="loc-box" id="locTxt">📍 Aguardando localização GPS...</div>
+  </div>
+
+  {% if contacts and contacts|length > 0 %}
+  <div class="card">
+    <div class="card-title">Contatos que serão notificados</div>
+    <div class="contacts-list">
+      {% for c in contacts %}
+      <div class="contact-item">
+        <div class="contact-icon">👤</div>
+        <div class="contact-info">
+          <div class="contact-name">{{ c.nome }}</div>
+          <div class="contact-tel">{{ c.telefone }}</div>
+        </div>
+        <div style="color:#00e676;font-size:12px;font-weight:700">✅ Ativo</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="card">
+    <div class="notice">⚠️ Nenhum contato cadastrado. <a href="/cadastro" style="color:#00aaff">Cadastrar agora →</a></div>
+  </div>
+  {% endif %}
+
   <script>
-    function goFull(){
-      const el=document.documentElement;
-      if(el.requestFullscreen) el.requestFullscreen();
-    }
+    // Ocorrência selecionada
+    let ocorrenciaSelecionada = "Abordagem suspeita";
 
-    // Ocorrência já pré-selecionada
-    document.getElementById("ocorrencia").selectedIndex = 0;
-
-    let lastPos = null;
-    let watchId = null;
-
-    function setLocText(txt){
-      document.getElementById('locTxt').textContent = txt;
-    }
-
-    function startLocation(){
-      if(!navigator.geolocation){
-        setLocText('Geolocalização não disponível neste dispositivo.');
-        return;
-      }
-
-      // watchPosition tende a ficar mais “vivo” no celular do que getCurrentPosition
-      if(watchId != null){
-        try{ navigator.geolocation.clearWatch(watchId); }catch(e){}
-      }
-
-      watchId = navigator.geolocation.watchPosition((pos)=>{
-        lastPos = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy };
-        setLocText(`Lat: ${lastPos.lat.toFixed(6)} | Lng: ${lastPos.lng.toFixed(6)} (precisão: ~${Math.round(lastPos.acc)}m)`);
-      }, (err)=>{
-        setLocText('Permita o acesso à localização no navegador/celular.');
-      }, {
-        enableHighAccuracy: true,
-        timeout: 12000,
-        maximumAge: 0
+    document.querySelectorAll('.oc-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.oc-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        ocorrenciaSelecionada = this.dataset.value;
       });
+    });
+
+    // GPS
+    let lastPos = null;
+    function setLocText(txt){ document.getElementById('locTxt').textContent = '📍 ' + txt; }
+
+    if(navigator.geolocation){
+      navigator.geolocation.watchPosition(
+        pos => {
+          lastPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setLocText(`Lat: ${lastPos.lat.toFixed(6)} | Lng: ${lastPos.lng.toFixed(6)} (precisão: ~${Math.round(pos.coords.accuracy)}m)`);
+        },
+        () => setLocText('Permita acesso à localização nas configurações do navegador.'),
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      );
+    } else {
+      setLocText('Geolocalização não disponível neste dispositivo.');
     }
 
-    startLocation();
-
+    // Enviar SOS
     async function enviar(){
       const btn = document.getElementById('sosBtn');
+      const status = document.getElementById('status');
       btn.disabled = true;
+      status.textContent = '⏳ Enviando alerta...';
 
-      const ocorrencia = document.getElementById('ocorrencia').value;
-      const motorista = (document.getElementById('motoristaNome').value || 'Motorista').trim();
-
-      // Tenta pegar uma posição “mais recente” no momento do SOS
-      await new Promise((resolve)=>{
+      // Tenta posição mais recente
+      await new Promise(resolve => {
         if(!navigator.geolocation){ resolve(); return; }
-        navigator.geolocation.getCurrentPosition((pos)=>{
-          lastPos = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy };
-          resolve();
-        }, ()=>resolve(), { enableHighAccuracy:true, timeout:12000, maximumAge:0 });
+        navigator.geolocation.getCurrentPosition(
+          pos => { lastPos = { lat: pos.coords.latitude, lng: pos.coords.longitude }; resolve(); },
+          () => resolve(),
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
       });
 
       const payload = {
-        motorista,
-        ocorrencia,
+        motorista: (document.getElementById('motoristaNome').value || 'Motorista').trim(),
+        ocorrencia: ocorrenciaSelecionada,
         lat: lastPos ? lastPos.lat : null,
         lng: lastPos ? lastPos.lng : null
       };
@@ -199,57 +155,28 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
         const j = await res.json();
 
         if(j.ok){
           btn.classList.add('sent');
-          btn.textContent = 'ENVIADO';
-          document.getElementById('status').textContent = '✅ Alerta enviado com sucesso. Aguarde atendimento.';
-        }else{
-          document.getElementById('status').textContent = '❌ Falha ao enviar alerta.';
+          btn.textContent = '✅';
+          status.innerHTML = '<b style="color:#27ae60">✅ ALERTA ENVIADO! Aguarde atendimento.</b>';
+          // Vibrar o celular
+          if(navigator.vibrate) navigator.vibrate([500, 200, 500]);
+        } else {
+          status.innerHTML = '<b style="color:#e74c3c">❌ Falha ao enviar. Tente novamente.</b>';
         }
-      }catch(e){
-        document.getElementById('status').textContent = '❌ Erro de conexão (Render). Tente novamente.';
+      } catch(e) {
+        status.innerHTML = '<b style="color:#e74c3c">❌ Erro de conexão. Tente novamente.</b>';
       }
 
-      // Volta ao normal automaticamente
-      setTimeout(()=>{
+      setTimeout(() => {
         btn.disabled = false;
         btn.classList.remove('sent');
         btn.textContent = 'SOS';
-      }, 6000);
+        status.textContent = 'Selecione a ocorrência e pressione SOS';
+      }, 8000);
     }
-
-    // NOVO CÓDIGO: Sincronizar botões com o select original
-    document.querySelectorAll('.ocorrencia-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        // Remove active de todos
-        document.querySelectorAll('.ocorrencia-btn').forEach(b => {
-          b.classList.remove('active');
-          b.style.opacity = '0.8';
-        });
-        
-        // Ativa o clicado
-        this.classList.add('active');
-        this.style.opacity = '1';
-        
-        // Atualiza o select original
-        const select = document.getElementById('ocorrencia');
-        select.value = this.dataset.value;
-        
-        // Dispara evento de change (caso alguém esteja ouvindo)
-        select.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-    });
-
-    // Garantir que o primeiro botão esteja ativo ao carregar
-    window.addEventListener('load', function() {
-      const primeiroBotao = document.querySelector('.ocorrencia-btn');
-      if (primeiroBotao) {
-        primeiroBotao.click();
-      }
-    });
   </script>
 </body>
 </html>

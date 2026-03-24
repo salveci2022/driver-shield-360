@@ -1,118 +1,111 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <link rel="manifest" href="/static/manifest.json">
-  <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
-  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-  <meta name="theme-color" content="#0a0014">
   <meta charset="utf-8">
   <title>Relatório - Driver Shield 360</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#060d1a;color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding:16px}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:12px 16px;background:#0d1a2e;border-radius:12px;border:1px solid #1a2a3a;flex-wrap:wrap;gap:8px}
+    .header h1{font-size:16px;font-weight:900}
+    .btns{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{padding:8px 14px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s}
+    .btn-blue{background:#00aaff22;color:#00aaff;border:1px solid #00aaff55}
+    .btn-red{background:#c0392b22;color:#e74c3c;border:1px solid #c0392b55}
+    .btn-green{background:#00e67622;color:#00e676;border:1px solid #00e67655}
+    .btn-gray{background:#1a2a3a;color:#aaa;border:1px solid #2a3a4a}
+    .card{background:#0d1a2e;border:1px solid #1a2a3a;border-radius:16px;padding:20px;margin-bottom:14px}
+    .top-bar{height:4px;background:linear-gradient(90deg,#00aaff,#00e676);border-radius:16px 16px 0 0;margin:-20px -20px 16px -20px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+    .stat{background:#1a2a3a;border-radius:12px;padding:14px;text-align:center}
+    .stat-num{font-size:28px;font-weight:900;color:#00aaff}
+    .stat-label{font-size:11px;color:#667;margin-top:4px}
+    .alert-item{background:#1a2a3a;border-radius:12px;padding:14px;margin-bottom:10px}
+    .alert-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .alert-num{font-size:11px;color:#445;font-weight:700}
+    .alert-ts{font-size:11px;color:#667}
+    .alert-oc{font-size:15px;font-weight:700;color:#e74c3c;margin-bottom:4px}
+    .alert-mt{font-size:13px;color:#00aaff;margin-bottom:4px}
+    .alert-loc{font-size:11px;color:#445}
+    .map-link{display:inline-block;margin-top:6px;padding:5px 10px;background:#00aaff22;color:#00aaff;border-radius:6px;font-size:11px;text-decoration:none;font-weight:700}
+    .notice{font-size:13px;color:#445;padding:20px;text-align:center}
+  </style>
 </head>
-
 <body>
-  <div class="container">
-    <div class="card">
-      <div class="header">
-        <div class="title">📊 Relatório de Ocorrências</div>
-        <div class="row">
-          <button class="btn small" onclick="goFull()">⛶ Tela cheia</button>
-          <button class="btn small" onclick="location.reload()">🔄 Atualizar</button>
-          <button class="btn small" onclick="copiar()">📋 Copiar</button>
-          <button class="btn small danger" onclick="limpar()">🧹 Limpar</button>
-          <a class="btn small" href="/">Sair</a>
-        </div>
-      </div>
-
-      {% if alerts and alerts|length > 0 %}
-      <table class="table" id="tabela">
-        <thead>
-          <tr>
-            <th>Data/Hora</th>
-            <th>Motorista</th>
-            <th>Ocorrência</th>
-            <th>Localização</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for a in alerts %}
-          <tr>
-            <td><b>{{ a.ts }}</b></td>
-            <td>{{ a.motorista }}</td>
-            <td>{{ a.ocorrencia }}</td>
-            <td>
-              {% if a.lat and a.lng %}
-                <div>Lat: {{ a.lat }}<br>Lng: {{ a.lng }}</div>
-                <div style="margin-top:6px">
-                  <a class="btn small" target="_blank" href="https://www.google.com/maps?q={{ a.lat }},{{ a.lng }}&z=16">
-                    🗺️ Abrir mapa
-                  </a>
-                </div>
-              {% else %}
-                —
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-        <div class="notice">Nenhuma ocorrência registrada.</div>
-      {% endif %}
+  <div class="header">
+    <h1>📊 Relatório de Ocorrências</h1>
+    <div class="btns">
+      <a class="btn btn-green" href="/relatorio.pdf">📄 Baixar PDF</a>
+      <button class="btn btn-blue" onclick="copiar()">📋 Copiar</button>
+      <button class="btn btn-red" onclick="limpar()">🧹 Limpar</button>
+      <a class="btn btn-gray" href="/painel">← Painel</a>
     </div>
   </div>
 
-  <script>
-    function goFull(){
-      const el=document.documentElement;
-      if(el.requestFullscreen) el.requestFullscreen();
-    }
+  <div class="card">
+    <div class="top-bar"></div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">{{ alerts|length }}</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" style="color:#e74c3c">{{ alerts|selectattr('status','equalto','Ativo')|list|length }}</div>
+        <div class="stat-label">Ativos</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" style="color:#27ae60">{{ alerts|rejectattr('status','equalto','Ativo')|list|length }}</div>
+        <div class="stat-label">Resolvidos</div>
+      </div>
+    </div>
+  </div>
 
+  {% if alerts and alerts|length > 0 %}
+    {% for a in alerts %}
+    <div class="alert-item" id="alerta-{{ loop.index0 }}">
+      <div class="alert-header">
+        <span class="alert-num">#{{ loop.index }}</span>
+        <span class="alert-ts">{{ a.ts }}</span>
+      </div>
+      <div class="alert-oc">⚠️ {{ a.ocorrencia }}</div>
+      <div class="alert-mt">🚕 {{ a.motorista }}</div>
+      {% if a.lat and a.lng %}
+        <div class="alert-loc">📍 Lat: {{ a.lat }} | Lng: {{ a.lng }}</div>
+        <a class="map-link" target="_blank" href="https://www.google.com/maps?q={{ a.lat }},{{ a.lng }}&z=16">🗺️ Ver no mapa</a>
+      {% else %}
+        <div class="alert-loc">📍 Localização não disponível</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="notice">Nenhuma ocorrência registrada.</div>
+  {% endif %}
+
+  <script>
     async function limpar(){
       if(!confirm('Limpar todos os alertas? Essa ação não pode ser desfeita.')) return;
-
-      try{
-        const res = await fetch('/api/clear_alerts', { method:'POST' });
-        if(!res.ok) throw new Error('HTTP ' + res.status);
-        const j = await res.json();
-
-        if(j.ok){
-          alert('✅ Alertas limpos!');
-          location.reload();
-        }else{
-          alert('❌ Falha ao limpar. Tente novamente.');
-        }
-      }catch(e){
-        alert('❌ Erro ao comunicar com o servidor (Render).');
-      }
+      const res = await fetch('/api/clear_alerts', {method:'POST'});
+      const j = await res.json();
+      if(j.ok){ alert('✅ Alertas limpos!'); location.reload(); }
     }
 
     async function copiar(){
-      const table = document.getElementById('tabela');
-      if(!table){
-        alert('Nada para copiar.');
-        return;
-      }
-
-      let texto = 'RELATÓRIO DRIVER SHIELD 360\n\n';
-      const rows = table.querySelectorAll('tbody tr');
-
-      rows.forEach((tr, i) => {
-        const cols = tr.querySelectorAll('td');
-        const data = cols[0]?.innerText.trim() || '';
-        const motorista = cols[1]?.innerText.trim() || '';
-        const ocorr = cols[2]?.innerText.trim() || '';
-        const loc = cols[3]?.innerText.trim().replace(/\s+/g,' ') || '—';
-
-        texto += `#${i+1}\n🕒 ${data}\n🚕 ${motorista}\n⚠️ ${ocorr}\n📍 ${loc}\n\n`;
+      const items = document.querySelectorAll('.alert-item');
+      if(!items.length){ alert('Nada para copiar.'); return; }
+      let txt = 'RELATÓRIO DRIVER-SHIELD-360\n\n';
+      items.forEach((el, i) => {
+        const oc = el.querySelector('.alert-oc')?.innerText || '';
+        const mt = el.querySelector('.alert-mt')?.innerText || '';
+        const ts = el.querySelector('.alert-ts')?.innerText || '';
+        const loc = el.querySelector('.alert-loc')?.innerText || '';
+        txt += `#${i+1} | ${ts}\n${oc}\n${mt}\n${loc}\n\n`;
       });
-
       try{
-        await navigator.clipboard.writeText(texto);
-        alert('✅ Copiado! Agora é só colar no WhatsApp.');
-      }catch(e){
-        alert('❌ Não consegui copiar automaticamente. Seu navegador bloqueou.');
+        await navigator.clipboard.writeText(txt);
+        alert('✅ Copiado! Cole no WhatsApp.');
+      } catch(e){
+        alert('❌ Erro ao copiar. Tente manualmente.');
       }
     }
   </script>

@@ -1,220 +1,205 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <link rel="manifest" href="/static/manifest.json">
-  <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
-  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-  <meta name="theme-color" content="#0a0014">
   <meta charset="utf-8">
-  <title>Pessoa de Confiança - Driver Shield 360</title>
+  <title>Painel de Confiança - Driver Shield 360</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="theme-color" content="#060d1a">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#060d1a;color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding:16px}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:12px 16px;background:#0d1a2e;border-radius:12px;border:1px solid #1a2a3a;flex-wrap:wrap;gap:8px}
+    .header h1{font-size:16px;font-weight:900}
+    .btns{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{padding:8px 14px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s}
+    .btn-blue{background:#00aaff22;color:#00aaff;border:1px solid #00aaff55}
+    .btn-red{background:#c0392b22;color:#e74c3c;border:1px solid #c0392b55}
+    .btn-green{background:#00e67622;color:#00e676;border:1px solid #00e67655}
+    .btn-gray{background:#1a2a3a;color:#aaa;border:1px solid #2a3a4a}
+    .card{background:#0d1a2e;border:1px solid #1a2a3a;border-radius:16px;padding:18px;margin-bottom:14px}
+    .card-title{font-size:13px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+    .alerta-box{background:#1a2a3a;border-radius:12px;padding:14px}
+    .alerta-box.ativo{border:2px solid #e74c3c;background:#2a0d0d}
+    .alerta-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px}
+    .label{color:#667;font-size:12px}
+    .value{color:#fff;font-weight:700}
+    .badge-ativo{display:inline-block;background:#e74c3c;color:#fff;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}
+    .badge-ok{display:inline-block;background:#27ae60;color:#fff;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}
+    .map-frame{width:100%;height:220px;border:none;border-radius:10px;margin-top:10px}
+    .map-link{display:inline-block;margin-top:8px;padding:8px 16px;background:#00aaff22;color:#00aaff;border:1px solid #00aaff55;border-radius:8px;font-size:12px;text-decoration:none;font-weight:700}
+    .alert-list{max-height:300px;overflow-y:auto}
+    .alert-item{padding:10px;border-bottom:1px solid #1a2a3a;font-size:13px}
+    .alert-item:last-child{border-bottom:none}
+    .alert-ts{color:#667;font-size:11px}
+    .alert-oc{color:#fff;font-weight:700;margin:2px 0}
+    .alert-mt{color:#00aaff;font-size:12px}
+    .notice{font-size:12px;color:#556;padding:10px;background:#1a2a3a;border-radius:8px;line-height:1.6}
+    .pulse{animation:pulse 1s infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 #e74c3c66}50%{box-shadow:0 0 0 12px transparent}}
+    .top-bar{height:4px;border-radius:16px 16px 0 0;margin:-18px -18px 14px -18px}
+  </style>
 </head>
-
 <body>
-  <div class="container">
-    <div class="card">
-      <div class="header">
-        <div class="title">🧑‍🤝‍🧑 Painel da Pessoa de Confiança</div>
-        <div class="row">
-          <button class="btn small" onclick="goFull()">⛶ Tela cheia</button>
-          <button class="btn small" onclick="location.reload()">🔄 Atualizar</button>
-          <button class="btn small danger" onclick="limpar()">🧹 Limpar</button>
-          <button class="btn small danger" onclick="toggleSirene()">🔊 Sirene</button>
-          <a class="btn small" href="{{ url_for('pessoa_sair') }}">Sair</a>
-        </div>
-      </div>
-
-      <div class="notice" id="audioHint">
-        Este painel é <b>aberto</b> (sem senha).
-        Para o som funcionar no celular, toque em <b>Sirene</b> 1 vez para liberar o áudio.
-        Depois disso, quando chegar um novo alerta a sirene pode tocar automaticamente.
-      </div>
-
-      <hr>
-
-      <div class="grid">
-        <div class="card">
-          <div class="title" style="font-size:18px">Último alerta</div>
-          <div id="ultimo" class="notice">Aguardando alerta…</div>
-
-          <hr>
-
-          <div class="title" style="font-size:18px">Mapa</div>
-          <iframe id="mapa" class="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-
-          <div id="mapLinkWrap" style="margin-top:10px; display:none">
-            <a id="mapLink" class="btn small" target="_blank">🗺️ Abrir no Google Maps</a>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="title" style="font-size:18px">Lista de alertas</div>
-          <div id="lista" class="notice">—</div>
-        </div>
-      </div>
-
-      <audio id="sireneAudio" preload="auto" loop>
-        <source src="{{ url_for('static', filename='sirene.mp3') }}" type="audio/mpeg">
-      </audio>
+  <div class="header">
+    <h1>🧑‍🤝‍🧑 Painel de Confiança</h1>
+    <div class="btns">
+      <button class="btn btn-green" onclick="toggleSirene()">🔊 Sirene</button>
+      <button class="btn btn-red" onclick="limpar()">🧹 Limpar</button>
+      <a class="btn btn-blue" href="/relatorio">📊 Relatório</a>
+      <a class="btn btn-gray" href="/painel/logout">Sair</a>
     </div>
   </div>
 
+  <div id="alertaBanner" style="display:none;background:#c0392b;border-radius:12px;padding:14px;text-align:center;margin-bottom:14px;font-weight:700;font-size:16px;animation:pulse 1s infinite">
+    🚨 NOVO ALERTA RECEBIDO!
+  </div>
+
+  <div class="card">
+    <div class="top-bar" id="topBar" style="background:#1a2a3a"></div>
+    <div class="card-title">Último alerta</div>
+    <div id="ultimoAlerta" class="alerta-box">
+      <div style="color:#445;text-align:center;padding:20px">Aguardando alertas...</div>
+    </div>
+    <div id="mapWrap" style="display:none">
+      <iframe id="mapa" class="map-frame" loading="lazy"></iframe>
+      <a id="mapLink" class="map-link" target="_blank">🗺️ Abrir no Google Maps</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Histórico de alertas</div>
+    <div id="listaAlertas" class="alert-list">
+      <div style="color:#445;padding:10px">Nenhum alerta ainda.</div>
+    </div>
+  </div>
+
+  <div class="notice" id="audioHint">
+    🔊 Toque em <b>Sirene</b> uma vez para liberar o áudio. Depois disso, a sirene tocará automaticamente quando chegar um novo alerta.
+  </div>
+
+  <audio id="sireneAudio" preload="auto" loop>
+    <source src="/static/sirene.mp3" type="audio/mpeg">
+  </audio>
+
   <script>
-    function goFull(){
-      const el=document.documentElement;
-      if(el.requestFullscreen) el.requestFullscreen();
-    }
-
-    // Sirene: precisa de interação do usuário pelo menos 1x no celular.
-    let sireneOn=false;
-    let audioLiberado=false;
-
-    function _playSirene(){
-      const audio=document.getElementById('sireneAudio');
-      audio.volume=1.0;
-      return audio.play().then(()=>{
-        sireneOn=true;
-      }).catch(()=>{
-        // Se não liberar áudio, pede novamente.
-        document.getElementById('audioHint').innerHTML =
-          '⚠️ O navegador bloqueou o áudio. Toque no botão <b>Sirene</b> uma vez para liberar.';
-        throw new Error('Audio bloqueado');
-      });
-    }
-
-    function _stopSirene(){
-      const audio=document.getElementById('sireneAudio');
-      audio.pause();
-      audio.currentTime=0;
-      sireneOn=false;
-    }
+    let sireneOn = false;
+    let audioLiberado = false;
+    let lastCount = -1;
 
     function toggleSirene(){
-      const audio=document.getElementById('sireneAudio');
+      const audio = document.getElementById('sireneAudio');
       if(!audioLiberado){
-        // Primeiro toque: libera áudio (e já toca 1x como teste)
-        _playSirene().then(()=>{
-          audioLiberado=true;
-          // Para não ficar tocando sem necessidade, já desliga e deixa pronto pro automático.
-          setTimeout(()=>{ _stopSirene(); }, 1200);
-          document.getElementById('audioHint').innerHTML =
-            '✅ Áudio liberado. A sirene poderá tocar automaticamente quando chegar um novo alerta.';
-        }).catch(()=>{});
+        audio.volume = 1.0;
+        audio.play().then(() => {
+          audioLiberado = true;
+          setTimeout(() => { audio.pause(); audio.currentTime = 0; sireneOn = false; }, 1500);
+          document.getElementById('audioHint').innerHTML = '✅ Áudio liberado! A sirene tocará automaticamente nos próximos alertas.';
+        }).catch(() => {
+          document.getElementById('audioHint').innerHTML = '⚠️ Toque na tela primeiro e tente novamente.';
+        });
         return;
       }
-
-      // Depois de liberado: vira liga/desliga manual
       if(!sireneOn){
-        _playSirene().catch(()=>{});
+        audio.play().then(() => sireneOn = true).catch(() => {});
       } else {
-        _stopSirene();
+        audio.pause(); audio.currentTime = 0; sireneOn = false;
       }
     }
 
-    let lastCount = -1; // força comparar no primeiro poll
-
-    function setMapa(lat,lng){
-      const iframe=document.getElementById('mapa');
-      const linkWrap=document.getElementById('mapLinkWrap');
-      const link=document.getElementById('mapLink');
-
-      if(lat==null || lng==null || lat==="" || lng===""){
-        iframe.srcdoc="<div style='padding:14px;color:#cdb7e6;font-family:system-ui'>Sem localização neste alerta.</div>";
-        linkWrap.style.display="none";
-        return;
-      }
-
-      iframe.src=`https://www.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
-      link.href=`https://www.google.com/maps?q=${lat},${lng}&z=16`;
-      linkWrap.style.display="block";
+    function pararSirene(){
+      const audio = document.getElementById('sireneAudio');
+      audio.pause(); audio.currentTime = 0; sireneOn = false;
     }
 
-    function renderAlert(a){
-      const el=document.getElementById('ultimo');
-      const lat=a.lat, lng=a.lng;
+    function setMapa(lat, lng){
+      const wrap = document.getElementById('mapWrap');
+      if(!lat || !lng){ wrap.style.display = 'none'; return; }
+      wrap.style.display = 'block';
+      document.getElementById('mapa').src = `https://www.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
+      document.getElementById('mapLink').href = `https://www.google.com/maps?q=${lat},${lng}&z=16`;
+    }
 
-      const localTxt = (lat!=null && lng!=null && lat!=="" && lng!=="") ? (lat + ", " + lng) : "—";
-      el.innerHTML = `
-        <div><b>Horário:</b> ${a.ts}</div>
-        <div><b>Motorista:</b> ${a.motorista}</div>
-        <div><b>Ocorrência:</b> ${a.ocorrencia}</div>
-        <div><b>Local:</b> ${localTxt}</div>
+    function renderUltimo(a){
+      const box = document.getElementById('ultimoAlerta');
+      const topBar = document.getElementById('topBar');
+      const banner = document.getElementById('alertaBanner');
+      const isAtivo = a.status === 'Ativo';
+
+      if(isAtivo){
+        box.className = 'alerta-box ativo';
+        topBar.style.background = 'linear-gradient(90deg,#c0392b,#e74c3c)';
+        banner.style.display = 'block';
+        document.title = '🚨 ALERTA - Driver Shield 360';
+      } else {
+        box.className = 'alerta-box';
+        topBar.style.background = 'linear-gradient(90deg,#27ae60,#2ecc71)';
+        banner.style.display = 'none';
+      }
+
+      const loc = (a.lat && a.lng) ? `${a.lat}, ${a.lng}` : '—';
+      box.innerHTML = `
+        <div class="alerta-row">
+          <div><div class="label">Status</div><div class="value">${isAtivo ? '<span class="badge-ativo">🚨 ATIVO</span>' : '<span class="badge-ok">✅ Resolvido</span>'}</div></div>
+          <div><div class="label">Horário</div><div class="value" style="font-size:13px">${a.ts}</div></div>
+        </div>
+        <div class="alerta-row">
+          <div><div class="label">Motorista</div><div class="value">${a.motorista}</div></div>
+        </div>
+        <div class="alerta-row">
+          <div><div class="label">Ocorrência</div><div class="value" style="color:#e74c3c">${a.ocorrencia}</div></div>
+        </div>
+        <div class="alerta-row">
+          <div><div class="label">Localização</div><div class="value" style="font-size:12px">${loc}</div></div>
+        </div>
       `;
 
-      setMapa(lat,lng);
-      document.title = `ALERTA - ${a.ocorrencia}`;
+      setMapa(a.lat, a.lng);
     }
 
     function renderLista(alerts){
-      const box=document.getElementById('lista');
-      if(!alerts.length){
-        box.textContent='Nenhum alerta ainda.';
-        return;
-      }
-      box.innerHTML = alerts.slice().reverse().map(a=>`
-        <div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.10)">
-          <div><b>${a.ts}</b> — ${a.ocorrencia}</div>
-          <div style="color:#cdb7e6">Motorista: ${a.motorista}</div>
+      const box = document.getElementById('listaAlertas');
+      if(!alerts.length){ box.innerHTML = '<div style="color:#445;padding:10px">Nenhum alerta ainda.</div>'; return; }
+      box.innerHTML = [...alerts].reverse().map((a, i) => `
+        <div class="alert-item">
+          <div class="alert-ts">${a.ts}</div>
+          <div class="alert-oc">${a.ocorrencia}</div>
+          <div class="alert-mt">🚕 ${a.motorista}</div>
         </div>
       `).join('');
     }
 
     async function poll(){
       try{
-        const res=await fetch('/api/alerts',{cache:'no-store'});
-        if(!res.ok) throw new Error('HTTP ' + res.status);
-
-        const alerts=await res.json();
+        const res = await fetch('/api/alerts', {cache:'no-store'});
+        const alerts = await res.json();
         renderLista(alerts);
+        if(alerts.length) renderUltimo(alerts[alerts.length - 1]);
+        else document.title = 'Painel de Confiança - Driver Shield 360';
 
-        if(alerts.length){
-          renderAlert(alerts[alerts.length-1]);
-        } else {
-          document.title = 'Pessoa de Confiança - Driver Shield 360';
-        }
-
-        // Auto-sirene: toca quando chegar novo alerta (se áudio já liberado)
         if(lastCount !== -1 && alerts.length > lastCount){
           if(audioLiberado){
-            _playSirene().catch(()=>{});
-          } else {
-            document.getElementById('audioHint').innerHTML =
-              '🚨 Chegou um alerta! Toque em <b>Sirene</b> para liberar o áudio e atender mais rápido.';
+            const audio = document.getElementById('sireneAudio');
+            audio.play().then(() => sireneOn = true).catch(() => {});
           }
         }
-
         lastCount = alerts.length;
-      }catch(e){
-        // Mostra estado de falha sem travar
-        document.getElementById('ultimo').innerHTML =
-          "<b>⚠️ Falha ao buscar alertas.</b><br>Verifique se o servidor está online no Render e tente atualizar.";
-      }
+      } catch(e) {}
+    }
+
+    async function limpar(){
+      if(!confirm('Limpar todos os alertas?')) return;
+      await fetch('/api/clear_alerts', {method:'POST'});
+      lastCount = 0;
+      pararSirene();
+      document.getElementById('alertaBanner').style.display = 'none';
+      document.getElementById('ultimoAlerta').innerHTML = '<div style="color:#445;text-align:center;padding:20px">Sem alertas ativos.</div>';
+      document.getElementById('listaAlertas').innerHTML = '<div style="color:#445;padding:10px">Nenhum alerta ainda.</div>';
+      document.getElementById('mapWrap').style.display = 'none';
+      document.title = 'Painel de Confiança - Driver Shield 360';
     }
 
     poll();
     setInterval(poll, 3000);
-
-    async function limpar(){
-      if(!confirm('Limpar todos os alertas?')) return;
-
-      try{
-        const res=await fetch('/api/clear_alerts',{method:'POST'});
-        if(!res.ok) throw new Error('HTTP ' + res.status);
-        const j=await res.json();
-
-        if(j.ok){
-          lastCount = 0;
-          _stopSirene();
-          alert('✅ Alertas limpos!');
-          location.reload();
-        } else {
-          alert('❌ Falha ao limpar. Tente novamente.');
-        }
-      }catch(e){
-        alert('❌ Erro ao comunicar com o servidor (Render).');
-      }
-    }
   </script>
 </body>
 </html>
