@@ -194,9 +194,9 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
 
 <!-- ══ TELA DE ATIVAÇÃO DO SOM ══ -->
 <div class="ativacao-overlay" id="ativacao">
-  <div class="ativ-icon">🔊</div>
-  <div class="ativ-titulo">Ativar Painel de Monitoramento</div>
-  <div class="ativ-sub">Toque uma vez para ativar o som da sirene. O painel vai alertar você automaticamente quando um SOS for disparado.</div>
+  <img src="/static/icon-512.png" style="width:120px;height:120px;border-radius:24px;margin-bottom:8px;" alt="Driver Shield 360">
+  <div class="ativ-titulo">Painel de Monitoramento</div>
+  <div class="ativ-sub">Toque para ativar o painel. A sirene tocará automaticamente quando um SOS for disparado.</div>
   <button class="ativ-btn" onclick="ativarPainel()">🛡️ ATIVAR PAINEL</button>
 </div>
 
@@ -270,23 +270,19 @@ let filtroAtual = 'todos';
 let viagemInterval = null;
 let ultimoTotal = -1;
 let sireneAtiva = false;
-let sireneCtx = null;
 let sireneLoop = null;
 let painelAtivado = false;
 
 // ══ ATIVAÇÃO ══
 function ativarPainel() {
   painelAtivado = true;
-  // Cria e desbloqueia AudioContext com gesto do usuário
-  try {
-    sireneCtx = new (window.AudioContext || window.webkitAudioContext)();
-    // Toca silêncio para desbloquear
-    const buf = sireneCtx.createBuffer(1,1,22050);
-    const src = sireneCtx.createBufferSource();
-    src.buffer = buf;
-    src.connect(sireneCtx.destination);
-    src.start(0);
-  } catch(e) {}
+  // Pré-carrega e desbloqueia MP3 com gesto do usuário
+  criarAudio();
+  // Toca mudo por 0.1s para desbloquear autoplay
+  sireneAudio.volume = 0;
+  sireneAudio.play().then(()=>{
+    setTimeout(()=>{ sireneAudio.pause(); sireneAudio.currentTime=0; sireneAudio.volume=0.9; },100);
+  }).catch(()=>{});
   document.getElementById('ativacao').classList.add('oculto');
   carregarAlertas();
   verificarViagem();
@@ -294,39 +290,30 @@ function ativarPainel() {
   setInterval(verificarViagem, 15000);
 }
 
-// ══ SIRENE WEB AUDIO ══
-function tocarBip() {
-  if (!sireneCtx) return;
-  try {
-    const osc  = sireneCtx.createOscillator();
-    const gain = sireneCtx.createGain();
-    osc.connect(gain);
-    gain.connect(sireneCtx.destination);
-    osc.type = 'sine';
-    const t = sireneCtx.currentTime;
-    osc.frequency.setValueAtTime(700, t);
-    osc.frequency.linearRampToValueAtTime(1200, t + 0.35);
-    osc.frequency.linearRampToValueAtTime(700, t + 0.7);
-    gain.gain.setValueAtTime(0.5, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.7);
-    osc.start(t);
-    osc.stop(t + 0.75);
-  } catch(e) {}
+// ══ SIRENE MP3 REAL ══
+let sireneAudio = null;
+
+function criarAudio() {
+  if (sireneAudio) return;
+  sireneAudio = new Audio('/static/sirene.mp3');
+  sireneAudio.loop = true;
+  sireneAudio.volume = 0.9;
 }
 
 function iniciarSirene() {
   if (sireneAtiva) return;
   sireneAtiva = true;
+  criarAudio();
+  sireneAudio.currentTime = 0;
+  sireneAudio.play().catch(()=>{});
   const btn = document.getElementById('btn-sirene');
   btn.textContent = '🔇 Parar';
   btn.className = 'hbtn sirene-on';
-  tocarBip();
-  sireneLoop = setInterval(tocarBip, 1400);
 }
 
 function pararSirene() {
   sireneAtiva = false;
-  clearInterval(sireneLoop);
+  if (sireneAudio) { sireneAudio.pause(); sireneAudio.currentTime = 0; }
   const btn = document.getElementById('btn-sirene');
   btn.textContent = '🔊 Sirene';
   btn.className = 'hbtn verde';
