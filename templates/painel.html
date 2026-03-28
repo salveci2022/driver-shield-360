@@ -15,86 +15,109 @@
   *{ box-sizing:border-box; margin:0; padding:0; }
   html,body{ background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100dvh; }
 
-  /* Header */
+  /* ── Header ── */
   .header{
     display:flex; align-items:center; justify-content:space-between;
-    padding:14px 20px; background:var(--bg2);
+    padding:12px 16px; background:var(--bg2);
     border-bottom:1px solid var(--border);
     position:sticky; top:0; z-index:100;
+    transition:background .3s, border-color .3s;
   }
+  .header.alerta-ativo{
+    background:#1a0608;
+    border-bottom-color:rgba(255,34,68,.4);
+    animation:header-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes header-pulse{ 0%,100%{background:#1a0608;} 50%{background:#240a0e;} }
+
   .logo{ font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; letter-spacing:1px; color:var(--blue); }
   .logo span{ color:var(--text); }
-  .header-actions{ display:flex; align-items:center; gap:10px; }
-  .btn-sair{
+  .header.alerta-ativo .logo{ color:#ff6680; }
+
+  .header-actions{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+
+  .btn-header{
     background:none; border:1px solid rgba(255,255,255,.1); border-radius:7px;
-    padding:6px 12px; color:var(--muted); font-size:12px; cursor:pointer;
-    text-decoration:none; transition:all .2s;
-  }
-  .btn-sair:hover{ color:var(--text); border-color:rgba(255,255,255,.2); }
-  .live-dot{
+    padding:6px 11px; color:var(--muted); font-size:12px; cursor:pointer;
+    text-decoration:none; transition:all .2s; font-family:'Inter',sans-serif;
     display:flex; align-items:center; gap:5px;
-    font-size:12px; color:var(--green);
   }
+  .btn-header:hover{ color:var(--text); border-color:rgba(255,255,255,.25); }
+  .btn-header.danger{ color:var(--red); border-color:rgba(255,34,68,.25); }
+  .btn-header.danger:hover{ background:rgba(255,34,68,.08); }
+
+  .live-dot{ display:flex; align-items:center; gap:5px; font-size:12px; color:var(--green); }
   .dot{ width:7px; height:7px; border-radius:50%; background:var(--green); animation:pdot 2s ease-in-out infinite; }
   @keyframes pdot{ 0%,100%{opacity:1}50%{opacity:.4} }
+  .dot.alerta{ background:var(--red); box-shadow:0 0 8px var(--red); animation:pdot .5s ease-in-out infinite; }
 
-  /* Stats top */
+  /* ── Banner alerta ativo ── */
+  .alerta-banner{
+    display:none; align-items:center; justify-content:space-between;
+    padding:12px 16px;
+    background:rgba(255,34,68,.12); border-bottom:1px solid rgba(255,34,68,.3);
+  }
+  .alerta-banner.visivel{ display:flex; animation:slideDown .3s ease; }
+  @keyframes slideDown{ from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }
+  .alerta-banner-txt{ font-size:13px; font-weight:600; color:var(--red); display:flex; align-items:center; gap:8px; }
+  .sirene-btn{
+    background:rgba(255,34,68,.2); border:1px solid rgba(255,34,68,.4);
+    border-radius:7px; padding:6px 12px;
+    color:var(--red); font-size:12px; font-weight:600; cursor:pointer;
+    transition:all .2s;
+  }
+  .sirene-btn:hover{ background:rgba(255,34,68,.3); }
+  .sirene-btn.tocando{ background:rgba(255,34,68,.3); animation:btn-blink .5s step-end infinite; }
+  @keyframes btn-blink{ 50%{opacity:.5} }
+
+  /* ── Stats ── */
   .stats-bar{
     display:grid; grid-template-columns:repeat(3,1fr);
     gap:1px; background:var(--border);
     border-bottom:1px solid var(--border);
   }
-  .stat-cell{
-    background:var(--bg2); padding:14px 12px; text-align:center;
-  }
-  .stat-num{ font-family:'Rajdhani',sans-serif; font-size:26px; font-weight:700; line-height:1; }
+  .stat-cell{ background:var(--bg2); padding:14px 12px; text-align:center; }
+  .stat-num{ font-family:'Rajdhani',sans-serif; font-size:28px; font-weight:700; line-height:1; }
   .stat-num.red{ color:var(--red); }
   .stat-num.blue{ color:var(--blue); }
   .stat-num.green{ color:var(--green); }
   .stat-lbl{ font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-top:2px; }
 
-  /* Toolbar */
-  .toolbar{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:12px 16px; gap:10px; flex-wrap:wrap;
+  /* ── Viagem banner ── */
+  .viagem-banner{
+    margin:12px 16px 0;
+    padding:14px 16px; border-radius:12px;
+    background:rgba(255,170,0,.08); border:1px solid rgba(255,170,0,.25);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
   }
+  .viagem-banner.oculto{ display:none; }
+  .viagem-lbl{ font-size:12px; color:var(--amber); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+  .viagem-motorista{ font-size:15px; font-weight:600; margin-top:2px; }
+  .viagem-timer{ font-family:'Rajdhani',sans-serif; font-size:30px; font-weight:700; color:var(--amber); white-space:nowrap; }
+  .viagem-timer.urgente{ color:var(--red); animation:blink .6s step-end infinite; }
+  @keyframes blink{ 50%{opacity:.3} }
+
+  /* ── Toolbar ── */
+  .toolbar{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; gap:10px; flex-wrap:wrap; }
   .toolbar-title{ font-family:'Rajdhani',sans-serif; font-size:17px; font-weight:600; }
-  .toolbar-btns{ display:flex; gap:8px; }
+  .toolbar-btns{ display:flex; gap:8px; flex-wrap:wrap; }
   .btn-sm{
     background:var(--bg3); border:1px solid var(--border);
     border-radius:8px; padding:7px 12px;
     color:var(--muted); font-size:12px; font-weight:500;
     cursor:pointer; transition:all .2s; text-decoration:none;
+    display:inline-flex; align-items:center; gap:5px;
   }
   .btn-sm:hover{ color:var(--text); border-color:rgba(0,136,255,.3); }
   .btn-sm.danger{ color:var(--red); border-color:rgba(255,34,68,.2); }
   .btn-sm.danger:hover{ background:rgba(255,34,68,.08); }
   .btn-sm.primary{ background:var(--blue); border-color:var(--blue); color:white; }
   .btn-sm.primary:hover{ background:#0077dd; }
+  .btn-sm.warning{ color:var(--amber); border-color:rgba(255,170,0,.2); }
+  .btn-sm.warning:hover{ background:rgba(255,170,0,.08); }
 
-  /* Viagem ativa banner */
-  .viagem-banner{
-    margin:0 16px 12px;
-    padding:14px 16px; border-radius:12px;
-    background:rgba(255,170,0,.08); border:1px solid rgba(255,170,0,.25);
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-  }
-  .viagem-banner.oculto{ display:none; }
-  .viagem-info{ flex:1; }
-  .viagem-lbl{ font-size:12px; color:var(--amber); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
-  .viagem-motorista{ font-size:15px; font-weight:600; margin-top:2px; }
-  .viagem-timer{
-    font-family:'Rajdhani',sans-serif; font-size:30px; font-weight:700;
-    color:var(--amber); white-space:nowrap;
-  }
-  .viagem-timer.urgente{ color:var(--red); animation:blink .6s step-end infinite; }
-  @keyframes blink{ 50%{opacity:.3} }
-
-  /* Filtro */
-  .filtro-bar{
-    display:flex; gap:8px; padding:0 16px 12px; overflow-x:auto;
-    scrollbar-width:none;
-  }
+  /* ── Filtros ── */
+  .filtro-bar{ display:flex; gap:8px; padding:0 16px 12px; overflow-x:auto; scrollbar-width:none; }
   .filtro-bar::-webkit-scrollbar{ display:none; }
   .filtro-btn{
     background:var(--bg3); border:1px solid var(--border);
@@ -102,39 +125,26 @@
     font-size:12px; font-weight:500; color:var(--muted);
     cursor:pointer; white-space:nowrap; transition:all .15s;
   }
-  .filtro-btn.ativo{
-    background:rgba(0,136,255,.15); border-color:var(--blue); color:var(--text);
-  }
+  .filtro-btn.ativo{ background:rgba(0,136,255,.15); border-color:var(--blue); color:var(--text); }
 
-  /* Alertas */
+  /* ── Cards de alerta ── */
   .alertas-list{ padding:0 16px; }
-
   .alerta-card{
     background:var(--bg2); border:1px solid var(--border);
     border-radius:14px; padding:16px;
-    margin-bottom:10px; position:relative;
-    overflow:hidden; transition:border-color .2s;
+    margin-bottom:10px; position:relative; overflow:hidden; transition:all .3s;
   }
-  .alerta-card.ativo::before{
-    content:''; position:absolute;
-    left:0; top:0; bottom:0; width:3px;
-    background:var(--red);
-  }
-  .alerta-card.resolvido::before{
-    content:''; position:absolute;
-    left:0; top:0; bottom:0; width:3px;
-    background:var(--green);
-  }
-  .alerta-card.dms::before{
-    content:''; position:absolute;
-    left:0; top:0; bottom:0; width:3px;
-    background:var(--amber);
-  }
+  .alerta-card.novo{ animation:card-entrada .4s ease; }
+  @keyframes card-entrada{ from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }
 
-  .alerta-top{
-    display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
-    margin-bottom:10px;
-  }
+  .alerta-card.ativo{ border-color:rgba(255,34,68,.25); }
+  .alerta-card.ativo::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--red); }
+  .alerta-card.resolvido{ border-color:rgba(0,204,102,.15); opacity:.7; }
+  .alerta-card.resolvido::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--green); }
+  .alerta-card.dms{ border-color:rgba(255,170,0,.25); }
+  .alerta-card.dms::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--amber); }
+
+  .alerta-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:10px; }
   .alerta-tipo{ font-weight:600; font-size:15px; flex:1; line-height:1.3; }
   .alerta-status{
     font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px;
@@ -147,31 +157,26 @@
   .alerta-field{ font-size:12px; color:var(--muted); display:flex; align-items:center; gap:4px; }
   .alerta-field strong{ color:var(--text); }
 
-  .alerta-actions{ display:flex; gap:8px; }
+  .alerta-actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .btn-resolver{
     background:rgba(0,204,102,.1); border:1px solid rgba(0,204,102,.25);
-    border-radius:7px; padding:6px 12px;
-    color:var(--green); font-size:12px; font-weight:600;
-    cursor:pointer; transition:all .2s;
+    border-radius:7px; padding:7px 14px;
+    color:var(--green); font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;
   }
   .btn-resolver:hover{ background:rgba(0,204,102,.2); }
   .btn-mapa{
     background:rgba(0,136,255,.1); border:1px solid rgba(0,136,255,.2);
-    border-radius:7px; padding:6px 12px;
+    border-radius:7px; padding:7px 14px;
     color:var(--blue); font-size:12px; font-weight:600;
     cursor:pointer; text-decoration:none; transition:all .2s;
   }
   .btn-mapa:hover{ background:rgba(0,136,255,.2); }
 
-  /* Empty */
-  .empty{
-    text-align:center; padding:48px 24px;
-    color:var(--muted);
-  }
+  /* ── Empty ── */
+  .empty{ text-align:center; padding:48px 24px; color:var(--muted); }
   .empty-icon{ font-size:48px; margin-bottom:12px; }
-  .empty-msg{ font-size:15px; }
 
-  /* Toast */
+  /* ── Toast ── */
   .toast{
     position:fixed; top:70px; left:50%;
     transform:translateX(-50%) translateY(-10px);
@@ -184,18 +189,31 @@
   }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
   .toast.ok{ color:var(--green); border-color:rgba(0,204,102,.3); }
+  .toast.erro{ color:var(--red); border-color:rgba(255,34,68,.3); }
 
-  .nav-spacer{ height:16px; }
+  .nav-spacer{ height:20px; }
 </style>
 </head>
 <body>
 
-<div class="header">
+<!-- Header — muda de cor quando há alerta ativo -->
+<div class="header" id="main-header">
   <div class="logo">DRIVER<span>·SHIELD</span> 360</div>
   <div class="header-actions">
-    <div class="live-dot"><div class="dot"></div> Ao vivo</div>
-    <a href="/painel/logout" class="btn-sair">Sair</a>
+    <div class="live-dot"><div class="dot" id="live-dot"></div> <span id="live-txt">Ao vivo</span></div>
+    <a href="/motorista" class="btn-header">🛡️ Motorista</a>
+    <button class="btn-header warning" onclick="reiniciarPagina()">🔄 Reiniciar</button>
+    <button class="btn-header danger" onclick="limparTodos()">🗑️ Limpar</button>
+    <a href="/painel/logout" class="btn-header">Sair</a>
   </div>
+</div>
+
+<!-- Banner de alerta ativo com sirene -->
+<div class="alerta-banner" id="alerta-banner">
+  <div class="alerta-banner-txt">
+    🚨 <span id="alerta-banner-txt">ALERTA ATIVO — motorista precisa de ajuda!</span>
+  </div>
+  <button class="sirene-btn" id="sirene-btn" onclick="toggleSirene()">🔊 Sirene</button>
 </div>
 
 <!-- Stats -->
@@ -215,9 +233,9 @@
 </div>
 
 <!-- Viagem ativa -->
-<div style="padding:16px 16px 0">
+<div style="padding:0 16px">
   <div class="viagem-banner oculto" id="viagem-banner">
-    <div class="viagem-info">
+    <div>
       <div class="viagem-lbl">⏰ Modo viagem ativo</div>
       <div class="viagem-motorista" id="viagem-motorista">—</div>
     </div>
@@ -230,7 +248,7 @@
   <div class="toolbar-title">Ocorrências</div>
   <div class="toolbar-btns">
     <a href="/relatorio.pdf" class="btn-sm primary" target="_blank">📄 PDF</a>
-    <button class="btn-sm danger" onclick="limparTodos()">🗑️ Limpar</button>
+    <a href="/relatorio" class="btn-sm">📊 Relatório</a>
   </div>
 </div>
 
@@ -244,10 +262,7 @@
 
 <!-- Lista -->
 <div class="alertas-list" id="alertas-list">
-  <div class="empty">
-    <div class="empty-icon">📡</div>
-    <div class="empty-msg">Carregando alertas...</div>
-  </div>
+  <div class="empty"><div class="empty-icon">📡</div><p>Carregando alertas...</p></div>
 </div>
 
 <div class="nav-spacer"></div>
@@ -257,20 +272,108 @@
 let todosAlertas = [];
 let filtroAtual = 'todos';
 let viagemInterval = null;
+let ultimoTotal = -1;
+let sireneAtiva = false;
+let sireneCtx = null;
+let sireneInterval = null;
+
+// ── Sirene Web Audio ─────────────────────
+function criarSirene() {
+  try {
+    sireneCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch(e) {}
+}
+
+function tocarBip() {
+  if (!sireneCtx) return;
+  try {
+    const osc = sireneCtx.createOscillator();
+    const gain = sireneCtx.createGain();
+    osc.connect(gain);
+    gain.connect(sireneCtx.destination);
+    osc.type = 'sine';
+
+    const now = sireneCtx.currentTime;
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.linearRampToValueAtTime(1320, now + 0.3);
+    osc.frequency.linearRampToValueAtTime(880, now + 0.6);
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.linearRampToValueAtTime(0, now + 0.6);
+
+    osc.start(now);
+    osc.stop(now + 0.7);
+  } catch(e) {}
+}
+
+function iniciarSirene() {
+  if (!sireneCtx) criarSirene();
+  sireneAtiva = true;
+  const btn = document.getElementById('sirene-btn');
+  btn.textContent = '🔇 Parar';
+  btn.classList.add('tocando');
+  tocarBip();
+  sireneInterval = setInterval(tocarBip, 1200);
+}
+
+function pararSirene() {
+  sireneAtiva = false;
+  clearInterval(sireneInterval);
+  const btn = document.getElementById('sirene-btn');
+  btn.textContent = '🔊 Sirene';
+  btn.classList.remove('tocando');
+}
+
+function toggleSirene() {
+  if (sireneAtiva) pararSirene();
+  else iniciarSirene();
+}
 
 // ── Carregar alertas ─────────────────────
 async function carregarAlertas() {
   try {
     const res = await fetch('/api/alerts');
     const data = await res.json();
-    todosAlertas = data.reverse(); // mais recente primeiro
+    todosAlertas = data.reverse();
+
+    const ativos = todosAlertas.filter(a => a.status === 'Ativo').length;
+
+    // Novo alerta? Toca sirene automaticamente
+    if (ultimoTotal >= 0 && todosAlertas.length > ultimoTotal && ativos > 0) {
+      if (!sireneAtiva) iniciarSirene();
+      showToast('🚨 Novo alerta recebido!', 'erro');
+    }
+    ultimoTotal = todosAlertas.length;
+
+    // Header e banner mudam de cor
+    const header = document.getElementById('main-header');
+    const banner = document.getElementById('alerta-banner');
+    const dot    = document.getElementById('live-dot');
+    const liveTxt = document.getElementById('live-txt');
+
+    if (ativos > 0) {
+      header.classList.add('alerta-ativo');
+      banner.classList.add('visivel');
+      dot.classList.add('alerta');
+      liveTxt.textContent = `${ativos} ALERTA${ativos>1?'S':''} ATIVO${ativos>1?'S':''}`;
+      document.getElementById('alerta-banner-txt').textContent =
+        `${ativos} alerta${ativos>1?'s':''} ativo${ativos>1?'s':''} — motorista precisa de ajuda!`;
+      document.title = `🚨 ${ativos} ALERTA — Driver Shield 360`;
+    } else {
+      header.classList.remove('alerta-ativo');
+      banner.classList.remove('visivel');
+      dot.classList.remove('alerta');
+      liveTxt.textContent = 'Ao vivo';
+      document.title = 'Painel — Driver Shield 360';
+      if (sireneAtiva) pararSirene();
+    }
+
     atualizarStats();
     renderAlertas();
   } catch(e) {}
 }
 
 function atualizarStats() {
-  const ativos    = todosAlertas.filter(a => a.status === 'Ativo').length;
+  const ativos     = todosAlertas.filter(a => a.status === 'Ativo').length;
   const resolvidos = todosAlertas.filter(a => a.status === 'Resolvido').length;
   document.getElementById('cnt-ativos').textContent    = ativos;
   document.getElementById('cnt-total').textContent     = todosAlertas.length;
@@ -280,28 +383,26 @@ function atualizarStats() {
 function renderAlertas() {
   const list = document.getElementById('alertas-list');
   let filtrados = todosAlertas;
-  if (filtroAtual === 'ativo')    filtrados = todosAlertas.filter(a => a.status === 'Ativo');
+  if (filtroAtual === 'ativo')     filtrados = todosAlertas.filter(a => a.status === 'Ativo');
   if (filtroAtual === 'resolvido') filtrados = todosAlertas.filter(a => a.status === 'Resolvido');
-  if (filtroAtual === 'dms')      filtrados = todosAlertas.filter(a => a.tipo === 'dead_mans_switch');
+  if (filtroAtual === 'dms')       filtrados = todosAlertas.filter(a => a.tipo === 'dead_mans_switch');
 
   if (!filtrados.length) {
-    list.innerHTML = `<div class="empty"><div class="empty-icon">✅</div><div class="empty-msg">Nenhuma ocorrência encontrada</div></div>`;
+    list.innerHTML = `<div class="empty"><div class="empty-icon">✅</div><p>Nenhuma ocorrência</p></div>`;
     return;
   }
 
-  list.innerHTML = filtrados.map((a, i) => {
-    const idx = todosAlertas.indexOf(a);
-    const status = a.status || 'Ativo';
-    const tipo = a.tipo === 'dead_mans_switch' ? 'dms' : status.toLowerCase();
+  list.innerHTML = filtrados.map((a) => {
+    const idx     = todosAlertas.indexOf(a);
+    const status  = a.status || 'Ativo';
+    const classe  = a.tipo === 'dead_mans_switch' ? 'dms' : status.toLowerCase();
     const mapsHref = (a.lat && a.lng)
-      ? `https://www.google.com/maps?q=${a.lat},${a.lng}&z=16`
-      : null;
-    const locTxt = (a.lat && a.lng)
-      ? `${parseFloat(a.lat).toFixed(4)}, ${parseFloat(a.lng).toFixed(4)}`
-      : 'Sem GPS';
+      ? `https://www.google.com/maps?q=${a.lat},${a.lng}&z=16` : null;
+    const locTxt  = (a.lat && a.lng)
+      ? `${parseFloat(a.lat).toFixed(4)}, ${parseFloat(a.lng).toFixed(4)}` : 'Sem GPS';
 
     return `
-    <div class="alerta-card ${tipo}" id="card-${idx}">
+    <div class="alerta-card ${classe}">
       <div class="alerta-top">
         <div class="alerta-tipo">${a.ocorrencia}</div>
         <span class="alerta-status ${status.toLowerCase()}">${status}</span>
@@ -326,78 +427,74 @@ function filtrar(f, btn) {
   renderAlertas();
 }
 
-// ── Resolver alerta ──────────────────────
+// ── Resolver ─────────────────────────────
 async function resolver(idx) {
   await fetch('/api/resolve', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
+    method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({idx: todosAlertas.length - 1 - idx})
   });
   await carregarAlertas();
   showToast('✅ Ocorrência resolvida', 'ok');
 }
 
-// ── Limpar todos ─────────────────────────
+// ── Limpar ────────────────────────────────
 async function limparTodos() {
   if (!confirm('Apagar todo o histórico de alertas?')) return;
   await fetch('/api/clear_alerts', {method:'POST'});
+  ultimoTotal = 0;
   await carregarAlertas();
   showToast('🗑️ Histórico limpo', 'ok');
 }
 
-// ── Modo Viagem ──────────────────────────
+// ── Reiniciar ─────────────────────────────
+function reiniciarPagina() {
+  pararSirene();
+  showToast('🔄 Recarregando...', 'ok');
+  setTimeout(() => location.reload(), 800);
+}
+
+// ── Viagem ───────────────────────────────
 async function verificarViagem() {
   try {
     const res = await fetch('/api/viagem/status');
     const data = await res.json();
     const banner = document.getElementById('viagem-banner');
-
     if (data.ativa) {
       banner.classList.remove('oculto');
       document.getElementById('viagem-motorista').textContent = data.motorista || '—';
-      iniciarCountdownViagem(data.restante);
+      iniciarCountdown(data.restante);
     } else {
       banner.classList.add('oculto');
-      pararCountdownViagem();
+      pararCountdown();
     }
   } catch(e) {}
 }
 
-function iniciarCountdownViagem(segundos) {
-  pararCountdownViagem();
-  let restante = segundos;
-  atualizarTimerViagem(restante);
-  viagemInterval = setInterval(() => {
-    restante--;
-    atualizarTimerViagem(restante);
-    if (restante <= 0) { pararCountdownViagem(); verificarViagem(); }
-  }, 1000);
+function iniciarCountdown(segundos) {
+  pararCountdown();
+  let s = segundos;
+  atualizar(s);
+  viagemInterval = setInterval(() => { s--; atualizar(s); if(s<=0){pararCountdown();verificarViagem();} }, 1000);
 }
-
-function pararCountdownViagem() {
-  if (viagemInterval) { clearInterval(viagemInterval); viagemInterval = null; }
-}
-
-function atualizarTimerViagem(seg) {
-  const m = Math.floor(seg / 60);
-  const s = seg % 60;
+function pararCountdown() { if(viagemInterval){clearInterval(viagemInterval);viagemInterval=null;} }
+function atualizar(s) {
   const el = document.getElementById('viagem-timer');
-  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  el.className = 'viagem-timer' + (seg <= 120 ? ' urgente' : '');
+  el.textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  el.className = 'viagem-timer' + (s<=120?' urgente':'');
 }
 
 // ── Toast ─────────────────────────────────
 function showToast(msg, tipo) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${tipo} show`;
+  t.textContent = msg; t.className = `toast ${tipo} show`;
   setTimeout(() => t.className = 'toast', 3000);
 }
 
-// ── Polling automático ───────────────────
+// ── Init ──────────────────────────────────
+criarSirene();
 carregarAlertas();
 verificarViagem();
-setInterval(carregarAlertas, 8000);
+setInterval(carregarAlertas, 6000);
 setInterval(verificarViagem, 15000);
 </script>
 </body>
