@@ -1,46 +1,147 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <title>Login - Driver Shield 360</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#060d1a">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#060d1a;color:#fff;font-family:Arial,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-    .card{background:#0d1a2e;border:1px solid #1a2a3a;border-radius:20px;padding:32px;max-width:400px;width:100%;text-align:center}
-    .top-bar{height:4px;background:linear-gradient(90deg,#00aaff,#00e676);border-radius:20px 20px 0 0;margin:-32px -32px 28px -32px}
-    .icon{font-size:56px;margin-bottom:12px}
-    h1{font-size:22px;font-weight:900;margin-bottom:4px}
-    .sub{font-size:13px;color:#667;margin-bottom:24px}
-    .input{width:100%;padding:14px;background:#1a2a3a;border:1px solid #2a3a4a;border-radius:12px;color:#fff;font-size:16px;margin-bottom:16px;text-align:center;letter-spacing:2px}
-    .input:focus{outline:none;border-color:#00aaff}
-    .btn{width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,#00aaff,#0077cc);color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s}
-    .btn:hover{opacity:.85}
-    .flash{padding:10px;border-radius:8px;margin-bottom:16px;font-size:13px;background:#6a1a1a;color:#ffaaaa}
-    .back{display:block;margin-top:16px;color:#445;font-size:13px;text-decoration:none}
-    .back:hover{color:#667}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<title>Login — Driver Shield 360</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  :root{
+    --bg:#0a0e1a; --bg2:#111827; --bg3:#1a2235;
+    --blue:#0088ff; --green:#00cc66; --red:#ff2244;
+    --text:#e8edf5; --muted:#8899aa; --border:rgba(0,136,255,.15);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100dvh;
+    display:flex; align-items:center; justify-content:center;
+  }
+  body::before{
+    content:'';
+    position:fixed; inset:0;
+    background:radial-gradient(ellipse 80% 60% at 50% 30%, rgba(0,136,255,.06) 0%, transparent 70%);
+    pointer-events:none;
+  }
+
+  .login-wrap{
+    width:100%; max-width:400px;
+    padding:24px;
+  }
+
+  .logo-area{ text-align:center; margin-bottom:32px; }
+  .logo-icon{ font-size:56px; margin-bottom:12px; }
+  .logo-text{
+    font-family:'Rajdhani',sans-serif;
+    font-size:26px; font-weight:700; color:var(--blue);
+    letter-spacing:1px;
+  }
+  .logo-text span{ color:var(--text); }
+  .logo-sub{ font-size:13px; color:var(--muted); margin-top:4px; }
+
+  .card{
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:28px;
+  }
+
+  .card-title{
+    font-family:'Rajdhani',sans-serif;
+    font-size:20px; font-weight:600;
+    text-align:center; margin-bottom:6px;
+  }
+  .card-sub{ font-size:13px; color:var(--muted); text-align:center; margin-bottom:24px; }
+
+  .flash{
+    padding:10px 14px; border-radius:10px; margin-bottom:16px;
+    font-size:13px; font-weight:500;
+    display:flex; align-items:center; gap:8px;
+  }
+  .flash.erro{ background:rgba(255,34,68,.1); border:1px solid rgba(255,34,68,.25); color:var(--red); }
+
+  .input-group{ margin-bottom:16px; }
+  .input-label{ font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin-bottom:6px; display:block; }
+  .input-field{
+    width:100%; background:var(--bg3); border:1px solid var(--border);
+    border-radius:10px; padding:13px 16px;
+    color:var(--text); font-family:'Inter',sans-serif; font-size:16px;
+    outline:none; transition:border-color .2s; text-align:center;
+    letter-spacing:4px;
+  }
+  .input-field:focus{ border-color:var(--blue); }
+  .input-field::placeholder{ letter-spacing:1px; color:var(--muted); font-size:13px; }
+
+  .btn-login{
+    width:100%; padding:14px;
+    background:var(--blue); border:none; border-radius:10px;
+    color:white; font-family:'Rajdhani',sans-serif;
+    font-size:18px; font-weight:600; letter-spacing:.5px;
+    cursor:pointer; transition:all .2s; margin-top:4px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-login:hover{ background:#0077dd; }
+  .btn-login:active{ transform:scale(.98); }
+
+  .back-link{
+    display:block; text-align:center; margin-top:16px;
+    font-size:13px; color:var(--muted); text-decoration:none;
+    transition:color .2s;
+  }
+  .back-link:hover{ color:var(--text); }
+
+  .info-box{
+    margin-top:20px; padding:12px 14px;
+    background:rgba(0,136,255,.05); border:1px solid rgba(0,136,255,.12);
+    border-radius:10px; font-size:12px; color:var(--muted); line-height:1.5;
+    text-align:center;
+  }
+</style>
 </head>
 <body>
+
+<div class="login-wrap">
+  <div class="logo-area">
+    <div class="logo-icon">🛡️</div>
+    <div class="logo-text">DRIVER<span>·SHIELD</span> 360</div>
+    <div class="logo-sub">Painel de Monitoramento</div>
+  </div>
+
   <div class="card">
-    <div class="top-bar"></div>
-    <div class="icon">🧑‍🤝‍🧑</div>
-    <h1>Painel de Confiança</h1>
-    <div class="sub">Driver Shield 360 — Acesso restrito</div>
+    <div class="card-title">Painel de Confiança</div>
+    <div class="card-sub">Acesso restrito — insira a senha</div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for cat, msg in messages %}
-        <div class="flash">⚠️ {{ msg }}</div>
+        <div class="flash {{ cat }}">⚠️ {{ msg }}</div>
       {% endfor %}
     {% endwith %}
 
-    <form method="post">
-      <input class="input" type="password" name="senha" placeholder="••••••••" autofocus required>
-      <button class="btn" type="submit">🔐 Entrar</button>
+    <form method="POST" action="/painel/login">
+      <div class="input-group">
+        <label class="input-label">Senha de acesso</label>
+        <input
+          class="input-field"
+          type="password"
+          name="senha"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          autofocus
+          required
+        >
+      </div>
+      <button class="btn-login" type="submit">🔐 Entrar no Painel</button>
     </form>
 
-    <a class="back" href="/">← Voltar ao início</a>
+    <a href="/motorista" class="back-link">← Voltar ao sistema do motorista</a>
   </div>
+
+  <div class="info-box">
+    Este painel é destinado a pessoas de confiança do motorista para acompanhar alertas e ocorrências em tempo real.
+  </div>
+</div>
+
 </body>
 </html>

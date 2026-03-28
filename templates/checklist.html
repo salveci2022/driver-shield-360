@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<title>Checklist — Driver Shield 360</title>
+<link rel="manifest" href="/manifest.json">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  :root{--bg:#0a0e1a;--bg2:#111827;--bg3:#1a2235;--blue:#0088ff;--green:#00cc66;--red:#ff2244;--amber:#ffaa00;--text:#e8edf5;--muted:#8899aa;--border:rgba(0,136,255,.15);}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100dvh;}
+
+  .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+  .logo{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--blue);letter-spacing:1px;}
+  .logo span{color:var(--text);}
+  .reset-btn{background:none;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:6px 12px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;}
+  .reset-btn:hover{color:var(--text);}
+
+  .page-header{padding:20px 20px 16px;}
+  .page-header h2{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;}
+  .page-header p{font-size:13px;color:var(--muted);margin-top:4px;}
+
+  /* Progresso */
+  .progress-section{padding:0 16px 20px;}
+  .progress-bar-bg{background:var(--bg3);border-radius:4px;height:8px;overflow:hidden;margin-bottom:8px;}
+  .progress-bar-fill{height:100%;background:var(--green);border-radius:4px;transition:width .4s ease;}
+  .progress-text{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;}
+  .progress-pct{color:var(--green);font-weight:600;}
+
+  /* Status final */
+  .status-card{margin:0 16px 16px;padding:14px 16px;border-radius:12px;font-size:14px;font-weight:600;text-align:center;transition:all .3s;display:none;}
+  .status-card.ok{background:rgba(0,204,102,.1);border:1px solid rgba(0,204,102,.3);color:var(--green);display:block;}
+  .status-card.parcial{background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.25);color:var(--amber);display:block;}
+
+  /* Grupos */
+  .grupo{padding:0 16px 20px;}
+  .grupo-titulo{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;color:var(--blue);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+
+  .item-check{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all .2s;-webkit-user-select:none;user-select:none;}
+  .item-check:active{transform:scale(.98);}
+  .item-check.marcado{background:rgba(0,204,102,.06);border-color:rgba(0,204,102,.25);}
+
+  .checkbox{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:13px;}
+  .item-check.marcado .checkbox{background:var(--green);border-color:var(--green);}
+
+  .item-texto{flex:1;}
+  .item-titulo{font-size:14px;font-weight:500;color:var(--text);line-height:1.3;}
+  .item-check.marcado .item-titulo{color:var(--muted);text-decoration:line-through;}
+  .item-desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4;}
+
+  /* Botão ir embora */
+  .go-btn-section{padding:0 16px 24px;}
+  .go-btn{width:100%;padding:15px;border:none;border-radius:12px;font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .2s;}
+  .go-btn.pronto{background:linear-gradient(135deg,var(--green),#007733);color:white;}
+  .go-btn.pendente{background:var(--bg3);color:var(--muted);border:1px solid var(--border);}
+  .go-btn:active{transform:scale(.98);}
+
+  .nav-spacer{height:80px;}
+  .nav-bar{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border-top:1px solid var(--border);z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+  .nav-item{display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;text-decoration:none;font-size:10px;color:var(--muted);font-weight:500;gap:3px;transition:color .15s;}
+  .nav-item.ativo{color:var(--blue);}
+  .nav-icon{font-size:20px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">DRIVER<span>·SHIELD</span> 360</div>
+  <button class="reset-btn" onclick="resetar()">↺ Resetar</button>
+</div>
+
+<div class="page-header">
+  <h2>✅ Checklist de Segurança</h2>
+  <p>Marque cada item antes de iniciar sua jornada</p>
+</div>
+
+<div class="progress-section">
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+  <div class="progress-text">
+    <span id="progress-label">0 de 12 itens</span>
+    <span class="progress-pct" id="progress-pct">0%</span>
+  </div>
+</div>
+
+<div class="status-card" id="status-card"></div>
+
+<!-- Grupo 1 -->
+<div class="grupo">
+  <div class="grupo-titulo">📱 Aplicativo e contatos</div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c1">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Contatos de confiança cadastrados</div>
+      <div class="item-desc">Pelo menos 1 contato no sistema para receber alertas</div>
+    </div>
+  </div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c2">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">GPS ativo e com permissão</div>
+      <div class="item-desc">Verifique se o ícone GPS está verde na tela principal</div>
+    </div>
+  </div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c3">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Celular com bateria acima de 30%</div>
+      <div class="item-desc">Carregue antes de longas viagens noturnas</div>
+    </div>
+  </div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c4">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Modo Viagem configurado</div>
+      <div class="item-desc">Selecione o tempo estimado da corrida antes de sair</div>
+    </div>
+  </div>
+</div>
+
+<!-- Grupo 2 -->
+<div class="grupo">
+  <div class="grupo-titulo">🚗 Veículo</div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c5">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Portas traseiras desbloqueadas por dentro</div>
+      <div class="item-desc">Passageiro deve conseguir sair sozinho em emergência</div>
+    </div>
+  </div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c6">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Celular visível e de fácil acesso</div>
+      <div class="item-desc">Suporte fixo no para-brisa, tela voltada para você</div>
+    </div>
+  </div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c7">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Combustível suficiente</div>
+      <div class="item-desc">Evite ficar parado em locais desconhecidos sem combustível</div>
+    </div>
+  </div>
+</div>
+
+<!-- Grupo 3 -->
+<div class="grupo">
+  <div class="grupo-titulo">🌙 Corrida noturna</div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c8">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Perfil do passageiro verificado</div>
+      <div class="item-desc">Avaliação, foto e nome conferidos antes de aceitar</div>
+    </div>
+  </div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c9">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Rota conferida antes de partir</div>
+      <div class="item-desc">Verifique se o destino é compatível com o perfil</div>
+    </div>
+  </div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c10">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Familiar/amigo sabe que está trabalhando</div>
+      <div class="item-desc">Comunique horário e região antes de cada turno noturno</div>
+    </div>
+  </div>
+</div>
+
+<!-- Grupo 4 -->
+<div class="grupo">
+  <div class="grupo-titulo">🧠 Mental e físico</div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c11">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Descansada e sem medicamentos que causam sonolência</div>
+      <div class="item-desc">Não dirija com sono ou sob efeito de qualquer medicamento</div>
+    </div>
+  </div>
+
+  <div class="item-check" onclick="toggle(this)" data-id="c12">
+    <div class="checkbox"></div>
+    <div class="item-texto">
+      <div class="item-titulo">Confio nos meus instintos</div>
+      <div class="item-desc">Se sentir algo errado, cancele a corrida sem hesitar</div>
+    </div>
+  </div>
+</div>
+
+<div class="go-btn-section">
+  <button class="go-btn pendente" id="go-btn" onclick="partirComSeguranca()">
+    Completar checklist para partir
+  </button>
+</div>
+
+<div class="nav-spacer"></div>
+
+<div class="nav-bar">
+  <a href="/motorista" class="nav-item"><span class="nav-icon">🛡️</span>SOS</a>
+  <a href="/cadastro"  class="nav-item"><span class="nav-icon">👥</span>Contatos</a>
+  <a href="/checklist" class="nav-item ativo"><span class="nav-icon">✅</span>Checklist</a>
+  <a href="/ia"        class="nav-item"><span class="nav-icon">🤖</span>Shield AI</a>
+</div>
+
+<script>
+const TOTAL = 12;
+let marcados = new Set();
+
+function toggle(el) {
+  const id = el.dataset.id;
+  if (marcados.has(id)) {
+    marcados.delete(id);
+    el.classList.remove('marcado');
+    el.querySelector('.checkbox').textContent = '';
+  } else {
+    marcados.add(id);
+    el.classList.add('marcado');
+    el.querySelector('.checkbox').textContent = '✓';
+  }
+  salvar();
+  atualizar();
+}
+
+function atualizar() {
+  const n = marcados.size;
+  const pct = Math.round((n / TOTAL) * 100);
+
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${n} de ${TOTAL} itens`;
+  document.getElementById('progress-pct').textContent = pct + '%';
+
+  const status = document.getElementById('status-card');
+  const goBtn = document.getElementById('go-btn');
+
+  if (n === TOTAL) {
+    status.className = 'status-card ok';
+    status.textContent = '🟢 Tudo certo! Você está pronta para partir com segurança.';
+    goBtn.className = 'go-btn pronto';
+    goBtn.textContent = '🚗 Partir com segurança!';
+  } else if (n >= 8) {
+    status.className = 'status-card parcial';
+    status.textContent = `⚠️ ${TOTAL - n} itens pendentes — complete para máxima segurança.`;
+    goBtn.className = 'go-btn pendente';
+    goBtn.textContent = `Completar checklist (${n}/${TOTAL})`;
+  } else {
+    status.className = 'status-card';
+    goBtn.className = 'go-btn pendente';
+    goBtn.textContent = `Completar checklist (${n}/${TOTAL})`;
+  }
+}
+
+function partirComSeguranca() {
+  if (marcados.size === TOTAL) {
+    window.location.href = '/motorista';
+  }
+}
+
+function resetar() {
+  if (!confirm('Resetar todos os itens?')) return;
+  marcados.clear();
+  document.querySelectorAll('.item-check').forEach(el => {
+    el.classList.remove('marcado');
+    el.querySelector('.checkbox').textContent = '';
+  });
+  salvar();
+  atualizar();
+}
+
+function salvar() {
+  localStorage.setItem('checklist', JSON.stringify([...marcados]));
+}
+
+function carregar() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('checklist') || '[]');
+    saved.forEach(id => {
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (el) { marcados.add(id); el.classList.add('marcado'); el.querySelector('.checkbox').textContent = '✓'; }
+    });
+  } catch(e) {}
+  atualizar();
+}
+
+carregar();
+</script>
+</body>
+</html>

@@ -1,182 +1,458 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <title>Motorista - Driver Shield 360</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#060d1a">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#060d1a;color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding:16px}
-    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:12px 16px;background:#0d1a2e;border-radius:12px;border:1px solid #1a2a3a}
-    .header h1{font-size:18px;font-weight:900;color:#fff}
-    .header a{color:#667;font-size:13px;text-decoration:none;padding:6px 12px;background:#1a2a3a;border-radius:8px}
-    .card{background:#0d1a2e;border:1px solid #1a2a3a;border-radius:16px;padding:20px;margin-bottom:16px}
-    .card-title{font-size:15px;font-weight:700;color:#aaa;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
-    .sos-wrap{text-align:center;padding:20px 0}
-    .sos-btn{width:180px;height:180px;border-radius:50%;border:6px solid #c0392b;background:radial-gradient(circle,#c0392b,#7b1c13);color:#fff;font-size:42px;font-weight:900;cursor:pointer;letter-spacing:2px;transition:all .2s;box-shadow:0 0 40px #c0392b66}
-    .sos-btn:active{transform:scale(.93)}
-    .sos-btn.sent{background:radial-gradient(circle,#27ae60,#1a7a40);border-color:#27ae60;box-shadow:0 0 40px #27ae6066}
-    .sos-btn:disabled{opacity:.7;cursor:not-allowed}
-    .status{text-align:center;padding:12px;background:#1a2a3a;border-radius:10px;font-size:14px;color:#aaa;margin-top:12px}
-    .input{width:100%;padding:12px;background:#1a2a3a;border:1px solid #2a3a4a;border-radius:10px;color:#fff;font-size:14px;margin-bottom:12px}
-    .input:focus{outline:none;border-color:#00aaff}
-    .oc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-    .oc-btn{padding:12px 8px;border:2px solid transparent;border-radius:10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center}
-    .oc-btn.active{border-color:#fff;transform:scale(1.03);box-shadow:0 0 12px rgba(255,255,255,.2)}
-    .oc-btn:hover{opacity:.85}
-    .loc-box{background:#1a2a3a;border-radius:10px;padding:12px;font-size:12px;color:#00aaff;margin-top:8px}
-    .contacts-list{margin-top:8px}
-    .contact-item{display:flex;align-items:center;gap:10px;padding:10px;background:#1a2a3a;border-radius:10px;margin-bottom:8px}
-    .contact-icon{font-size:20px}
-    .contact-info{flex:1}
-    .contact-name{font-weight:700;font-size:14px}
-    .contact-tel{font-size:12px;color:#667}
-    .notice{font-size:12px;color:#556;padding:10px;background:#1a2a3a;border-radius:8px;line-height:1.6}
-    .divider{border:none;border-top:1px solid #1a2a3a;margin:16px 0}
-    .top-bar{height:4px;background:linear-gradient(90deg,#c0392b,#e74c3c);border-radius:16px 16px 0 0;margin:-20px -20px 16px -20px}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shield 360">
+<title>Driver Shield 360</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  :root{
+    --bg:#0a0e1a;--bg2:#111827;--bg3:#1a2235;
+    --blue:#0088ff;--blue-d:#0066cc;
+    --green:#00cc66;--red:#ff2244;--red-d:#cc0033;--amber:#ffaa00;
+    --text:#e8edf5;--muted:#8899aa;--border:rgba(0,136,255,.15);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100dvh;overflow-x:hidden;}
+
+  .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+  .logo{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:1px;color:var(--blue);}
+  .logo span{color:var(--text);}
+  .header-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pdot 2s ease-in-out infinite;}
+  @keyframes pdot{0%,100%{opacity:1}50%{opacity:.5}}
+
+  .gps-banner{margin:12px 16px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;transition:all .3s;}
+  .gps-banner.ok{background:rgba(0,204,102,.12);border:1px solid rgba(0,204,102,.3);color:var(--green);}
+  .gps-banner.wait{background:rgba(255,170,0,.1);border:1px solid rgba(255,170,0,.3);color:var(--amber);}
+  .gps-banner.erro{background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.3);color:var(--red);}
+
+  .nome-section{padding:16px 16px 8px;}
+  .nome-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:6px;}
+  .nome-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+  .nome-input:focus{border-color:var(--blue);}
+
+  .tipo-section{padding:8px 16px;}
+  .tipo-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px;}
+  .tipo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+  .tipo-btn{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 8px;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;text-align:center;transition:all .15s;line-height:1.3;}
+  .tipo-btn.ativo{background:rgba(0,136,255,.15);border-color:var(--blue);color:var(--text);}
+  .tipo-btn:active{transform:scale(.97);}
+
+  .sos-section{padding:20px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .sos-btn{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff3355,var(--red-d));border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform .1s,box-shadow .3s;position:relative;z-index:1;-webkit-user-select:none;user-select:none;}
+  .sos-btn.idle{animation:sos-pulse 2.5s ease-in-out infinite;}
+  @keyframes sos-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,34,68,.4);}50%{box-shadow:0 0 0 20px rgba(255,34,68,.0);}}
+  .sos-btn:active{transform:scale(.93);}
+  .sos-btn.disparado{background:radial-gradient(circle at 35% 35%,#ff6644,#cc3300);animation:none;box-shadow:0 0 30px rgba(255,100,0,.6);}
+  .sos-icon{font-size:48px;line-height:1;}
+  .sos-text{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:white;letter-spacing:3px;}
+  .sos-sub{font-size:10px;color:rgba(255,255,255,.7);font-weight:500;letter-spacing:.5px;text-transform:uppercase;}
+  .sos-hint{font-size:11px;color:var(--muted);text-align:center;}
+
+  /* Dica discreta */
+  .dica-volume{margin:0 16px 8px;padding:8px 12px;background:rgba(255,170,0,.06);border:1px solid rgba(255,170,0,.15);border-radius:8px;font-size:11px;color:var(--muted);text-align:center;}
+
+  /* Modo Viagem */
+  .viagem-section{padding:8px 16px 16px;}
+  .viagem-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;}
+  .viagem-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:var(--amber);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+  .viagem-desc{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5;}
+  .viagem-config{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .min-label{font-size:12px;color:var(--muted);white-space:nowrap;}
+  .min-select{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;outline:none;}
+  .btn-viagem{width:100%;padding:12px;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:all .2s;}
+  .btn-viagem.iniciar{background:linear-gradient(135deg,#ffaa00,#ff6600);color:#0a0e1a;}
+  .btn-viagem.confirmar{background:linear-gradient(135deg,#00cc66,#009944);color:white;}
+  .btn-viagem.cancelar{background:var(--bg2);border:1px solid var(--border);color:var(--muted);margin-top:6px;font-size:13px;padding:8px;}
+  .btn-viagem:active{transform:scale(.97);}
+  .timer-display{display:none;text-align:center;padding:10px 0 4px;}
+  .timer-display.visivel{display:block;}
+  .timer-num{font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:700;color:var(--amber);line-height:1;}
+  .timer-num.urgente{color:var(--red);animation:blink .6s step-end infinite;}
+  @keyframes blink{50%{opacity:.3}}
+  .timer-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:2px;}
+
+  /* Links rápidos */
+  .links-section{padding:0 16px 8px;}
+  .links-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+  .link-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:border-color .2s;}
+  .link-card:hover{border-color:rgba(0,136,255,.3);}
+  .link-card-icon{font-size:22px;}
+  .link-card-text{font-size:12px;font-weight:500;color:var(--text);}
+  .link-card-sub{font-size:10px;color:var(--muted);}
+
+  /* Contatos */
+  .contatos-section{padding:8px 16px 24px;}
+  .section-title{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px;}
+  .contato-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;font-size:13px;}
+  .contato-avatar{width:32px;height:32px;border-radius:50%;background:rgba(0,136,255,.2);border:1px solid rgba(0,136,255,.3);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .contato-nome{font-weight:500;color:var(--text);}
+  .contato-rel{font-size:11px;color:var(--muted);}
+  .sem-contatos{text-align:center;padding:16px;color:var(--muted);font-size:13px;background:var(--bg3);border-radius:10px;border:1px dashed var(--border);}
+  .sem-contatos a{color:var(--blue);text-decoration:none;}
+
+  .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-size:14px;font-weight:500;color:var(--text);z-index:999;opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.4);pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.ok{border-color:rgba(0,204,102,.4);color:var(--green);}
+  .toast.erro{border-color:rgba(255,34,68,.4);color:var(--red);}
+
+  .nav-bar{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border-top:1px solid var(--border);z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+  .nav-item{display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;text-decoration:none;font-size:10px;color:var(--muted);font-weight:500;letter-spacing:.3px;gap:3px;transition:color .15s;}
+  .nav-item.ativo{color:var(--blue);}
+  .nav-icon{font-size:20px;}
+  .nav-spacer{height:80px;}
+
+  .install-banner{margin:0 16px 12px;padding:10px 14px;background:rgba(0,136,255,.08);border:1px solid rgba(0,136,255,.2);border-radius:10px;display:flex;align-items:center;justify-content:space-between;font-size:12px;}
+  .install-banner span{color:var(--muted);}
+  .install-btn{background:var(--blue);border:none;border-radius:6px;padding:6px 12px;color:white;font-size:12px;font-weight:600;cursor:pointer;}
+</style>
 </head>
 <body>
-  <div class="header">
-    <h1>🚕 Painel do Motorista</h1>
-    <a href="/">← Início</a>
+
+<div class="header">
+  <div class="logo">DRIVER<span>·SHIELD</span> 360</div>
+  <div class="header-status">
+    <div class="dot"></div>
+    <span id="status-txt">Protegido</span>
   </div>
+</div>
 
-  <div class="card">
-    <div class="top-bar" style="background:linear-gradient(90deg,#c0392b,#e74c3c)"></div>
-    <div class="card-title">Botão de Pânico</div>
-    <div class="sos-wrap">
-      <button id="sosBtn" class="sos-btn" onclick="enviar()">SOS</button>
-    </div>
-    <div id="status" class="status">
-      Selecione a ocorrência e pressione <b>SOS</b>
-    </div>
+<div class="gps-banner wait" id="gps-banner">📡 Obtendo localização GPS...</div>
+
+<div class="install-banner" id="install-banner" style="display:none">
+  <span>📲 Instalar como app no celular</span>
+  <button class="install-btn" id="install-btn">Instalar</button>
+</div>
+
+<div class="nome-section">
+  <div class="nome-label">Seu nome</div>
+  <input class="nome-input" id="nome-input" type="text" placeholder="Ex: Maria Silva" maxlength="50">
+</div>
+
+<div class="tipo-section">
+  <div class="tipo-label">Tipo de ocorrência</div>
+  <div class="tipo-grid">
+    <button class="tipo-btn ativo" data-tipo="Emergência Geral">🚨 Emergência</button>
+    <button class="tipo-btn" data-tipo="Passageiro Suspeito">👤 Passageiro Suspeito</button>
+    <button class="tipo-btn" data-tipo="Perseguição">🚗 Perseguição</button>
+    <button class="tipo-btn" data-tipo="Acidente">💥 Acidente</button>
+    <button class="tipo-btn" data-tipo="Assalto">🔪 Assalto</button>
+    <button class="tipo-btn" data-tipo="Pane / Parado">⛽ Pane / Parado</button>
+    <button class="tipo-btn" data-tipo="Área Perigosa">📍 Área Perigosa</button>
+    <button class="tipo-btn" data-tipo="Outro">⚠️ Outro</button>
   </div>
+</div>
 
-  <div class="card">
-    <div class="card-title">Tipo de Ocorrência</div>
-    <select id="ocorrencia" style="display:none"></select>
-    <div class="oc-grid">
-      <button class="oc-btn active" data-value="Abordagem suspeita" style="background:#1a3a6a">🚶 Abordagem suspeita</button>
-      <button class="oc-btn" data-value="Tentativa de assalto" style="background:#6a1a1a">🔫 Tentativa de assalto</button>
-      <button class="oc-btn" data-value="Ameaça / intimidação" style="background:#6a1a1a">😠 Ameaça / intimidação</button>
-      <button class="oc-btn" data-value="Passageiro agressivo" style="background:#6a3a1a">👤 Passageiro agressivo</button>
-      <button class="oc-btn" data-value="Seguimento / perseguição" style="background:#1a3a6a">🚗 Perseguição</button>
-      <button class="oc-btn" data-value="Emergência médica" style="background:#1a4a3a">🏥 Emergência médica</button>
-      <button class="oc-btn" data-value="Acidente de trânsito" style="background:#4a3a1a">💥 Acidente de trânsito</button>
-      <button class="oc-btn" data-value="Outro" style="background:#2a2a3a">❓ Outro</button>
-    </div>
+<div class="sos-section">
+  <button class="sos-btn idle" id="sos-btn" onclick="disparar()">
+    <span class="sos-icon">🛡️</span>
+    <span class="sos-text">SOS</span>
+    <span class="sos-sub" id="sos-sub">Pressione para alertar</span>
+  </button>
+  <div class="sos-hint">Alerta com GPS enviado por WhatsApp</div>
+</div>
 
-    <label style="font-size:13px;color:#aaa;margin-bottom:6px;display:block">Seu nome (opcional)</label>
-    <input id="motoristaNome" class="input" placeholder="Ex: João — Uber">
+<div class="dica-volume">⚡ Dica: pressione o botão de volume 3× rapidamente para disparar SOS discretamente</div>
 
-    <div class="loc-box" id="locTxt">📍 Aguardando localização GPS...</div>
-  </div>
-
-  {% if contacts and contacts|length > 0 %}
-  <div class="card">
-    <div class="card-title">Contatos que serão notificados</div>
-    <div class="contacts-list">
-      {% for c in contacts %}
-      <div class="contact-item">
-        <div class="contact-icon">👤</div>
-        <div class="contact-info">
-          <div class="contact-name">{{ c.nome }}</div>
-          <div class="contact-tel">{{ c.telefone }}</div>
-        </div>
-        <div style="color:#00e676;font-size:12px;font-weight:700">✅ Ativo</div>
+<div class="viagem-section">
+  <div class="viagem-card">
+    <div class="viagem-title">⏰ Modo Viagem</div>
+    <div class="viagem-desc">Configure o tempo. Se não confirmar chegada, alerta automático é enviado.</div>
+    <div id="viagem-config-panel">
+      <div class="viagem-config">
+        <span class="min-label">Tempo:</span>
+        <select class="min-select" id="min-select">
+          <option value="10">10 minutos</option>
+          <option value="15">15 minutos</option>
+          <option value="20">20 minutos</option>
+          <option value="30" selected>30 minutos</option>
+          <option value="45">45 minutos</option>
+          <option value="60">1 hora</option>
+          <option value="90">1h30</option>
+          <option value="120">2 horas</option>
+        </select>
       </div>
-      {% endfor %}
+      <button class="btn-viagem iniciar" onclick="iniciarViagem()">⏰ Iniciar Modo Viagem</button>
+    </div>
+    <div id="viagem-ativa-panel" style="display:none">
+      <div class="timer-display visivel">
+        <div class="timer-num" id="timer-num">--:--</div>
+        <div class="timer-label">restante para alerta automático</div>
+      </div>
+      <button class="btn-viagem confirmar" onclick="confirmarChegada()">✅ Cheguei com segurança!</button>
+      <button class="btn-viagem cancelar" onclick="cancelarViagem()">Cancelar viagem</button>
     </div>
   </div>
-  {% else %}
-  <div class="card">
-    <div class="notice">⚠️ Nenhum contato cadastrado. <a href="/cadastro" style="color:#00aaff">Cadastrar agora →</a></div>
+</div>
+
+<div class="links-section">
+  <div class="section-title">Acesso rápido</div>
+  <div class="links-grid">
+    <a href="/checklist" class="link-card">
+      <span class="link-card-icon">✅</span>
+      <div><div class="link-card-text">Checklist</div><div class="link-card-sub">Antes de sair</div></div>
+    </a>
+    <a href="/historico" class="link-card">
+      <span class="link-card-icon">📋</span>
+      <div><div class="link-card-text">Histórico</div><div class="link-card-sub">Minhas viagens</div></div>
+    </a>
   </div>
+</div>
+
+<div class="contatos-section">
+  <div class="section-title">Contatos de confiança</div>
+  {% if contacts %}
+    {% for c in contacts %}
+    <div class="contato-item">
+      <div class="contato-avatar">👤</div>
+      <div>
+        <div class="contato-nome">{{ c.nome }}</div>
+        <div class="contato-rel">{{ c.get('relacao','Contato') }} · {{ c.telefone }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="sem-contatos">
+      Nenhum contato cadastrado.<br>
+      <a href="/cadastro">Cadastrar agora →</a>
+    </div>
   {% endif %}
+</div>
 
-  <script>
-    // Ocorrência selecionada
-    let ocorrenciaSelecionada = "Abordagem suspeita";
+<div class="nav-spacer"></div>
+<div class="toast" id="toast"></div>
 
-    document.querySelectorAll('.oc-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.oc-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        ocorrenciaSelecionada = this.dataset.value;
-      });
+<div class="nav-bar">
+  <a href="/motorista" class="nav-item ativo"><span class="nav-icon">🛡️</span>SOS</a>
+  <a href="/cadastro"  class="nav-item"><span class="nav-icon">👥</span>Contatos</a>
+  <a href="/checklist" class="nav-item"><span class="nav-icon">✅</span>Checklist</a>
+  <a href="/ia"        class="nav-item"><span class="nav-icon">🤖</span>Shield AI</a>
+</div>
+
+<script>
+// ── Token API ────────────────────────────
+let API_TOKEN = null;
+async function carregarToken() {
+  try {
+    const r = await fetch('/api/token');
+    const d = await r.json();
+    API_TOKEN = d.token;
+  } catch(e) { API_TOKEN = 'ds360-api-2026'; }
+}
+
+function apiHeaders() {
+  return { 'Content-Type': 'application/json', 'X-Shield-Token': API_TOKEN };
+}
+
+// ── GPS ──────────────────────────────────
+let gpsLat = null, gpsLng = null;
+const gpsBanner = document.getElementById('gps-banner');
+
+function iniciarGPS() {
+  if (!navigator.geolocation) {
+    gpsBanner.className = 'gps-banner erro';
+    gpsBanner.textContent = '❌ GPS não disponível';
+    return;
+  }
+  navigator.geolocation.watchPosition(
+    pos => {
+      gpsLat = pos.coords.latitude.toFixed(6);
+      gpsLng = pos.coords.longitude.toFixed(6);
+      gpsBanner.className = 'gps-banner ok';
+      gpsBanner.textContent = `✅ GPS ativo — ${gpsLat}, ${gpsLng}`;
+    },
+    () => {
+      gpsBanner.className = 'gps-banner erro';
+      gpsBanner.textContent = '⚠️ GPS sem permissão — alerta sem localização';
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+  );
+}
+
+// ── Tipo de ocorrência ───────────────────
+let tipoSelecionado = 'Emergência Geral';
+document.querySelectorAll('.tipo-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('ativo'));
+    btn.classList.add('ativo');
+    tipoSelecionado = btn.dataset.tipo;
+  });
+});
+
+// ── SOS ──────────────────────────────────
+let disparando = false;
+
+async function disparar() {
+  if (disparando || !API_TOKEN) return;
+  disparando = true;
+  const nome = document.getElementById('nome-input').value.trim() || 'Motorista';
+  const btn = document.getElementById('sos-btn');
+  btn.classList.remove('idle');
+  btn.classList.add('disparado');
+  document.getElementById('sos-sub').textContent = 'Enviando alerta...';
+  document.getElementById('status-txt').textContent = 'ALERTA ATIVO';
+  vibrar([200,100,200,100,400]);
+  try {
+    const res = await fetch('/api/panic', {
+      method: 'POST', headers: apiHeaders(),
+      body: JSON.stringify({ motorista: nome, ocorrencia: tipoSelecionado, lat: gpsLat, lng: gpsLng })
     });
-
-    // GPS
-    let lastPos = null;
-    function setLocText(txt){ document.getElementById('locTxt').textContent = '📍 ' + txt; }
-
-    if(navigator.geolocation){
-      navigator.geolocation.watchPosition(
-        pos => {
-          lastPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          setLocText(`Lat: ${lastPos.lat.toFixed(6)} | Lng: ${lastPos.lng.toFixed(6)} (precisão: ~${Math.round(pos.coords.accuracy)}m)`);
-        },
-        () => setLocText('Permita acesso à localização nas configurações do navegador.'),
-        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
-      );
+    const data = await res.json();
+    if (data.ok) {
+      showToast('🚨 Alerta enviado!', 'ok');
+      document.getElementById('sos-sub').textContent = 'Alerta disparado!';
     } else {
-      setLocText('Geolocalização não disponível neste dispositivo.');
+      showToast('Erro: ' + (data.erro || 'tente novamente'), 'erro');
     }
+  } catch(e) {
+    showToast('Sem conexão', 'erro');
+  }
+  setTimeout(() => {
+    disparando = false;
+    btn.classList.remove('disparado'); btn.classList.add('idle');
+    document.getElementById('sos-sub').textContent = 'Pressione para alertar';
+    document.getElementById('status-txt').textContent = 'Protegido';
+  }, 5000);
+}
 
-    // Enviar SOS
-    async function enviar(){
-      const btn = document.getElementById('sosBtn');
-      const status = document.getElementById('status');
-      btn.disabled = true;
-      status.textContent = '⏳ Enviando alerta...';
-
-      // Tenta posição mais recente
-      await new Promise(resolve => {
-        if(!navigator.geolocation){ resolve(); return; }
-        navigator.geolocation.getCurrentPosition(
-          pos => { lastPos = { lat: pos.coords.latitude, lng: pos.coords.longitude }; resolve(); },
-          () => resolve(),
-          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-        );
-      });
-
-      const payload = {
-        motorista: (document.getElementById('motoristaNome').value || 'Motorista').trim(),
-        ocorrencia: ocorrenciaSelecionada,
-        lat: lastPos ? lastPos.lat : null,
-        lng: lastPos ? lastPos.lng : null
-      };
-
-      try{
-        const res = await fetch('/api/panic', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const j = await res.json();
-
-        if(j.ok){
-          btn.classList.add('sent');
-          btn.textContent = '✅';
-          status.innerHTML = '<b style="color:#27ae60">✅ ALERTA ENVIADO! Aguarde atendimento.</b>';
-          // Vibrar o celular
-          if(navigator.vibrate) navigator.vibrate([500, 200, 500]);
-        } else {
-          status.innerHTML = '<b style="color:#e74c3c">❌ Falha ao enviar. Tente novamente.</b>';
-        }
-      } catch(e) {
-        status.innerHTML = '<b style="color:#e74c3c">❌ Erro de conexão. Tente novamente.</b>';
-      }
-
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.classList.remove('sent');
-        btn.textContent = 'SOS';
-        status.textContent = 'Selecione a ocorrência e pressione SOS';
-      }, 8000);
+// ── Botão Volume — SOS Disfarçado ────────
+let volPresses = 0, volTimer = null;
+document.addEventListener('keydown', e => {
+  if (e.key === 'AudioVolumeUp' || e.key === 'VolumeUp' ||
+      e.key === 'AudioVolumeDown' || e.key === 'VolumeDown') {
+    volPresses++;
+    clearTimeout(volTimer);
+    if (volPresses >= 3) {
+      volPresses = 0;
+      disparar();
+    } else {
+      volTimer = setTimeout(() => { volPresses = 0; }, 2000);
     }
-  </script>
+  }
+});
+
+// ── Dead Man's Switch ─────────────────────
+let timerInterval = null, tempoRestante = 0;
+
+async function iniciarViagem() {
+  if (!API_TOKEN) return;
+  const nome = document.getElementById('nome-input').value.trim() || 'Motorista';
+  const minutos = parseInt(document.getElementById('min-select').value);
+  const res = await fetch('/api/viagem/iniciar', {
+    method: 'POST', headers: apiHeaders(),
+    body: JSON.stringify({ motorista: nome, minutos, lat: gpsLat, lng: gpsLng })
+  });
+  const data = await res.json();
+  if (data.ok) {
+    tempoRestante = data.segundos;
+    mostrarPainelAtivo();
+    iniciarTimerLocal();
+    showToast(`⏰ Modo viagem: ${minutos} min`, 'ok');
+    vibrar([200]);
+  } else {
+    showToast(data.erro || 'Erro ao iniciar', 'erro');
+  }
+}
+
+async function confirmarChegada() {
+  if (!API_TOKEN) return;
+  await fetch('/api/viagem/confirmar', { method: 'POST', headers: apiHeaders() });
+  pararTimer();
+  mostrarPainelConfig();
+  showToast('✅ Chegada confirmada!', 'ok');
+  vibrar([200,100,200]);
+}
+
+async function cancelarViagem() {
+  if (!API_TOKEN) return;
+  await fetch('/api/viagem/cancelar', { method: 'POST', headers: apiHeaders() });
+  pararTimer();
+  mostrarPainelConfig();
+  showToast('Viagem cancelada.', 'ok');
+}
+
+function mostrarPainelAtivo() {
+  document.getElementById('viagem-config-panel').style.display = 'none';
+  document.getElementById('viagem-ativa-panel').style.display  = 'block';
+}
+function mostrarPainelConfig() {
+  document.getElementById('viagem-config-panel').style.display = 'block';
+  document.getElementById('viagem-ativa-panel').style.display  = 'none';
+}
+function iniciarTimerLocal() {
+  pararTimer();
+  atualizarTimer();
+  timerInterval = setInterval(() => {
+    tempoRestante--;
+    atualizarTimer();
+    if (tempoRestante <= 0) { pararTimer(); mostrarPainelConfig(); }
+  }, 1000);
+}
+function pararTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+function atualizarTimer() {
+  const m = Math.floor(tempoRestante / 60), s = tempoRestante % 60;
+  const el = document.getElementById('timer-num');
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.className = 'timer-num' + (tempoRestante <= 120 ? ' urgente' : '');
+}
+
+async function verificarViagemAtiva() {
+  try {
+    const res = await fetch('/api/viagem/status');
+    const data = await res.json();
+    if (data.ativa) {
+      tempoRestante = data.restante;
+      mostrarPainelAtivo();
+      iniciarTimerLocal();
+    }
+  } catch(e) {}
+}
+
+// ── Utils ─────────────────────────────────
+function vibrar(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }
+
+function showToast(msg, tipo) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${tipo} show`;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ── PWA Install ──────────────────────────
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('install-banner').style.display = 'flex';
+});
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner').style.display = 'none';
+});
+
+// ── SW ────────────────────────────────────
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+
+// ── Nome persistido ───────────────────────
+const nomeInput = document.getElementById('nome-input');
+const nomeGuardado = localStorage.getItem('motorista_nome');
+if (nomeGuardado) nomeInput.value = nomeGuardado;
+nomeInput.addEventListener('change', () => localStorage.setItem('motorista_nome', nomeInput.value));
+
+// ── Init ──────────────────────────────────
+carregarToken().then(() => {
+  iniciarGPS();
+  verificarViagemAtiva();
+});
+</script>
 </body>
 </html>

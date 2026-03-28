@@ -1,83 +1,298 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <title>Cadastro - Driver Shield 360</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#060d1a;color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding:16px}
-    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:12px 16px;background:#0d1a2e;border-radius:12px;border:1px solid #1a2a3a}
-    .header h1{font-size:16px;font-weight:900}
-    .header a{color:#667;font-size:13px;text-decoration:none;padding:6px 12px;background:#1a2a3a;border-radius:8px}
-    .card{background:#0d1a2e;border:1px solid #1a2a3a;border-radius:16px;padding:20px;margin-bottom:14px}
-    .card-title{font-size:13px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
-    .input{width:100%;padding:12px;background:#1a2a3a;border:1px solid #2a3a4a;border-radius:10px;color:#fff;font-size:14px;margin-bottom:12px}
-    .input:focus{outline:none;border-color:#00aaff}
-    label{font-size:13px;color:#aaa;display:block;margin-bottom:6px}
-    .btn{padding:12px 20px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;display:inline-block}
-    .btn-blue{background:#00aaff;color:#fff}
-    .btn-red{background:#c0392b22;color:#e74c3c;border:1px solid #c0392b55}
-    .btn:hover{opacity:.85}
-    .contact-item{display:flex;align-items:center;gap:12px;padding:12px;background:#1a2a3a;border-radius:10px;margin-bottom:8px}
-    .contact-icon{font-size:24px}
-    .contact-info{flex:1}
-    .contact-name{font-weight:700;font-size:14px}
-    .contact-tel{font-size:12px;color:#667;margin-top:2px}
-    .flash{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}
-    .flash.ok{background:#27ae6022;color:#27ae60;border:1px solid #27ae6055}
-    .flash.erro{background:#c0392b22;color:#e74c3c;border:1px solid #c0392b55}
-    .notice{font-size:12px;color:#556;padding:10px;background:#1a2a3a;border-radius:8px}
-    .top-bar{height:4px;background:linear-gradient(90deg,#00aaff,#00e676);border-radius:16px 16px 0 0;margin:-20px -20px 16px -20px}
-    .limit-badge{display:inline-block;background:#00aaff22;color:#00aaff;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;margin-left:8px}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Contatos — Driver Shield 360</title>
+<link rel="manifest" href="/manifest.json">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  :root {
+    --bg:#0a0e1a; --bg2:#111827; --bg3:#1a2235;
+    --blue:#0088ff; --blue-d:#0066cc;
+    --green:#00cc66; --red:#ff2244;
+    --amber:#ffaa00;
+    --text:#e8edf5; --muted:#8899aa;
+    --border:rgba(0,136,255,.15);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body{ background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100dvh; }
+
+  .header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px;
+    background:var(--bg2); border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:100;
+  }
+  .logo{ font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; letter-spacing:1px; color:var(--blue); }
+  .logo span{ color:var(--text); }
+  .header-count{
+    font-size:12px; color:var(--muted);
+    background:var(--bg3); border:1px solid var(--border);
+    padding:4px 10px; border-radius:20px;
+  }
+  .header-count strong{ color:var(--text); }
+
+  .page-title{ padding:20px 20px 4px; }
+  .page-title h2{ font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; }
+  .page-title p{ font-size:13px; color:var(--muted); margin-top:4px; }
+
+  /* Flash messages */
+  .flash{
+    margin:12px 16px 0;
+    padding:10px 14px; border-radius:10px;
+    font-size:13px; font-weight:500;
+    display:flex; align-items:center; gap:8px;
+  }
+  .flash.ok  { background:rgba(0,204,102,.1); border:1px solid rgba(0,204,102,.25); color:var(--green); }
+  .flash.erro{ background:rgba(255,34,68,.1);  border:1px solid rgba(255,34,68,.25);  color:var(--red); }
+
+  /* Formulário */
+  .form-card{
+    margin:16px; padding:20px;
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:16px;
+  }
+  .form-title{
+    font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:600;
+    color:var(--blue); margin-bottom:16px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .form-row{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+  .form-label{ font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); }
+  .form-input{
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:10px; padding:12px 14px;
+    color:var(--text); font-family:'Inter',sans-serif; font-size:15px;
+    outline:none; width:100%; transition:border-color .2s;
+  }
+  .form-input:focus{ border-color:var(--blue); }
+  .form-select{
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:10px; padding:12px 14px;
+    color:var(--text); font-family:'Inter',sans-serif; font-size:15px;
+    outline:none; width:100%;
+    -webkit-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238899aa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center;
+  }
+  .btn-add{
+    width:100%; padding:13px;
+    background:var(--blue); border:none; border-radius:10px;
+    color:white; font-family:'Rajdhani',sans-serif;
+    font-size:16px; font-weight:600; letter-spacing:.5px;
+    cursor:pointer; transition:all .2s; margin-top:4px;
+  }
+  .btn-add:hover{ background:var(--blue-d); }
+  .btn-add:active{ transform:scale(.98); }
+  .btn-add:disabled{ background:var(--bg3); color:var(--muted); cursor:not-allowed; }
+
+  /* Limite banner */
+  .limite-banner{
+    margin:0 16px;
+    padding:10px 14px; border-radius:10px;
+    background:rgba(255,170,0,.08); border:1px solid rgba(255,170,0,.2);
+    font-size:13px; color:var(--amber); font-weight:500;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  /* Lista de contatos */
+  .contatos-section{ padding:20px 16px; }
+  .section-label{ font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin-bottom:12px; }
+
+  .contato-card{
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:14px; padding:16px;
+    margin-bottom:10px;
+    display:flex; align-items:center; gap:14px;
+    position:relative; overflow:hidden;
+  }
+  .contato-card::before{
+    content:''; position:absolute;
+    left:0; top:0; bottom:0; width:3px;
+    background:var(--blue);
+  }
+  .contato-avatar{
+    width:44px; height:44px; flex-shrink:0;
+    border-radius:50%;
+    background:rgba(0,136,255,.15);
+    border:1px solid rgba(0,136,255,.25);
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+  }
+  .contato-info{ flex:1; min-width:0; }
+  .contato-nome{ font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .contato-meta{ display:flex; gap:8px; margin-top:3px; flex-wrap:wrap; }
+  .contato-tel{ font-size:13px; color:var(--muted); }
+  .contato-rel{
+    font-size:11px; color:var(--blue); font-weight:600;
+    background:rgba(0,136,255,.1); border:1px solid rgba(0,136,255,.2);
+    padding:1px 7px; border-radius:4px; text-transform:uppercase; letter-spacing:.3px;
+  }
+  .contato-num{
+    width:24px; height:24px; flex-shrink:0;
+    border-radius:50%; background:var(--bg3); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; color:var(--muted); font-weight:600;
+  }
+
+  .btn-delete{
+    background:none; border:1px solid rgba(255,34,68,.2); border-radius:8px;
+    padding:7px 10px; color:var(--red); font-size:18px;
+    cursor:pointer; flex-shrink:0; transition:all .2s;
+  }
+  .btn-delete:hover{ background:rgba(255,34,68,.1); }
+
+  /* Vazio */
+  .empty-state{
+    text-align:center; padding:32px 16px;
+    background:var(--bg2); border:1px dashed rgba(0,136,255,.2);
+    border-radius:16px;
+  }
+  .empty-icon{ font-size:48px; margin-bottom:12px; }
+  .empty-title{ font-family:'Rajdhani',sans-serif; font-size:18px; font-weight:600; margin-bottom:6px; }
+  .empty-desc{ font-size:13px; color:var(--muted); }
+
+  /* Dica */
+  .dica{
+    margin:0 16px 16px;
+    padding:10px 14px; border-radius:10px;
+    background:rgba(0,136,255,.05); border:1px solid rgba(0,136,255,.12);
+    font-size:12px; color:var(--muted); line-height:1.5;
+  }
+  .dica strong{ color:var(--text); }
+
+  .nav-spacer{ height:80px; }
+
+  .nav-bar{
+    position:fixed; bottom:0; left:0; right:0;
+    display:grid; grid-template-columns:repeat(3,1fr);
+    background:var(--bg2); border-top:1px solid var(--border);
+    z-index:100; padding-bottom:env(safe-area-inset-bottom);
+  }
+  .nav-item{
+    display:flex; flex-direction:column; align-items:center;
+    padding:10px 0 8px; text-decoration:none;
+    font-size:10px; color:var(--muted); font-weight:500;
+    letter-spacing:.3px; gap:3px; transition:color .15s;
+  }
+  .nav-item.ativo{ color:var(--blue); }
+  .nav-icon{ font-size:20px; }
+</style>
 </head>
 <body>
-  <div class="header">
-    <h1>👥 Cadastro de Contatos</h1>
-    <a href="/">← Início</a>
+
+<div class="header">
+  <div class="logo">DRIVER<span>·SHIELD</span> 360</div>
+  <div class="header-count">
+    <strong>{{ contacts|length }}</strong>/5 contatos
   </div>
+</div>
 
-  <div class="card">
-    <div class="top-bar"></div>
-    <div class="card-title">Adicionar contato <span class="limit-badge">{{ contacts|length }}/5</span></div>
+<div class="page-title">
+  <h2>👥 Contatos de Confiança</h2>
+  <p>Essas pessoas receberão o alerta no WhatsApp</p>
+</div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for cat, msg in messages %}
-        <div class="flash {{ cat }}">{{ msg }}</div>
-      {% endfor %}
-    {% endwith %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+    <div class="flash {{ cat }}">
+      {% if cat == 'ok' %}✅{% else %}⚠️{% endif %} {{ msg }}
+    </div>
+  {% endfor %}
+{% endwith %}
 
-    <form method="post" autocomplete="off">
-      <input type="hidden" name="acao" value="add">
-      <label>Nome completo</label>
-      <input class="input" name="nome" placeholder="Ex: Maria Silva" required>
-      <label>Telefone WhatsApp (com DDD)</label>
-      <input class="input" name="telefone" placeholder="Ex: (61) 99999-9999" required>
-      <button class="btn btn-blue" type="submit">+ Cadastrar contato</button>
-    </form>
-  </div>
+{% if contacts|length < 5 %}
+<div class="form-card">
+  <div class="form-title">➕ Adicionar contato</div>
+  <form method="POST" action="/cadastro">
+    <input type="hidden" name="acao" value="add">
 
-  <div class="card">
-    <div class="card-title">Contatos cadastrados</div>
-    {% if contacts and contacts|length > 0 %}
-      {% for c in contacts %}
-      <div class="contact-item">
-        <div class="contact-icon">👤</div>
-        <div class="contact-info">
-          <div class="contact-name">{{ c.nome }}</div>
-          <div class="contact-tel">📱 {{ c.telefone }}</div>
-        </div>
-        <form method="post" style="margin:0">
-          <input type="hidden" name="acao" value="delete">
-          <input type="hidden" name="idx" value="{{ loop.index0 }}">
-          <button class="btn btn-red" type="submit">Apagar</button>
-        </form>
+    <div class="form-row">
+      <label class="form-label">Nome completo</label>
+      <input class="form-input" type="text" name="nome" placeholder="Ex: Ana Lima" maxlength="60" required autocomplete="name">
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">WhatsApp (com DDD)</label>
+      <input class="form-input" type="tel" name="telefone" placeholder="Ex: 61999887766" maxlength="20" required autocomplete="tel" inputmode="tel">
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Relação</label>
+      <select class="form-select" name="relacao">
+        <option value="Familiar">👨‍👩‍👧 Familiar</option>
+        <option value="Cônjuge">💑 Cônjuge / Parceiro(a)</option>
+        <option value="Amigo(a)">👫 Amigo(a)</option>
+        <option value="Colega">🤝 Colega de trabalho</option>
+        <option value="Emergência">🆘 Contato de emergência</option>
+      </select>
+    </div>
+
+    <button class="btn-add" type="submit">➕ Cadastrar contato</button>
+  </form>
+</div>
+{% else %}
+<div class="limite-banner">
+  ⚠️ Limite atingido — máximo de 5 contatos cadastrados.
+</div>
+{% endif %}
+
+<div class="dica">
+  <strong>💡 Dica:</strong> Cadastre o número com DDD, sem espaços ou traços. Ex: 61999887766. O contato receberá alertas via WhatsApp automaticamente quando você pressionar SOS.
+</div>
+
+<div class="contatos-section">
+  <div class="section-label">Contatos cadastrados ({{ contacts|length }}/5)</div>
+
+  {% if contacts %}
+    {% for c in contacts %}
+    <div class="contato-card">
+      <div class="contato-num">{{ loop.index }}</div>
+      <div class="contato-avatar">
+        {% if c.get('relacao') == 'Cônjuge' %}💑
+        {% elif c.get('relacao') == 'Familiar' %}👨‍👩‍👧
+        {% elif c.get('relacao') == 'Amigo(a)' %}👫
+        {% else %}👤{% endif %}
       </div>
-      {% endfor %}
-    {% else %}
-      <div class="notice">Nenhum contato cadastrado ainda. Adicione até 5 pessoas de confiança.</div>
-    {% endif %}
-  </div>
+      <div class="contato-info">
+        <div class="contato-nome">{{ c.nome }}</div>
+        <div class="contato-meta">
+          <span class="contato-tel">📱 {{ c.telefone }}</span>
+          <span class="contato-rel">{{ c.get('relacao','Contato') }}</span>
+        </div>
+      </div>
+      <form method="POST" action="/cadastro" style="margin:0">
+        <input type="hidden" name="acao" value="delete">
+        <input type="hidden" name="idx" value="{{ loop.index0 }}">
+        <button class="btn-delete" type="submit" onclick="return confirm('Remover {{ c.nome }}?')">🗑️</button>
+      </form>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">👥</div>
+      <div class="empty-title">Nenhum contato cadastrado</div>
+      <div class="empty-desc">Adicione pelo menos 1 contato para receber alertas quando você pressionar SOS.</div>
+    </div>
+  {% endif %}
+</div>
+
+<div class="nav-spacer"></div>
+
+<div class="nav-bar">
+  <a href="/motorista" class="nav-item">
+    <span class="nav-icon">🛡️</span>SOS
+  </a>
+  <a href="/cadastro" class="nav-item ativo">
+    <span class="nav-icon">👥</span>Contatos
+  </a>
+  <a href="/ia" class="nav-item">
+    <span class="nav-icon">🤖</span>Shield AI
+  </a>
+</div>
+
 </body>
 </html>

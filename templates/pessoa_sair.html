@@ -1,34 +1,45 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <link rel="manifest" href="/static/manifest.json">
-  <link rel="icon" type="image/png" href="/static/icons/favicon-32.png">
-  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-  <meta name="theme-color" content="#0a0014">
-  <meta charset="utf-8">
-  <title>Painel Encerrado - Driver Shield 360</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <style>
-    .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-    .box{max-width:560px;width:100%;text-align:center}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<title>Sair — Driver Shield 360</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  :root{ --bg:#0a0e1a; --bg2:#111827; --bg3:#1a2235; --blue:#0088ff; --green:#00cc66; --text:#e8edf5; --muted:#8899aa; --border:rgba(0,136,255,.15); }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{
+    background:var(--bg); color:var(--text); font-family:'Inter',sans-serif;
+    min-height:100dvh; display:flex; align-items:center; justify-content:center;
+  }
+  .card{
+    max-width:380px; width:100%; padding:24px;
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:20px; margin:24px; text-align:center;
+  }
+  .icon{ font-size:56px; margin-bottom:16px; }
+  h2{ font-family:'Rajdhani',sans-serif; font-size:24px; font-weight:700; margin-bottom:8px; }
+  p{ font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:24px; }
+  .btn{
+    display:block; width:100%; padding:13px;
+    border-radius:10px; border:none; font-size:15px; font-weight:600;
+    cursor:pointer; text-decoration:none; margin-bottom:10px; transition:all .2s;
+    font-family:'Rajdhani',sans-serif; letter-spacing:.5px;
+  }
+  .btn.primary{ background:var(--blue); color:white; }
+  .btn.primary:hover{ background:#0077dd; }
+  .btn.secondary{ background:var(--bg3); color:var(--muted); border:1px solid var(--border); }
+  .btn.secondary:hover{ color:var(--text); }
+</style>
 </head>
-
 <body>
-  <div class="center">
-    <div class="card box">
-      <div class="title" style="font-size:26px">Painel encerrado</div>
-
-      <p class="notice">
-        Você saiu do painel da pessoa de confiança.
-        Esta tela não direciona para outros painéis.
-      </p>
-
-      <div class="row" style="justify-content:center">
-        <a class="btn hot" href="{{ url_for('painel') }}">Voltar ao painel</a>
-      </div>
-    </div>
-  </div>
+<div class="card">
+  <div class="icon">🛡️</div>
+  <h2>Sessão encerrada</h2>
+  <p>Você saiu do painel de confiança do Driver Shield 360. Para acessar novamente, use a senha de acesso.</p>
+  <a href="/painel/login" class="btn primary">🔐 Acessar novamente</a>
+  <a href="/motorista" class="btn secondary">← Voltar ao sistema</a>
+</div>
 </body>
 </html>

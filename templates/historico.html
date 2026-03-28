@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<title>Histórico — Driver Shield 360</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  :root{--bg:#0a0e1a;--bg2:#111827;--bg3:#1a2235;--blue:#0088ff;--green:#00cc66;--red:#ff2244;--amber:#ffaa00;--text:#e8edf5;--muted:#8899aa;--border:rgba(0,136,255,.15);}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100dvh;}
+
+  .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+  .logo{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--blue);letter-spacing:1px;}
+  .logo span{color:var(--text);}
+
+  .page-header{padding:20px 20px 16px;}
+  .page-header h2{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;}
+  .page-header p{font-size:13px;color:var(--muted);margin-top:4px;}
+
+  /* Stats */
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 20px;}
+  .stat{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;}
+  .stat-n{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;line-height:1;}
+  .stat-n.green{color:var(--green);}
+  .stat-n.blue{color:var(--blue);}
+  .stat-n.red{color:var(--red);}
+  .stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:3px;}
+
+  /* Lista */
+  .lista{padding:0 16px 24px;}
+  .section-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px;}
+
+  .viagem-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;position:relative;overflow:hidden;}
+  .viagem-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+  .viagem-card.ok::before{background:var(--green);}
+  .viagem-card.dms::before{background:var(--red);}
+  .viagem-card.cancelada::before{background:var(--muted);}
+  .viagem-card.em_andamento::before{background:var(--amber);}
+
+  .v-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+  .v-motorista{font-weight:600;font-size:15px;}
+  .badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+  .badge.ok{background:rgba(0,204,102,.1);color:var(--green);border:1px solid rgba(0,204,102,.25);}
+  .badge.dms{background:rgba(255,34,68,.1);color:var(--red);border:1px solid rgba(255,34,68,.25);}
+  .badge.cancelada{background:rgba(136,153,170,.1);color:var(--muted);border:1px solid rgba(136,153,170,.2);}
+  .badge.em_andamento{background:rgba(255,170,0,.1);color:var(--amber);border:1px solid rgba(255,170,0,.25);}
+
+  .v-meta{display:flex;flex-wrap:wrap;gap:10px;}
+  .v-field{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+  .v-field strong{color:var(--text);}
+
+  /* Empty */
+  .empty{text-align:center;padding:48px 24px;color:var(--muted);}
+  .empty-icon{font-size:48px;margin-bottom:12px;}
+
+  .nav-spacer{height:80px;}
+  .nav-bar{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border-top:1px solid var(--border);z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+  .nav-item{display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;text-decoration:none;font-size:10px;color:var(--muted);font-weight:500;gap:3px;transition:color .15s;}
+  .nav-item.ativo{color:var(--blue);}
+  .nav-icon{font-size:20px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">DRIVER<span>·SHIELD</span> 360</div>
+</div>
+
+<div class="page-header">
+  <h2>📋 Histórico de Viagens</h2>
+  <p>Registro de todas as viagens com Modo Viagem ativo</p>
+</div>
+
+{% set total = viagens|length %}
+{% set seguras = viagens|selectattr('resultado','equalto','chegou_segura')|list|length %}
+{% set alertas = viagens|selectattr('resultado','equalto','dead_mans_switch')|list|length %}
+
+<div class="stats-row">
+  <div class="stat">
+    <div class="stat-n blue">{{ total }}</div>
+    <div class="stat-l">Total</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n green">{{ seguras }}</div>
+    <div class="stat-l">Seguras</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n red">{{ alertas }}</div>
+    <div class="stat-l">Com alerta</div>
+  </div>
+</div>
+
+<div class="lista">
+  <div class="section-label">Viagens registradas</div>
+
+  {% if viagens %}
+    {% for v in viagens %}
+    {% set res = v.get('resultado', 'em_andamento') %}
+    <div class="viagem-card {{ res }}">
+      <div class="v-top">
+        <div class="v-motorista">{{ v.motorista }}</div>
+        {% if res == 'chegou_segura' %}
+          <span class="badge ok">✅ Chegou segura</span>
+        {% elif res == 'dead_mans_switch' %}
+          <span class="badge dms">🚨 Alerta disparado</span>
+        {% elif res == 'cancelada' %}
+          <span class="badge cancelada">Cancelada</span>
+        {% else %}
+          <span class="badge em_andamento">⏰ Em andamento</span>
+        {% endif %}
+      </div>
+      <div class="v-meta">
+        <div class="v-field">🕐 Início: <strong>{{ v.inicio }}</strong></div>
+        {% if v.get('fim') %}
+        <div class="v-field">🏁 Fim: <strong>{{ v.fim }}</strong></div>
+        {% endif %}
+        <div class="v-field">⏱️ Tempo: <strong>{{ v.minutos }} min</strong></div>
+        {% if v.get('lat') and v.get('lng') %}
+        <div class="v-field">
+          📍 <a href="https://www.google.com/maps?q={{ v.lat }},{{ v.lng }}&z=16" target="_blank" style="color:var(--blue);text-decoration:none;">Ver no mapa</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty">
+      <div class="empty-icon">📋</div>
+      <p>Nenhuma viagem registrada ainda.</p>
+      <p style="font-size:12px;margin-top:6px;">Ative o Modo Viagem antes de cada corrida.</p>
+    </div>
+  {% endif %}
+</div>
+
+<div class="nav-spacer"></div>
+
+<div class="nav-bar">
+  <a href="/motorista" class="nav-item"><span class="nav-icon">🛡️</span>SOS</a>
+  <a href="/cadastro"  class="nav-item"><span class="nav-icon">👥</span>Contatos</a>
+  <a href="/checklist" class="nav-item"><span class="nav-icon">✅</span>Checklist</a>
+  <a href="/ia"        class="nav-item"><span class="nav-icon">🤖</span>Shield AI</a>
+</div>
+
+</body>
+</html>

@@ -1,62 +1,561 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <title>Driver Shield 360 Premium</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#060d1a">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#060d1a;color:#fff;font-family:Arial,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-    .container{max-width:480px;width:100%}
-    .logo{text-align:center;margin-bottom:32px}
-    .logo h1{font-size:28px;font-weight:900;color:#fff;letter-spacing:1px}
-    .logo span{color:#00aaff}
-    .logo .sub{font-size:13px;color:#667;margin-top:4px}
-    .shield{font-size:64px;margin-bottom:8px}
-    .card{background:#0d1a2e;border:1px solid #1a2a3a;border-radius:16px;padding:24px;margin-bottom:16px}
-    .btn{display:block;width:100%;padding:16px;border-radius:12px;border:none;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;margin-bottom:12px;transition:all .2s}
-    .btn-sos{background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;font-size:20px;padding:20px;border-radius:16px;letter-spacing:1px}
-    .btn-blue{background:#00aaff22;color:#00aaff;border:1px solid #00aaff55}
-    .btn-green{background:#00e67622;color:#00e676;border:1px solid #00e67655}
-    .btn-ia{background:#a45cff22;color:#a45cff;border:1px solid #a45cff55;font-weight:700}
-    .btn-gray{background:#1a2a3a;color:#aaa;border:1px solid #2a3a4a}
-    .btn:hover{opacity:.85;transform:scale(.98)}
-    .badge{display:inline-block;background:#00e67622;color:#00e676;border:1px solid #00e67655;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:16px}
-    .divider{border:none;border-top:1px solid #1a2a3a;margin:16px 0}
-    .notice{font-size:12px;color:#556;text-align:center;line-height:1.6;margin-top:8px}
-    .version{text-align:center;font-size:11px;color:#334;margin-top:24px}
-    .top-bar{height:4px;background:linear-gradient(90deg,#00aaff,#00e676);border-radius:16px 16px 0 0;margin:-24px -24px 20px -24px}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<title>Driver Shield 360 — Segurança para Motoristas de App</title>
+<meta name="description" content="Sistema de segurança profissional para motoristas de aplicativo. Botão SOS, GPS em tempo real, alertas WhatsApp e modo viagem automático.">
+<link rel="manifest" href="/manifest.json">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg:    #0a0e1a;
+    --bg2:   #111827;
+    --bg3:   #1a2235;
+    --blue:  #0088ff;
+    --green: #00cc66;
+    --red:   #ff2244;
+    --amber: #ffaa00;
+    --text:  #e8edf5;
+    --muted: #8899aa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 32px;
+    background: rgba(10,14,26,.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,136,255,.1);
+  }
+  .nav-logo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px; font-weight: 700; color: var(--blue); letter-spacing: 1px;
+  }
+  .nav-logo span { color: var(--text); }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a {
+    color: var(--muted); font-size: 14px; text-decoration: none;
+    font-weight: 500; transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--blue); color: white;
+    border: none; border-radius: 8px;
+    padding: 9px 20px; font-size: 14px; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    transition: background .2s;
+  }
+  .nav-cta:hover { background: #0077dd; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 100px 24px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,136,255,.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,204,102,.1); border: 1px solid rgba(0,204,102,.25);
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 12px; font-weight: 600; color: var(--green);
+    letter-spacing: .5px; text-transform: uppercase; margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(38px, 8vw, 72px);
+    font-weight: 700; line-height: 1.05;
+    margin-bottom: 20px;
+    max-width: 800px;
+  }
+  .hero h1 .blue { color: var(--blue); }
+  .hero p {
+    font-size: clamp(15px, 2.5vw, 18px);
+    color: var(--muted); max-width: 560px;
+    line-height: 1.7; margin-bottom: 36px;
+  }
+  .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .btn-primary {
+    background: var(--blue); color: white;
+    border: none; border-radius: 10px;
+    padding: 14px 28px; font-size: 16px; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { background: #0077dd; transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent; color: var(--text);
+    border: 1px solid rgba(255,255,255,.15); border-radius: 10px;
+    padding: 14px 28px; font-size: 16px; font-weight: 500;
+    cursor: pointer; text-decoration: none;
+    transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-secondary:hover { border-color: rgba(255,255,255,.3); }
+
+  /* Mockup phone */
+  .phone-mockup {
+    margin-top: 56px;
+    position: relative;
+    display: inline-block;
+  }
+  .phone-frame {
+    width: 280px;
+    background: var(--bg2);
+    border: 2px solid rgba(0,136,255,.2);
+    border-radius: 36px;
+    padding: 20px 16px;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+    position: relative;
+    overflow: hidden;
+  }
+  .phone-notch {
+    width: 80px; height: 6px;
+    background: rgba(255,255,255,.08);
+    border-radius: 3px; margin: 0 auto 16px;
+  }
+  .phone-sos {
+    background: var(--bg3);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+  }
+  .phone-sos-circle {
+    width: 100px; height: 100px;
+    background: radial-gradient(circle at 35% 35%, #ff3355, #cc0033);
+    border-radius: 50%; margin: 0 auto 12px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    box-shadow: 0 0 30px rgba(255,34,68,.3);
+    animation: phone-pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes phone-pulse {
+    0%,100%{ box-shadow: 0 0 30px rgba(255,34,68,.3); }
+    50%    { box-shadow: 0 0 50px rgba(255,34,68,.5); }
+  }
+  .phone-sos-icon  { font-size: 28px; }
+  .phone-sos-label { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: white; }
+  .phone-gps {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: rgba(0,204,102,.1);
+    border: 1px solid rgba(0,204,102,.25);
+    border-radius: 8px;
+    font-size: 11px; color: var(--green); font-weight: 500;
+  }
+  .phone-timer {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(255,170,0,.08);
+    border: 1px solid rgba(255,170,0,.2);
+    border-radius: 8px;
+    font-size: 11px; color: var(--amber); font-weight: 500;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  /* STATS */
+  .stats {
+    display: flex; justify-content: center; gap: 48px;
+    flex-wrap: wrap;
+    padding: 48px 24px;
+    border-top: 1px solid rgba(255,255,255,.05);
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 40px; font-weight: 700; color: var(--blue);
+    line-height: 1;
+  }
+  .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* FEATURES */
+  .section { padding: 80px 24px; max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--blue); font-weight: 600; margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 700; margin-bottom: 48px;
+    max-width: 600px;
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .feature-card {
+    background: var(--bg2);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 16px;
+    padding: 28px;
+    transition: border-color .2s, transform .2s;
+  }
+  .feature-card:hover { border-color: rgba(0,136,255,.3); transform: translateY(-2px); }
+  .feature-icon { font-size: 36px; margin-bottom: 16px; }
+  .feature-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px; font-weight: 600; margin-bottom: 8px;
+  }
+  .feature-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .feature-badge {
+    display: inline-block; margin-top: 10px;
+    background: rgba(0,204,102,.1);
+    border: 1px solid rgba(0,204,102,.2);
+    border-radius: 4px; padding: 3px 8px;
+    font-size: 11px; color: var(--green); font-weight: 600;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .feature-badge.novo {
+    background: rgba(0,136,255,.1); border-color: rgba(0,136,255,.2); color: var(--blue);
+  }
+
+  /* COMO FUNCIONA */
+  .steps { display: flex; flex-direction: column; gap: 20px; max-width: 640px; }
+  .step {
+    display: flex; gap: 20px; align-items: flex-start;
+    padding: 20px 24px;
+    background: var(--bg2);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px;
+  }
+  .step-num {
+    width: 36px; height: 36px; flex-shrink: 0;
+    background: var(--blue); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px; font-weight: 700; color: white;
+  }
+  .step-content h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .step-content p  { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* PLANOS */
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px; max-width: 900px; margin: 0 auto;
+  }
+  .plan-card {
+    background: var(--bg2);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 20px; padding: 32px 28px;
+    position: relative;
+    transition: transform .2s;
+  }
+  .plan-card:hover { transform: translateY(-4px); }
+  .plan-card.destaque {
+    border-color: var(--blue);
+    background: linear-gradient(145deg, #111827, #0d1628);
+    box-shadow: 0 0 40px rgba(0,136,255,.15);
+  }
+  .plan-tag {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--blue); color: white;
+    padding: 4px 14px; border-radius: 12px;
+    font-size: 12px; font-weight: 600;
+    white-space: nowrap;
+  }
+  .plan-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px; font-weight: 700; margin-bottom: 4px;
+  }
+  .plan-desc { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .plan-price {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 48px; font-weight: 700; line-height: 1;
+  }
+  .plan-price sup { font-size: 20px; vertical-align: top; margin-top: 8px; display: inline-block; }
+  .plan-price sub { font-size: 16px; color: var(--muted); }
+  .plan-period { font-size: 13px; color: var(--muted); margin-bottom: 24px; margin-top: 2px; }
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .plan-features li { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+  .plan-features li.no::before { content: '×'; color: var(--muted); }
+  .plan-features li.no { color: var(--muted); }
+  .plan-btn {
+    width: 100%; padding: 13px;
+    border-radius: 10px; border: none;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all .2s;
+    text-decoration: none; display: block; text-align: center;
+  }
+  .plan-btn.primario { background: var(--blue); color: white; }
+  .plan-btn.primario:hover { background: #0077dd; }
+  .plan-btn.secundario { background: var(--bg3); color: var(--text); border: 1px solid rgba(255,255,255,.1); }
+  .plan-btn.secundario:hover { border-color: rgba(255,255,255,.2); }
+
+  /* FOOTER */
+  footer {
+    text-align: center; padding: 40px 24px;
+    border-top: 1px solid rgba(255,255,255,.05);
+    color: var(--muted); font-size: 13px;
+  }
+  footer strong { color: var(--text); }
+
+  /* Responsivo */
+  @media (max-width: 640px) {
+    nav { padding: 12px 16px; }
+    .nav-links { display: none; }
+    .hero { padding: 80px 20px 48px; }
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo">
-      <div class="shield">🛡️</div>
-      <h1>DRIVER<span>SHIELD</span>360</h1>
-      <div class="sub">Sistema de Segurança Premium para Motoristas</div>
-    </div>
 
-    <div class="card">
-      <div class="top-bar"></div>
-      <div style="text-align:center;margin-bottom:20px">
-        <div class="badge">✅ Sistema ativo e protegendo</div>
-      </div>
-
-      <a class="btn btn-sos" href="/motorista">🚨 PAINEL DO MOTORISTA</a>
-      <a class="btn btn-blue" href="/cadastro">👥 Cadastrar Contatos de Confiança</a>
-      <a class="btn btn-green" href="/painel/login">🧑‍🤝‍🧑 Painel da Pessoa de Confiança</a>
-      <a class="btn btn-ia" href="/ia">🤖 IA de Segurança — SHIELD AI</a>
-      <a class="btn btn-gray" href="/relatorio">📊 Relatório de Ocorrências</a>
-
-      <hr class="divider">
-      <div class="notice">
-        💡 Dica: no celular, use <b>Adicionar à tela inicial</b> para acesso rápido.<br>
-        A sirene toca no painel da Pessoa de Confiança quando um alerta chegar.
-      </div>
-    </div>
-
-    <div class="version">DRIVER-SHIELD-360 PREMIUM • Brasília-DF • 2026</div>
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">DRIVER<span>·SHIELD</span> 360</div>
+  <div class="nav-links">
+    <a href="#funcionalidades">Funcionalidades</a>
+    <a href="#como-funciona">Como funciona</a>
+    <a href="#planos">Planos</a>
   </div>
+  <a href="/motorista" class="nav-cta">🛡️ Acessar Sistema</a>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">
+    <span>🟢</span> Sistema ativo 24/7
+  </div>
+  <h1>
+    Segurança real para<br><span class="blue">motoristas de app</span>
+  </h1>
+  <p>
+    Botão SOS com GPS, alertas automáticos no WhatsApp e modo viagem com alarme automático. Pensado especialmente para motoristas mulheres.
+  </p>
+  <div class="hero-btns">
+    <a href="/motorista" class="btn-primary">🛡️ Usar agora — Grátis</a>
+    <a href="#planos" class="btn-secondary">Ver planos →</a>
+  </div>
+
+  <div class="phone-mockup">
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-sos">
+        <div class="phone-sos-circle">
+          <div class="phone-sos-icon">🛡️</div>
+          <div class="phone-sos-label">SOS</div>
+        </div>
+        <div class="phone-gps">✅ GPS ativo — localização capturada</div>
+        <div class="phone-timer">⏰ 28:47 restantes</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat-item">
+    <div class="stat-num">3s</div>
+    <div class="stat-label">Tempo de alerta</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">5</div>
+    <div class="stat-label">Contatos de confiança</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">24/7</div>
+    <div class="stat-label">Sistema online</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">GPS</div>
+    <div class="stat-label">Localização em tempo real</div>
+  </div>
+</div>
+
+<!-- Funcionalidades -->
+<section class="section" id="funcionalidades">
+  <div class="section-label">Funcionalidades</div>
+  <h2 class="section-title">Tudo que você precisa para andar segura</h2>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🚨</div>
+      <div class="feature-title">Botão SOS</div>
+      <div class="feature-desc">Um toque dispara alerta para todos os seus contatos de confiança via WhatsApp, com sua localização exata no mapa.</div>
+      <span class="feature-badge">Incluso</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📍</div>
+      <div class="feature-title">GPS em tempo real</div>
+      <div class="feature-desc">Link do Google Maps com sua localização exata enviado automaticamente no momento do alerta. Sem precisar digitar nada.</div>
+      <span class="feature-badge novo">Novo</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⏰</div>
+      <div class="feature-title">Modo Viagem — Alarme automático</div>
+      <div class="feature-desc">Configure o tempo da corrida. Se não confirmar chegada, o alerta dispara sozinho para seus contatos. O "dead man's switch".</div>
+      <span class="feature-badge novo">Novo</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <div class="feature-title">WhatsApp automático</div>
+      <div class="feature-desc">Alertas enviados diretamente para até 5 contatos via WhatsApp com nome da motorista, tipo de ocorrência e GPS.</div>
+      <span class="feature-badge">Incluso</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📲</div>
+      <div class="feature-title">Instala como app</div>
+      <div class="feature-desc">Instale direto no celular sem precisar da Play Store. Aparece como app nativo na tela inicial para acesso rápido.</div>
+      <span class="feature-badge novo">Novo</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <div class="feature-title">Shield AI</div>
+      <div class="feature-desc">Assistente de inteligência artificial especializado em segurança para motoristas. Tire dúvidas e receba orientações.</div>
+      <span class="feature-badge">Premium</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Painel de ocorrências</div>
+      <div class="feature-desc">Pessoa de confiança acessa painel com histórico completo de alertas, localização e status de cada ocorrência.</div>
+      <span class="feature-badge">Incluso</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📄</div>
+      <div class="feature-title">Relatório em PDF</div>
+      <div class="feature-desc">Exportação do histórico de ocorrências em PDF profissional. Útil para registros, boletim de ocorrência e comprovação.</div>
+      <span class="feature-badge">Incluso</span>
+    </div>
+  </div>
+</section>
+
+<!-- Como Funciona -->
+<section class="section" id="como-funciona">
+  <div class="section-label">Como funciona</div>
+  <h2 class="section-title">Simples de usar. Poderoso quando importa.</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Instale no seu celular</h3>
+        <p>Acesse o sistema pelo navegador e instale como app. Fica na tela inicial como qualquer outro aplicativo, pronto para uso rápido.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Cadastre seus contatos de confiança</h3>
+        <p>Adicione até 5 pessoas — familiar, amigo, parceiro. Eles receberão o alerta no WhatsApp quando você pressionar SOS.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Ative o Modo Viagem em cada corrida</h3>
+        <p>Configure o tempo estimado. Se você não confirmar chegada, o alerta dispara automaticamente. Zero esforço, máxima segurança.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Em emergência, pressione SOS</h3>
+        <p>Um toque envia sua localização GPS e o tipo de ocorrência para todos os seus contatos. Seus familiares sabem exatamente onde você está.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Planos -->
+<section class="section" id="planos" style="text-align: center;">
+  <div class="section-label">Planos</div>
+  <h2 class="section-title" style="margin: 0 auto 48px; text-align:center;">Escolha o plano ideal</h2>
+  <div class="plans-grid">
+    <div class="plan-card">
+      <div class="plan-name">Básico</div>
+      <div class="plan-desc">Para começar a usar</div>
+      <div class="plan-price"><sup>R$</sup>0<sub>/mês</sub></div>
+      <div class="plan-period">Gratuito para sempre</div>
+      <ul class="plan-features">
+        <li>Botão SOS</li>
+        <li>GPS no alerta</li>
+        <li>3 contatos WhatsApp</li>
+        <li>Modo Viagem (1 ativo)</li>
+        <li class="no">Shield AI</li>
+        <li class="no">Painel de confiança</li>
+        <li class="no">Relatório PDF</li>
+      </ul>
+      <a href="/motorista" class="plan-btn secundario">Usar grátis</a>
+    </div>
+
+    <div class="plan-card destaque">
+      <div class="plan-tag">⭐ Mais popular</div>
+      <div class="plan-name">Premium</div>
+      <div class="plan-desc">Para motoristas profissionais</div>
+      <div class="plan-price"><sup>R$</sup>29<sub>/mês</sub></div>
+      <div class="plan-period">ou R$ 249/ano — economize 28%</div>
+      <ul class="plan-features">
+        <li>Botão SOS</li>
+        <li>GPS em tempo real</li>
+        <li>5 contatos WhatsApp</li>
+        <li>Modo Viagem ilimitado</li>
+        <li>Shield AI — IA de segurança</li>
+        <li>Painel de confiança</li>
+        <li>Relatório PDF completo</li>
+      </ul>
+      <a href="/motorista" class="plan-btn primario">Assinar agora</a>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">Frota</div>
+      <div class="plan-desc">Para empresas e cooperativas</div>
+      <div class="plan-price" style="font-size:32px; margin-top: 8px;">Sob consulta</div>
+      <div class="plan-period">a partir de 10 motoristas</div>
+      <ul class="plan-features">
+        <li>Tudo do Premium</li>
+        <li>Painel administrativo</li>
+        <li>Gestão de múltiplos motoristas</li>
+        <li>Relatórios consolidados</li>
+        <li>Suporte prioritário</li>
+        <li>Treinamento da equipe</li>
+      </ul>
+      <a href="https://wa.me/5561999999999?text=Quero+saber+sobre+o+plano+Frota+do+Driver+Shield+360" class="plan-btn secundario" target="_blank">Falar com vendas</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Final -->
+<section style="text-align: center; padding: 80px 24px; background: linear-gradient(180deg, transparent, rgba(0,136,255,.05));">
+  <h2 style="font-family:'Rajdhani',sans-serif; font-size: clamp(28px,5vw,44px); font-weight:700; margin-bottom:16px;">
+    Sua segurança não pode esperar
+  </h2>
+  <p style="color: var(--muted); font-size:16px; margin-bottom:32px; max-width:480px; margin-left:auto; margin-right:auto;">
+    Instale agora em menos de 1 minuto. Sem cadastro, sem cartão de crédito para começar.
+  </p>
+  <a href="/motorista" class="btn-primary" style="font-size:18px; padding: 16px 36px;">
+    🛡️ Começar gratuitamente
+  </a>
+</section>
+
+<footer>
+  <p><strong>Driver Shield 360</strong> — Sistema de Segurança para Motoristas</p>
+  <p style="margin-top:8px;">Desenvolvido por <strong>SPYNET Security</strong> · Brasília–DF · © 2026</p>
+</footer>
+
 </body>
 </html>

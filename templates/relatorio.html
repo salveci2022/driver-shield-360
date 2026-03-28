@@ -1,113 +1,197 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <title>Relatório - Driver Shield 360</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#060d1a;color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding:16px}
-    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:12px 16px;background:#0d1a2e;border-radius:12px;border:1px solid #1a2a3a;flex-wrap:wrap;gap:8px}
-    .header h1{font-size:16px;font-weight:900}
-    .btns{display:flex;gap:8px;flex-wrap:wrap}
-    .btn{padding:8px 14px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s}
-    .btn-blue{background:#00aaff22;color:#00aaff;border:1px solid #00aaff55}
-    .btn-red{background:#c0392b22;color:#e74c3c;border:1px solid #c0392b55}
-    .btn-green{background:#00e67622;color:#00e676;border:1px solid #00e67655}
-    .btn-gray{background:#1a2a3a;color:#aaa;border:1px solid #2a3a4a}
-    .card{background:#0d1a2e;border:1px solid #1a2a3a;border-radius:16px;padding:20px;margin-bottom:14px}
-    .top-bar{height:4px;background:linear-gradient(90deg,#00aaff,#00e676);border-radius:16px 16px 0 0;margin:-20px -20px 16px -20px}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-    .stat{background:#1a2a3a;border-radius:12px;padding:14px;text-align:center}
-    .stat-num{font-size:28px;font-weight:900;color:#00aaff}
-    .stat-label{font-size:11px;color:#667;margin-top:4px}
-    .alert-item{background:#1a2a3a;border-radius:12px;padding:14px;margin-bottom:10px}
-    .alert-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .alert-num{font-size:11px;color:#445;font-weight:700}
-    .alert-ts{font-size:11px;color:#667}
-    .alert-oc{font-size:15px;font-weight:700;color:#e74c3c;margin-bottom:4px}
-    .alert-mt{font-size:13px;color:#00aaff;margin-bottom:4px}
-    .alert-loc{font-size:11px;color:#445}
-    .map-link{display:inline-block;margin-top:6px;padding:5px 10px;background:#00aaff22;color:#00aaff;border-radius:6px;font-size:11px;text-decoration:none;font-weight:700}
-    .notice{font-size:13px;color:#445;padding:20px;text-align:center}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<title>Relatório — Driver Shield 360</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  :root{
+    --bg:#0a0e1a; --bg2:#111827; --bg3:#1a2235;
+    --blue:#0088ff; --green:#00cc66; --red:#ff2244; --amber:#ffaa00;
+    --text:#e8edf5; --muted:#8899aa; --border:rgba(0,136,255,.15);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100dvh; }
+
+  .header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; background:var(--bg2);
+    border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:100;
+  }
+  .logo{ font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; color:var(--blue); letter-spacing:1px; }
+  .logo span{ color:var(--text); }
+  .header-nav{ display:flex; gap:8px; align-items:center; }
+  .btn-sm{
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:7px; padding:6px 12px;
+    color:var(--muted); font-size:12px; font-weight:500;
+    cursor:pointer; text-decoration:none; transition:all .2s;
+  }
+  .btn-sm:hover{ color:var(--text); }
+  .btn-sm.primary{ background:var(--blue); border-color:var(--blue); color:white; }
+  .btn-sm.primary:hover{ background:#0077dd; }
+
+  .page-header{ padding:24px 20px 16px; }
+  .page-header h2{ font-family:'Rajdhani',sans-serif; font-size:24px; font-weight:700; }
+  .page-header p{ font-size:13px; color:var(--muted); margin-top:4px; }
+
+  /* Stats */
+  .stats-row{
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:10px; padding:0 16px 20px;
+  }
+  @media(max-width:600px){ .stats-row{ grid-template-columns:repeat(2,1fr); } }
+  .stat-card{
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:12px; padding:14px; text-align:center;
+  }
+  .stat-n{ font-family:'Rajdhani',sans-serif; font-size:30px; font-weight:700; line-height:1; }
+  .stat-n.red{ color:var(--red); }
+  .stat-n.blue{ color:var(--blue); }
+  .stat-n.green{ color:var(--green); }
+  .stat-n.amber{ color:var(--amber); }
+  .stat-l{ font-size:11px; color:var(--muted); margin-top:3px; }
+
+  /* Tabela */
+  .table-wrap{ padding:0 16px 40px; overflow-x:auto; }
+  table{
+    width:100%; border-collapse:collapse;
+    font-size:13px; min-width:500px;
+  }
+  thead tr{
+    background:var(--bg3); border-bottom:1px solid var(--border);
+  }
+  th{
+    padding:10px 12px; text-align:left;
+    font-size:11px; text-transform:uppercase; letter-spacing:.6px;
+    color:var(--muted); font-weight:600; white-space:nowrap;
+  }
+  tbody tr{
+    border-bottom:1px solid rgba(255,255,255,.04);
+    transition:background .15s;
+  }
+  tbody tr:hover{ background:rgba(255,255,255,.02); }
+  td{ padding:12px 12px; vertical-align:middle; }
+
+  .badge{
+    display:inline-block; padding:3px 8px; border-radius:4px;
+    font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.3px;
+    white-space:nowrap;
+  }
+  .badge.ativo   { background:rgba(255,34,68,.1); color:var(--red); border:1px solid rgba(255,34,68,.25); }
+  .badge.resolvido{ background:rgba(0,204,102,.1); color:var(--green); border:1px solid rgba(0,204,102,.25); }
+  .badge.dms     { background:rgba(255,170,0,.1); color:var(--amber); border:1px solid rgba(255,170,0,.25); }
+
+  .td-ocorrencia{ font-weight:500; max-width:200px; }
+  .td-local a{
+    color:var(--blue); text-decoration:none; font-size:12px;
+    display:flex; align-items:center; gap:4px;
+  }
+  .td-local a:hover{ text-decoration:underline; }
+  .sem-gps{ color:var(--muted); font-size:12px; }
+
+  /* Empty */
+  .empty{
+    text-align:center; padding:64px 24px; color:var(--muted);
+  }
+  .empty-icon{ font-size:56px; margin-bottom:16px; }
+  .empty-msg{ font-size:16px; }
+  .empty-sub{ font-size:13px; margin-top:6px; }
+</style>
 </head>
 <body>
-  <div class="header">
-    <h1>📊 Relatório de Ocorrências</h1>
-    <div class="btns">
-      <a class="btn btn-green" href="/relatorio.pdf">📄 Baixar PDF</a>
-      <button class="btn btn-blue" onclick="copiar()">📋 Copiar</button>
-      <button class="btn btn-red" onclick="limpar()">🧹 Limpar</button>
-      <a class="btn btn-gray" href="/painel">← Painel</a>
-    </div>
+
+<div class="header">
+  <div class="logo">DRIVER<span>·SHIELD</span> 360</div>
+  <div class="header-nav">
+    <a href="/relatorio.pdf" class="btn-sm primary" target="_blank">📄 Exportar PDF</a>
+    <a href="/painel" class="btn-sm">← Painel</a>
   </div>
+</div>
 
-  <div class="card">
-    <div class="top-bar"></div>
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-num">{{ alerts|length }}</div>
-        <div class="stat-label">Total</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num" style="color:#e74c3c">{{ alerts|selectattr('status','equalto','Ativo')|list|length }}</div>
-        <div class="stat-label">Ativos</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num" style="color:#27ae60">{{ alerts|rejectattr('status','equalto','Ativo')|list|length }}</div>
-        <div class="stat-label">Resolvidos</div>
-      </div>
-    </div>
+<div class="page-header">
+  <h2>📊 Relatório de Ocorrências</h2>
+  <p>Histórico completo de alertas registrados no sistema</p>
+</div>
+
+{% set total = alerts|length %}
+{% set ativos = alerts|selectattr('status','equalto','Ativo')|list|length %}
+{% set resolvidos = alerts|selectattr('status','equalto','Resolvido')|list|length %}
+{% set dms = alerts|selectattr('tipo','equalto','dead_mans_switch')|list|length %}
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-n blue">{{ total }}</div>
+    <div class="stat-l">Total</div>
   </div>
+  <div class="stat-card">
+    <div class="stat-n red">{{ ativos }}</div>
+    <div class="stat-l">Ativos</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-n green">{{ resolvidos }}</div>
+    <div class="stat-l">Resolvidos</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-n amber">{{ dms }}</div>
+    <div class="stat-l">Automáticos</div>
+  </div>
+</div>
 
-  {% if alerts and alerts|length > 0 %}
-    {% for a in alerts %}
-    <div class="alert-item" id="alerta-{{ loop.index0 }}">
-      <div class="alert-header">
-        <span class="alert-num">#{{ loop.index }}</span>
-        <span class="alert-ts">{{ a.ts }}</span>
-      </div>
-      <div class="alert-oc">⚠️ {{ a.ocorrencia }}</div>
-      <div class="alert-mt">🚕 {{ a.motorista }}</div>
-      {% if a.lat and a.lng %}
-        <div class="alert-loc">📍 Lat: {{ a.lat }} | Lng: {{ a.lng }}</div>
-        <a class="map-link" target="_blank" href="https://www.google.com/maps?q={{ a.lat }},{{ a.lng }}&z=16">🗺️ Ver no mapa</a>
-      {% else %}
-        <div class="alert-loc">📍 Localização não disponível</div>
-      {% endif %}
-    </div>
-    {% endfor %}
-  {% else %}
-    <div class="notice">Nenhuma ocorrência registrada.</div>
-  {% endif %}
+{% if alerts %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Data / Hora</th>
+        <th>Motorista</th>
+        <th>Ocorrência</th>
+        <th>Localização</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in alerts %}
+      <tr>
+        <td style="color:var(--muted);font-weight:600;">{{ loop.index }}</td>
+        <td style="white-space:nowrap; color:var(--muted);">{{ a.ts }}</td>
+        <td style="font-weight:500;">{{ a.motorista }}</td>
+        <td class="td-ocorrencia">{{ a.ocorrencia }}</td>
+        <td class="td-local">
+          {% if a.lat and a.lng %}
+            <a href="https://www.google.com/maps?q={{ a.lat }},{{ a.lng }}&z=16" target="_blank">
+              📍 Ver no mapa
+            </a>
+          {% else %}
+            <span class="sem-gps">Sem GPS</span>
+          {% endif %}
+        </td>
+        <td>
+          {% set tipo_badge = 'dms' if a.get('tipo') == 'dead_mans_switch' else a.get('status','Ativo')|lower %}
+          {% if a.get('tipo') == 'dead_mans_switch' %}
+            <span class="badge dms">⏰ Auto</span>
+          {% elif a.get('status') == 'Resolvido' %}
+            <span class="badge resolvido">✅ Resolvido</span>
+          {% else %}
+            <span class="badge ativo">🔴 Ativo</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty">
+  <div class="empty-icon">📋</div>
+  <div class="empty-msg">Nenhuma ocorrência registrada</div>
+  <div class="empty-sub">Os alertas aparecerão aqui quando o motorista pressionar SOS</div>
+</div>
+{% endif %}
 
-  <script>
-    async function limpar(){
-      if(!confirm('Limpar todos os alertas? Essa ação não pode ser desfeita.')) return;
-      const res = await fetch('/api/clear_alerts', {method:'POST'});
-      const j = await res.json();
-      if(j.ok){ alert('✅ Alertas limpos!'); location.reload(); }
-    }
-
-    async function copiar(){
-      const items = document.querySelectorAll('.alert-item');
-      if(!items.length){ alert('Nada para copiar.'); return; }
-      let txt = 'RELATÓRIO DRIVER-SHIELD-360\n\n';
-      items.forEach((el, i) => {
-        const oc = el.querySelector('.alert-oc')?.innerText || '';
-        const mt = el.querySelector('.alert-mt')?.innerText || '';
-        const ts = el.querySelector('.alert-ts')?.innerText || '';
-        const loc = el.querySelector('.alert-loc')?.innerText || '';
-        txt += `#${i+1} | ${ts}\n${oc}\n${mt}\n${loc}\n\n`;
-      });
-      try{
-        await navigator.clipboard.writeText(txt);
-        alert('✅ Copiado! Cole no WhatsApp.');
-      } catch(e){
-        alert('❌ Erro ao copiar. Tente manualmente.');
-      }
-    }
-  </script>
 </body>
 </html>
