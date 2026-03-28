@@ -45,15 +45,35 @@
   .tipo-btn.ativo{background:rgba(0,136,255,.15);border-color:var(--blue);color:var(--text);}
   .tipo-btn:active{transform:scale(.97);}
 
-  .sos-section{padding:20px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:12px;}
-  .sos-btn{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff3355,var(--red-d));border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform .1s,box-shadow .3s;position:relative;z-index:1;-webkit-user-select:none;user-select:none;}
-  .sos-btn.idle{animation:sos-pulse 2.5s ease-in-out infinite;}
-  @keyframes sos-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,34,68,.4);}50%{box-shadow:0 0 0 20px rgba(255,34,68,.0);}}
-  .sos-btn:active{transform:scale(.93);}
-  .sos-btn.disparado{background:radial-gradient(circle at 35% 35%,#ff6644,#cc3300);animation:none;box-shadow:0 0 30px rgba(255,100,0,.6);}
-  .sos-icon{font-size:48px;line-height:1;}
-  .sos-text{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:white;letter-spacing:3px;}
-  .sos-sub{font-size:10px;color:rgba(255,255,255,.7);font-weight:500;letter-spacing:.5px;text-transform:uppercase;}
+  /* ── SOS 2026 ── */
+  .sos-section{padding:20px 16px 8px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .sos-ring-wrap{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;}
+
+  /* Anéis pulsantes — sempre ativos */
+  .pulse-ring{position:absolute;border-radius:50%;border:1px solid rgba(255,34,68,.2);animation:ring-expand 3s ease-out infinite;}
+  .pulse-ring:nth-child(1){width:220px;height:220px;animation-delay:0s;}
+  .pulse-ring:nth-child(2){width:185px;height:185px;animation-delay:.8s;}
+  @keyframes ring-expand{0%{opacity:0;transform:scale(.75);}40%{opacity:1;}100%{opacity:0;transform:scale(1.08);}}
+
+  /* Anel de progresso SVG — aparece ao segurar */
+  .prog-svg{position:absolute;width:200px;height:200px;transform:rotate(-90deg);opacity:0;transition:opacity .2s;pointer-events:none;}
+  .prog-track{fill:none;stroke:rgba(255,255,255,.06);stroke-width:3;}
+  .prog-fill{fill:none;stroke:#ff2244;stroke-width:3;stroke-linecap:round;stroke-dasharray:565;stroke-dashoffset:565;transition:none;}
+
+  /* Borda externa — GIRA só quando disparado */
+  .sos-outer{width:175px;height:175px;border-radius:50%;padding:3px;background:#ff2244;position:relative;}
+  .sos-outer.girando{background:conic-gradient(from 0deg,#ff1a3c,#ff6600,#ff1a3c);animation:spin-border 1.8s linear infinite;}
+  @keyframes spin-border{to{transform:rotate(360deg);}}
+
+  .sos-mid{width:100%;height:100%;border-radius:50%;background:#0a0e1a;padding:2px;display:flex;align-items:center;justify-content:center;}
+
+  .sos-btn{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 38% 32%,#ff3355 0%,#cc0022 55%,#8a0018 100%);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;-webkit-user-select:none;user-select:none;transition:transform .1s;}
+  .sos-btn:active{transform:scale(.94);}
+  .sos-btn.disparado{background:radial-gradient(circle at 38% 32%,#ff6600 0%,#cc3300 55%,#882200 100%);}
+
+  .sos-shield{width:40px;height:40px;}
+  .sos-text{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:white;letter-spacing:4px;line-height:1;}
+  .sos-sub{font-size:9px;color:rgba(255,255,255,.55);letter-spacing:1.5px;text-transform:uppercase;}
   .sos-hint{font-size:11px;color:var(--muted);text-align:center;}
 
   /* Dica discreta */
@@ -151,11 +171,34 @@
 </div>
 
 <div class="sos-section">
-  <button class="sos-btn idle" id="sos-btn" onclick="disparar()">
-    <span class="sos-icon">🛡️</span>
-    <span class="sos-text">SOS</span>
-    <span class="sos-sub" id="sos-sub">Pressione para alertar</span>
-  </button>
+  <div class="sos-ring-wrap">
+    <div class="pulse-ring"></div>
+    <div class="pulse-ring"></div>
+
+    <!-- Anel de progresso (segurar) -->
+    <svg class="prog-svg" id="prog-svg" viewBox="0 0 200 200">
+      <circle class="prog-track" cx="100" cy="100" r="90"/>
+      <circle class="prog-fill" cx="100" cy="100" r="90" id="prog-fill"/>
+    </svg>
+
+    <!-- Botão -->
+    <div class="sos-outer" id="sos-outer">
+      <div class="sos-mid">
+        <button class="sos-btn" id="sos-btn"
+          onmousedown="startPress()" onmouseup="endPress()" onmouseleave="endPress()"
+          ontouchstart="startPress(event)" ontouchend="endPress()">
+          <svg class="sos-shield" viewBox="0 0 40 40" fill="none">
+            <path d="M20 3L5 9V20C5 28.3 11.8 36 20 38C28.2 36 35 28.3 35 20V9L20 3Z"
+              fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+            <path d="M13 20.5L18 25.5L27 15" stroke="white" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="sos-text">SOS</div>
+          <div class="sos-sub" id="sos-sub">segure para disparar</div>
+        </button>
+      </div>
+    </div>
+  </div>
   <div class="sos-hint">Alerta com GPS enviado por WhatsApp</div>
 </div>
 
@@ -286,39 +329,85 @@ document.querySelectorAll('.tipo-btn').forEach(btn => {
   });
 });
 
-// ── SOS ──────────────────────────────────
-let disparando = false;
+// ── SOS 2026 — segurar 1.5s para disparar ────
+let pressAnim = null;
+let holding = false;
+let fired = false;
+
+function startPress(e) {
+  if (e) e.preventDefault();
+  if (fired || !API_TOKEN) return;
+  holding = true;
+  const svg = document.getElementById('prog-svg');
+  const fill = document.getElementById('prog-fill');
+  svg.style.opacity = '1';
+  document.getElementById('sos-sub').textContent = 'segurando...';
+
+  const total = 565;
+  const duration = 1500;
+  const start = performance.now();
+
+  function animate(now) {
+    if (!holding) return;
+    const pct = Math.min((now - start) / duration, 1);
+    fill.style.strokeDashoffset = total * (1 - pct);
+    if (pct < 1) {
+      pressAnim = requestAnimationFrame(animate);
+    } else {
+      disparar();
+    }
+  }
+  pressAnim = requestAnimationFrame(animate);
+}
+
+function endPress() {
+  if (!holding || fired) return;
+  holding = false;
+  if (pressAnim) cancelAnimationFrame(pressAnim);
+  document.getElementById('prog-svg').style.opacity = '0';
+  document.getElementById('prog-fill').style.strokeDashoffset = '565';
+  document.getElementById('sos-sub').textContent = 'segure para disparar';
+}
 
 async function disparar() {
-  if (disparando || !API_TOKEN) return;
-  disparando = true;
+  if (fired || !API_TOKEN) return;
+  holding = false;
+  fired = true;
+  if (pressAnim) cancelAnimationFrame(pressAnim);
+
   const nome = document.getElementById('nome-input').value.trim() || 'Motorista';
-  const btn = document.getElementById('sos-btn');
-  btn.classList.remove('idle');
+  const outer = document.getElementById('sos-outer');
+  const btn   = document.getElementById('sos-btn');
+
+  // Ativa rotação + cor laranja de alerta
+  outer.classList.add('girando');
   btn.classList.add('disparado');
-  document.getElementById('sos-sub').textContent = 'Enviando alerta...';
+  document.getElementById('sos-sub').textContent = 'Enviando...';
   document.getElementById('status-txt').textContent = 'ALERTA ATIVO';
+  document.getElementById('prog-svg').style.opacity = '0';
   vibrar([200,100,200,100,400]);
+
   try {
     const res = await fetch('/api/panic', {
-      method: 'POST', headers: apiHeaders(),
-      body: JSON.stringify({ motorista: nome, ocorrencia: tipoSelecionado, lat: gpsLat, lng: gpsLng })
+      method:'POST', headers: apiHeaders(),
+      body: JSON.stringify({ motorista:nome, ocorrencia:tipoSelecionado, lat:gpsLat, lng:gpsLng })
     });
     const data = await res.json();
-    if (data.ok) {
-      showToast('🚨 Alerta enviado!', 'ok');
-      document.getElementById('sos-sub').textContent = 'Alerta disparado!';
-    } else {
-      showToast('Erro: ' + (data.erro || 'tente novamente'), 'erro');
-    }
+    showToast(data.ok ? '🚨 Alerta enviado com GPS!' : 'Erro: ' + (data.erro||'tente novamente'),
+              data.ok ? 'ok' : 'erro');
+    document.getElementById('sos-sub').textContent = data.ok ? 'Alerta disparado!' : 'Erro — tente de novo';
   } catch(e) {
     showToast('Sem conexão', 'erro');
+    document.getElementById('sos-sub').textContent = 'Sem conexão';
   }
+
   setTimeout(() => {
-    disparando = false;
-    btn.classList.remove('disparado'); btn.classList.add('idle');
-    document.getElementById('sos-sub').textContent = 'Pressione para alertar';
+    fired = false;
+    outer.classList.remove('girando');
+    btn.classList.remove('disparado');
+    document.getElementById('sos-sub').textContent = 'segure para disparar';
     document.getElementById('status-txt').textContent = 'Protegido';
+    document.getElementById('prog-fill').style.strokeDashoffset = '565';
   }, 5000);
 }
 
