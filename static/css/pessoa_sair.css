@@ -1,0 +1,25 @@
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  :root{ --bg:#0a0e1a; --bg2:#111827; --bg3:#1a2235; --blue:#0088ff; --green:#00cc66; --text:#e8edf5; --muted:#8899aa; --border:rgba(0,136,255,.15); }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{
+    background:var(--bg); color:var(--text); font-family:'Inter',sans-serif;
+    min-height:100dvh; display:flex; align-items:center; justify-content:center;
+  }
+  .card{
+    max-width:380px; width:100%; padding:24px;
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:20px; margin:24px; text-align:center;
+  }
+  .icon{ font-size:56px; margin-bottom:16px; }
+  h2{ font-family:'Rajdhani',sans-serif; font-size:24px; font-weight:700; margin-bottom:8px; }
+  p{ font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:24px; }
+  .btn{
+    display:block; width:100%; padding:13px;
+    border-radius:10px; border:none; font-size:15px; font-weight:600;
+    cursor:pointer; text-decoration:none; margin-bottom:10px; transition:all .2s;
+    font-family:'Rajdhani',sans-serif; letter-spacing:.5px;
+  }
+  .btn.primary{ background:var(--blue); color:white; }
+  .btn.primary:hover{ background:#0077dd; }
+  .btn.secondary{ background:var(--bg3); color:var(--muted); border:1px solid var(--border); }
+  .btn.secondary:hover{ color:var(--text); }

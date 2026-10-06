@@ -7,322 +7,7 @@
 <title>Driver Shield 360 — Segurança para Motoristas de App</title>
 <meta name="description" content="Sistema de segurança profissional para motoristas de aplicativo. Botão SOS, GPS em tempo real, alertas WhatsApp e modo viagem automático.">
 <link rel="manifest" href="/manifest.json">
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-
-  :root {
-    --bg:    #0a0e1a;
-    --bg2:   #111827;
-    --bg3:   #1a2235;
-    --blue:  #0088ff;
-    --green: #00cc66;
-    --red:   #ff2244;
-    --amber: #ffaa00;
-    --text:  #e8edf5;
-    --muted: #8899aa;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    overflow-x: hidden;
-  }
-
-  /* NAV */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 32px;
-    background: rgba(10,14,26,.9);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(0,136,255,.1);
-  }
-  .nav-logo {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 22px; font-weight: 700; color: var(--blue); letter-spacing: 1px;
-  }
-  .nav-logo span { color: var(--text); }
-  .nav-links { display: flex; gap: 28px; }
-  .nav-links a {
-    color: var(--muted); font-size: 14px; text-decoration: none;
-    font-weight: 500; transition: color .2s;
-  }
-  .nav-links a:hover { color: var(--text); }
-  .nav-cta {
-    background: var(--blue); color: white;
-    border: none; border-radius: 8px;
-    padding: 9px 20px; font-size: 14px; font-weight: 600;
-    cursor: pointer; text-decoration: none;
-    transition: background .2s;
-  }
-  .nav-cta:hover { background: #0077dd; }
-
-  /* HERO */
-  .hero {
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    text-align: center;
-    padding: 100px 24px 60px;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,136,255,.08) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(0,204,102,.1); border: 1px solid rgba(0,204,102,.25);
-    border-radius: 20px; padding: 5px 14px;
-    font-size: 12px; font-weight: 600; color: var(--green);
-    letter-spacing: .5px; text-transform: uppercase; margin-bottom: 24px;
-  }
-  .hero h1 {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: clamp(38px, 8vw, 72px);
-    font-weight: 700; line-height: 1.05;
-    margin-bottom: 20px;
-    max-width: 800px;
-  }
-  .hero h1 .blue { color: var(--blue); }
-  .hero p {
-    font-size: clamp(15px, 2.5vw, 18px);
-    color: var(--muted); max-width: 560px;
-    line-height: 1.7; margin-bottom: 36px;
-  }
-  .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-  .btn-primary {
-    background: var(--blue); color: white;
-    border: none; border-radius: 10px;
-    padding: 14px 28px; font-size: 16px; font-weight: 600;
-    cursor: pointer; text-decoration: none;
-    transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
-  }
-  .btn-primary:hover { background: #0077dd; transform: translateY(-1px); }
-  .btn-secondary {
-    background: transparent; color: var(--text);
-    border: 1px solid rgba(255,255,255,.15); border-radius: 10px;
-    padding: 14px 28px; font-size: 16px; font-weight: 500;
-    cursor: pointer; text-decoration: none;
-    transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
-  }
-  .btn-secondary:hover { border-color: rgba(255,255,255,.3); }
-
-  /* Mockup phone */
-  .phone-mockup {
-    margin-top: 56px;
-    position: relative;
-    display: inline-block;
-  }
-  .phone-frame {
-    width: 280px;
-    background: var(--bg2);
-    border: 2px solid rgba(0,136,255,.2);
-    border-radius: 36px;
-    padding: 20px 16px;
-    box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
-    position: relative;
-    overflow: hidden;
-  }
-  .phone-notch {
-    width: 80px; height: 6px;
-    background: rgba(255,255,255,.08);
-    border-radius: 3px; margin: 0 auto 16px;
-  }
-  .phone-sos {
-    background: var(--bg3);
-    border-radius: 20px;
-    padding: 20px;
-    text-align: center;
-  }
-  .phone-sos-circle {
-    width: 100px; height: 100px;
-    background: radial-gradient(circle at 35% 35%, #ff3355, #cc0033);
-    border-radius: 50%; margin: 0 auto 12px;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    box-shadow: 0 0 30px rgba(255,34,68,.3);
-    animation: phone-pulse 2.5s ease-in-out infinite;
-  }
-  @keyframes phone-pulse {
-    0%,100%{ box-shadow: 0 0 30px rgba(255,34,68,.3); }
-    50%    { box-shadow: 0 0 50px rgba(255,34,68,.5); }
-  }
-  .phone-sos-icon  { font-size: 28px; }
-  .phone-sos-label { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: white; }
-  .phone-gps {
-    margin-top: 10px;
-    padding: 8px 10px;
-    background: rgba(0,204,102,.1);
-    border: 1px solid rgba(0,204,102,.25);
-    border-radius: 8px;
-    font-size: 11px; color: var(--green); font-weight: 500;
-  }
-  .phone-timer {
-    margin-top: 8px;
-    padding: 8px 10px;
-    background: rgba(255,170,0,.08);
-    border: 1px solid rgba(255,170,0,.2);
-    border-radius: 8px;
-    font-size: 11px; color: var(--amber); font-weight: 500;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 16px;
-    text-align: center;
-  }
-
-  /* STATS */
-  .stats {
-    display: flex; justify-content: center; gap: 48px;
-    flex-wrap: wrap;
-    padding: 48px 24px;
-    border-top: 1px solid rgba(255,255,255,.05);
-    border-bottom: 1px solid rgba(255,255,255,.05);
-  }
-  .stat-item { text-align: center; }
-  .stat-num {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 40px; font-weight: 700; color: var(--blue);
-    line-height: 1;
-  }
-  .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
-
-  /* FEATURES */
-  .section { padding: 80px 24px; max-width: 1100px; margin: 0 auto; }
-  .section-label {
-    font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--blue); font-weight: 600; margin-bottom: 12px;
-  }
-  .section-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: clamp(28px, 5vw, 44px);
-    font-weight: 700; margin-bottom: 48px;
-    max-width: 600px;
-  }
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-  }
-  .feature-card {
-    background: var(--bg2);
-    border: 1px solid rgba(255,255,255,.06);
-    border-radius: 16px;
-    padding: 28px;
-    transition: border-color .2s, transform .2s;
-  }
-  .feature-card:hover { border-color: rgba(0,136,255,.3); transform: translateY(-2px); }
-  .feature-icon { font-size: 36px; margin-bottom: 16px; }
-  .feature-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 20px; font-weight: 600; margin-bottom: 8px;
-  }
-  .feature-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
-  .feature-badge {
-    display: inline-block; margin-top: 10px;
-    background: rgba(0,204,102,.1);
-    border: 1px solid rgba(0,204,102,.2);
-    border-radius: 4px; padding: 3px 8px;
-    font-size: 11px; color: var(--green); font-weight: 600;
-    text-transform: uppercase; letter-spacing: .5px;
-  }
-  .feature-badge.novo {
-    background: rgba(0,136,255,.1); border-color: rgba(0,136,255,.2); color: var(--blue);
-  }
-
-  /* COMO FUNCIONA */
-  .steps { display: flex; flex-direction: column; gap: 20px; max-width: 640px; }
-  .step {
-    display: flex; gap: 20px; align-items: flex-start;
-    padding: 20px 24px;
-    background: var(--bg2);
-    border: 1px solid rgba(255,255,255,.06);
-    border-radius: 14px;
-  }
-  .step-num {
-    width: 36px; height: 36px; flex-shrink: 0;
-    background: var(--blue); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 18px; font-weight: 700; color: white;
-  }
-  .step-content h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-  .step-content p  { font-size: 13px; color: var(--muted); line-height: 1.5; }
-
-  /* PLANOS */
-  .plans-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px; max-width: 900px; margin: 0 auto;
-  }
-  .plan-card {
-    background: var(--bg2);
-    border: 1px solid rgba(255,255,255,.06);
-    border-radius: 20px; padding: 32px 28px;
-    position: relative;
-    transition: transform .2s;
-  }
-  .plan-card:hover { transform: translateY(-4px); }
-  .plan-card.destaque {
-    border-color: var(--blue);
-    background: linear-gradient(145deg, #111827, #0d1628);
-    box-shadow: 0 0 40px rgba(0,136,255,.15);
-  }
-  .plan-tag {
-    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-    background: var(--blue); color: white;
-    padding: 4px 14px; border-radius: 12px;
-    font-size: 12px; font-weight: 600;
-    white-space: nowrap;
-  }
-  .plan-name {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 22px; font-weight: 700; margin-bottom: 4px;
-  }
-  .plan-desc { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-  .plan-price {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 48px; font-weight: 700; line-height: 1;
-  }
-  .plan-price sup { font-size: 20px; vertical-align: top; margin-top: 8px; display: inline-block; }
-  .plan-price sub { font-size: 16px; color: var(--muted); }
-  .plan-period { font-size: 13px; color: var(--muted); margin-bottom: 24px; margin-top: 2px; }
-  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-  .plan-features li { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-  .plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
-  .plan-features li.no::before { content: '×'; color: var(--muted); }
-  .plan-features li.no { color: var(--muted); }
-  .plan-btn {
-    width: 100%; padding: 13px;
-    border-radius: 10px; border: none;
-    font-size: 15px; font-weight: 600;
-    cursor: pointer; transition: all .2s;
-    text-decoration: none; display: block; text-align: center;
-  }
-  .plan-btn.primario { background: var(--blue); color: white; }
-  .plan-btn.primario:hover { background: #0077dd; }
-  .plan-btn.secundario { background: var(--bg3); color: var(--text); border: 1px solid rgba(255,255,255,.1); }
-  .plan-btn.secundario:hover { border-color: rgba(255,255,255,.2); }
-
-  /* FOOTER */
-  footer {
-    text-align: center; padding: 40px 24px;
-    border-top: 1px solid rgba(255,255,255,.05);
-    color: var(--muted); font-size: 13px;
-  }
-  footer strong { color: var(--text); }
-
-  /* Responsivo */
-  @media (max-width: 640px) {
-    nav { padding: 12px 16px; }
-    .nav-links { display: none; }
-    .hero { padding: 80px 20px 48px; }
-  }
-</style>
+<link rel="stylesheet" href="/static/css/index.css">
 </head>
 <body>
 
@@ -482,9 +167,9 @@
 </section>
 
 <!-- Planos -->
-<section class="section" id="planos" style="text-align: center;">
+<section class="section s-72a68ac3" id="planos">
   <div class="section-label">Planos</div>
-  <h2 class="section-title" style="margin: 0 auto 48px; text-align:center;">Escolha o plano ideal</h2>
+  <h2 class="section-title s-fd29e743">Escolha o plano ideal</h2>
   <div class="plans-grid">
     <div class="plan-card">
       <div class="plan-name">Básico</div>
@@ -524,7 +209,7 @@
     <div class="plan-card">
       <div class="plan-name">Frota</div>
       <div class="plan-desc">Para empresas e cooperativas</div>
-      <div class="plan-price" style="font-size:32px; margin-top: 8px;">Sob consulta</div>
+      <div class="plan-price s-883a9281">Sob consulta</div>
       <div class="plan-period">a partir de 10 motoristas</div>
       <ul class="plan-features">
         <li>Tudo do Premium</li>
@@ -540,21 +225,21 @@
 </section>
 
 <!-- CTA Final -->
-<section style="text-align: center; padding: 80px 24px; background: linear-gradient(180deg, transparent, rgba(0,136,255,.05));">
-  <h2 style="font-family:'Rajdhani',sans-serif; font-size: clamp(28px,5vw,44px); font-weight:700; margin-bottom:16px;">
+<section class="s-fb6d3edb">
+  <h2 class="s-8272c189">
     Sua segurança não pode esperar
   </h2>
-  <p style="color: var(--muted); font-size:16px; margin-bottom:32px; max-width:480px; margin-left:auto; margin-right:auto;">
+  <p class="s-6660d00d">
     Instale agora em menos de 1 minuto. Sem cadastro, sem cartão de crédito para começar.
   </p>
-  <a href="/motorista" class="btn-primary" style="font-size:18px; padding: 16px 36px;">
+  <a href="/motorista" class="btn-primary s-4d77c877">
     🛡️ Começar gratuitamente
   </a>
 </section>
 
 <footer>
   <p><strong>Driver Shield 360</strong> — Sistema de Segurança para Motoristas</p>
-  <p style="margin-top:8px;">Desenvolvido por <strong>SPYNET Security</strong> · Brasília–DF · © 2026</p>
+  <p class="s-b1ecc496">Desenvolvido por <strong>SPYNET Security</strong> · Brasília–DF · © 2026</p>
 </footer>
 
 </body>

@@ -1,0 +1,29 @@
+# ── Dados pessoais (LGPD) — NUNCA enviar ao GitHub ──
+data/
+data_backup_*/
+backup_fase*/
+backup_importacao_*/
+backup_rollback_*/
+lgpd_backup_*/
+*.corrompido-*
+alerts_backup_*.json
+lgpd_export_*.json
+
+# Estado de segurança (sessões, rate limit) e travas
+*.db
+*.db-wal
+*.db-shm
+*.lock
+*.tmp
+
+# Segredos
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# FASE 3: backups/relatórios de importação e rollback ficam dentro de data/ (já ignorado)
+rollback_*/

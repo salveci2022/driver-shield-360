@@ -42,17 +42,29 @@ Configure em **Dashboard → Environment → Environment Variables**:
 | `ZAPI_INSTANCE`    | ID da instância Z-API        | Sim         |
 | `ZAPI_TOKEN`       | Token da instância Z-API     | Sim         |
 | `ZAPI_CLIENT_TOKEN`| Client Token Z-API           | Sim         |
-| `PAINEL_SENHA`     | Senha do painel de confiança | Sim         |
-| `API_SECRET`       | Token interno da API         | Sim         |
-| `ANTHROPIC_API_KEY`| Chave da API Anthropic       | Shield AI   |
-| `SECRET_KEY`       | Chave secreta Flask          | Recomendado |
+| `SECRET_KEY`       | Chave secreta Flask (sessões)| **Sim — a aplicação não inicia sem ela** |
+| `PAINEL_SENHA`     | Senha do painel de confiança | **Sim — a aplicação não inicia sem ela** |
+| `MOTORISTA_SENHA`  | Código de acesso do motorista| **Sim — a aplicação não inicia sem ela** |
+| `API_SECRET`       | Token de integrações servidor-a-servidor (nunca vai ao navegador) | **Sim — a aplicação não inicia sem ela** |
+| `ANTHROPIC_API_KEY`| Chave da API Anthropic (fica só no servidor) | Opcional: sem ela o Shield AI responde "não configurado" |
+| `IA_MODELO`        | Modelo do Shield AI          | Opcional (padrão `claude-opus-5-5`) |
+| `DS360_PROXY_HOPS` | Proxies confiáveis na frente do app | Opcional (padrão `1`, que é o caso do Render; use `0` sem proxy) |
+| `STORAGE_BACKEND`  | `json` (padrão) ou `postgres` | Opcional: ver `ARQUITETURA.md` |
+| `DATABASE_URL`     | URL do PostgreSQL            | Obrigatória com `STORAGE_BACKEND=postgres` |
+| `AGENDADOR_EMBUTIDO` | `1` (padrão) ou `0` com o worker `python agendador.py` | Opcional |
 
-### Valores recomendados para produção:
+> **FASE 3:** no modo `postgres`, `MOTORISTA_SENHA` e `PAINEL_SENHA` deixam de ser obrigatórias (cada usuário tem a sua senha). O passo a passo completo de banco, migração, worker e rollback está em **`ARQUITETURA.md`**.
+
+### Gerando valores seguros
+Gere cada valor separadamente (nunca reutilize o mesmo valor em duas variáveis):
 ```
-PAINEL_SENHA=MinhasSenha@2026
-API_SECRET=shield360-prod-CHAVE_ALEATORIA_AQUI
-SECRET_KEY=flask-secret-OUTRA_CHAVE_ALEATORIA
+python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
+Os antigos valores padrão (`shield360`, `ds360-api-2026`, `driver-shield-360-premium-2026`)
+e os exemplos que estavam neste README são **recusados** na inicialização.
+
+Para desenvolvimento local apenas: `DS360_DEV=1` gera valores aleatórios para os secrets
+ausentes e desativa o cookie `Secure` (HTTP local). **Nunca use `DS360_DEV` no Render.**
 
 ---
 
@@ -74,6 +86,7 @@ SECRET_KEY=flask-secret-OUTRA_CHAVE_ALEATORIA
 Após o deploy, os links são:
 
 ```
+🔑  Login motorista:     https://driver-shield-360.onrender.com/motorista/login
 🛡️  Motorista (SOS):     https://driver-shield-360.onrender.com/motorista
 📋  Cadastro contatos:   https://driver-shield-360.onrender.com/cadastro
 ✅  Checklist:           https://driver-shield-360.onrender.com/checklist
@@ -90,8 +103,14 @@ Após o deploy, os links são:
 
 ## 🔑 Como o sistema de segurança da API funciona
 
-O frontend busca o token em `/api/token` ao carregar.
-Todas as requisições sensíveis enviam o header:
+- **Motorista** entra em `/motorista/login` com `MOTORISTA_SENHA`. A sessão dura 30 dias
+  e é renovada a cada uso, então quem usa o app não perde o acesso ao SOS. Para sair: botão "Sair desta conta" (o logout revoga a sessão no servidor).
+- **Painel** entra em `/painel/login` com `PAINEL_SENHA` (sessão de 12h).
+- Depois de 5 senhas erradas em 15 minutos, o IP fica bloqueado por 15 minutos.
+- Toda alteração (POST) exige o token CSRF da sessão.
+- `/api/token` foi removido: nenhum secret é enviado ao navegador.
+- Integrações servidor-a-servidor ainda podem chamar `/api/panic`, `/api/viagem/*` e
+  `/api/passageiro_suspeito` com o header:
 ```
 X-Shield-Token: SEU_API_SECRET
 ```
@@ -137,3 +156,15 @@ WhatsApp: https://wa.me/5561999999999
 ---
 
 *Driver Shield 360 v3.0 — © 2026 SPYNET Security*
+
+---
+
+## 🔒 Segurança — FASE 2
+
+- **CSP estrita:** nenhum script inline (todo o JS fica em `static/js/`). Violações são registradas no log como `[CSP]`.
+- **Sessões revogáveis:** ficam guardadas em `data/seguranca.db`. Trocar `PAINEL_SENHA` ou `MOTORISTA_SENHA` derruba as sessões abertas daquele papel.
+- **Limite de tentativas compartilhado** entre os workers do gunicorn (SQLite).
+- **Gravação dos JSONs com trava entre processos**, sem perder atualizações. Um JSON corrompido é preservado em `*.corrompido-<data>`, nunca sobrescrito.
+- **Shield AI via backend** (`/api/ia`): exige login do motorista e tem limite de 20 perguntas a cada 10 minutos e 300 por dia no total.
+- **LGPD:** ver `LGPD.md` e `python lgpd.py --help`.
+- ⚠️ **Disco no Render:** sem um *Persistent Disk*, `data/` (JSONs, sessões, limite de tentativas) é apagado a cada deploy ou reinício.

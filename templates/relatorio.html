@@ -5,102 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0e1a">
 <title>Relatório — Driver Shield 360</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-  :root{
-    --bg:#0a0e1a; --bg2:#111827; --bg3:#1a2235;
-    --blue:#0088ff; --green:#00cc66; --red:#ff2244; --amber:#ffaa00;
-    --text:#e8edf5; --muted:#8899aa; --border:rgba(0,136,255,.15);
-  }
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  html,body{ background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100dvh; }
-
-  .header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 20px; background:var(--bg2);
-    border-bottom:1px solid var(--border);
-    position:sticky; top:0; z-index:100;
-  }
-  .logo{ font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; color:var(--blue); letter-spacing:1px; }
-  .logo span{ color:var(--text); }
-  .header-nav{ display:flex; gap:8px; align-items:center; }
-  .btn-sm{
-    background:var(--bg3); border:1px solid var(--border);
-    border-radius:7px; padding:6px 12px;
-    color:var(--muted); font-size:12px; font-weight:500;
-    cursor:pointer; text-decoration:none; transition:all .2s;
-  }
-  .btn-sm:hover{ color:var(--text); }
-  .btn-sm.primary{ background:var(--blue); border-color:var(--blue); color:white; }
-  .btn-sm.primary:hover{ background:#0077dd; }
-
-  .page-header{ padding:24px 20px 16px; }
-  .page-header h2{ font-family:'Rajdhani',sans-serif; font-size:24px; font-weight:700; }
-  .page-header p{ font-size:13px; color:var(--muted); margin-top:4px; }
-
-  /* Stats */
-  .stats-row{
-    display:grid; grid-template-columns:repeat(4,1fr);
-    gap:10px; padding:0 16px 20px;
-  }
-  @media(max-width:600px){ .stats-row{ grid-template-columns:repeat(2,1fr); } }
-  .stat-card{
-    background:var(--bg2); border:1px solid var(--border);
-    border-radius:12px; padding:14px; text-align:center;
-  }
-  .stat-n{ font-family:'Rajdhani',sans-serif; font-size:30px; font-weight:700; line-height:1; }
-  .stat-n.red{ color:var(--red); }
-  .stat-n.blue{ color:var(--blue); }
-  .stat-n.green{ color:var(--green); }
-  .stat-n.amber{ color:var(--amber); }
-  .stat-l{ font-size:11px; color:var(--muted); margin-top:3px; }
-
-  /* Tabela */
-  .table-wrap{ padding:0 16px 40px; overflow-x:auto; }
-  table{
-    width:100%; border-collapse:collapse;
-    font-size:13px; min-width:500px;
-  }
-  thead tr{
-    background:var(--bg3); border-bottom:1px solid var(--border);
-  }
-  th{
-    padding:10px 12px; text-align:left;
-    font-size:11px; text-transform:uppercase; letter-spacing:.6px;
-    color:var(--muted); font-weight:600; white-space:nowrap;
-  }
-  tbody tr{
-    border-bottom:1px solid rgba(255,255,255,.04);
-    transition:background .15s;
-  }
-  tbody tr:hover{ background:rgba(255,255,255,.02); }
-  td{ padding:12px 12px; vertical-align:middle; }
-
-  .badge{
-    display:inline-block; padding:3px 8px; border-radius:4px;
-    font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.3px;
-    white-space:nowrap;
-  }
-  .badge.ativo   { background:rgba(255,34,68,.1); color:var(--red); border:1px solid rgba(255,34,68,.25); }
-  .badge.resolvido{ background:rgba(0,204,102,.1); color:var(--green); border:1px solid rgba(0,204,102,.25); }
-  .badge.dms     { background:rgba(255,170,0,.1); color:var(--amber); border:1px solid rgba(255,170,0,.25); }
-
-  .td-ocorrencia{ font-weight:500; max-width:200px; }
-  .td-local a{
-    color:var(--blue); text-decoration:none; font-size:12px;
-    display:flex; align-items:center; gap:4px;
-  }
-  .td-local a:hover{ text-decoration:underline; }
-  .sem-gps{ color:var(--muted); font-size:12px; }
-
-  /* Empty */
-  .empty{
-    text-align:center; padding:64px 24px; color:var(--muted);
-  }
-  .empty-icon{ font-size:56px; margin-bottom:16px; }
-  .empty-msg{ font-size:16px; }
-  .empty-sub{ font-size:13px; margin-top:6px; }
-</style>
+<link rel="stylesheet" href="/static/css/relatorio.css">
 </head>
 <body>
 
@@ -157,9 +62,9 @@
     <tbody>
       {% for a in alerts %}
       <tr>
-        <td style="color:var(--muted);font-weight:600;">{{ loop.index }}</td>
-        <td style="white-space:nowrap; color:var(--muted);">{{ a.ts }}</td>
-        <td style="font-weight:500;">{{ a.motorista }}</td>
+        <td class="s-c0471546">{{ loop.index }}</td>
+        <td class="s-c2f8b82f">{{ a.ts }}</td>
+        <td class="s-be39d6e2">{{ a.motorista }}</td>
         <td class="td-ocorrencia">{{ a.ocorrencia }}</td>
         <td class="td-local">
           {% if a.lat and a.lng %}

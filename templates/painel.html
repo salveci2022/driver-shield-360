@@ -4,200 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0e1a">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Painel — Driver Shield 360</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-:root{
-  --bg:#0a0e1a;--bg2:#111827;--bg3:#1a2235;
-  --blue:#0088ff;--green:#00cc66;--red:#ff2244;--amber:#ffaa00;
-  --text:#e8edf5;--muted:#8899aa;--border:rgba(0,136,255,.15);
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100dvh;}
-
-/* ── TELA DE ATIVAÇÃO ── */
-.ativacao-overlay{
-  position:fixed;inset:0;z-index:9999;
-  background:#0a0e1a;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:20px;padding:32px;text-align:center;
-}
-.ativacao-overlay.oculto{display:none;}
-.ativ-icon{font-size:64px;animation:pulse-ativ 1.5s ease-in-out infinite;}
-@keyframes pulse-ativ{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
-.ativ-titulo{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:var(--text);}
-.ativ-sub{font-size:14px;color:var(--muted);max-width:300px;line-height:1.6;}
-.ativ-btn{
-  background:var(--red);border:none;border-radius:14px;
-  padding:16px 40px;
-  font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;
-  color:white;letter-spacing:1px;cursor:pointer;
-  animation:pulse-btn 1s ease-in-out infinite;
-}
-@keyframes pulse-btn{0%,100%{box-shadow:0 0 0 0 rgba(255,34,68,.5);}50%{box-shadow:0 0 0 16px rgba(255,34,68,.0);}}
-
-/* ── HEADER ── */
-.header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px;background:var(--bg2);
-  border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:100;
-  gap:8px;
-}
-.header.alerta-ativo{
-  background:#1a0608;
-  border-bottom-color:rgba(255,34,68,.4);
-  animation:hpulse 1.5s ease-in-out infinite;
-}
-@keyframes hpulse{0%,100%{background:#1a0608;}50%{background:#240a0e;}}
-.logo{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;color:var(--blue);white-space:nowrap;}
-.logo span{color:var(--text);}
-.header.alerta-ativo .logo{color:#ff6680;}
-
-.header-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;flex:1;}
-
-.live-badge{
-  display:flex;align-items:center;gap:5px;
-  font-size:11px;color:var(--green);white-space:nowrap;
-  background:rgba(0,204,102,.08);border:1px solid rgba(0,204,102,.2);
-  border-radius:20px;padding:4px 10px;
-}
-.live-badge.alerta{color:var(--red);background:rgba(255,34,68,.1);border-color:rgba(255,34,68,.3);}
-.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pdot 2s ease-in-out infinite;}
-.ldot.alerta{background:var(--red);box-shadow:0 0 6px var(--red);animation:pdot .4s ease-in-out infinite;}
-@keyframes pdot{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* Botões do header */
-.hbtn{
-  display:inline-flex;align-items:center;gap:4px;
-  border-radius:8px;padding:7px 10px;
-  font-size:12px;font-weight:600;cursor:pointer;
-  text-decoration:none;transition:all .2s;border:none;
-  font-family:'Inter',sans-serif;white-space:nowrap;
-}
-.hbtn.verde{background:rgba(0,204,102,.15);color:var(--green);border:1px solid rgba(0,204,102,.25);}
-.hbtn.verde:hover{background:rgba(0,204,102,.25);}
-.hbtn.azul{background:rgba(0,136,255,.15);color:var(--blue);border:1px solid rgba(0,136,255,.25);}
-.hbtn.azul:hover{background:rgba(0,136,255,.25);}
-.hbtn.cinza{background:var(--bg3);color:var(--muted);border:1px solid rgba(255,255,255,.1);}
-.hbtn.cinza:hover{color:var(--text);border-color:rgba(255,255,255,.2);}
-.hbtn.vermelho{background:rgba(255,34,68,.12);color:var(--red);border:1px solid rgba(255,34,68,.25);}
-.hbtn.vermelho:hover{background:rgba(255,34,68,.22);}
-.hbtn.sirene-on{background:rgba(255,34,68,.3);color:white;border:1px solid var(--red);animation:sblink .5s step-end infinite;}
-@keyframes sblink{50%{opacity:.6}}
-
-/* ── BANNER ALERTA ── */
-.alerta-banner{
-  display:none;align-items:center;justify-content:space-between;gap:10px;
-  padding:10px 14px;
-  background:rgba(255,34,68,.1);border-bottom:1px solid rgba(255,34,68,.3);
-}
-.alerta-banner.visivel{display:flex;animation:slidedown .3s ease;}
-@keyframes slidedown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-.banner-txt{font-size:13px;font-weight:600;color:var(--red);display:flex;align-items:center;gap:6px;}
-
-/* ── STATS ── */
-.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
-.stat-cell{background:var(--bg2);padding:12px;text-align:center;}
-.stat-num{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;line-height:1;}
-.stat-num.red{color:var(--red);}
-.stat-num.blue{color:var(--blue);}
-.stat-num.green{color:var(--green);}
-.stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
-
-/* ── VIAGEM ── */
-.viagem-banner{
-  margin:12px 14px 0;padding:12px 14px;border-radius:12px;
-  background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.25);
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-}
-.viagem-banner.oculto{display:none;}
-.viagem-lbl{font-size:11px;color:var(--amber);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
-.viagem-motorista{font-size:14px;font-weight:600;margin-top:2px;}
-.viagem-timer{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--amber);white-space:nowrap;}
-.viagem-timer.urgente{color:var(--red);animation:blink .6s step-end infinite;}
-@keyframes blink{50%{opacity:.3}}
-
-/* ── TOOLBAR ── */
-.toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;gap:10px;flex-wrap:wrap;}
-.toolbar-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:600;}
-.toolbar-btns{display:flex;gap:8px;flex-wrap:wrap;}
-.btn-sm{
-  background:var(--bg3);border:1px solid var(--border);
-  border-radius:8px;padding:7px 12px;
-  color:var(--muted);font-size:12px;font-weight:500;
-  cursor:pointer;transition:all .2s;text-decoration:none;
-  display:inline-flex;align-items:center;gap:5px;
-}
-.btn-sm:hover{color:var(--text);border-color:rgba(0,136,255,.3);}
-.btn-sm.primary{background:var(--blue);border-color:var(--blue);color:white;}
-.btn-sm.primary:hover{background:#0077dd;}
-
-/* ── FILTROS ── */
-.filtro-bar{display:flex;gap:8px;padding:0 14px 10px;overflow-x:auto;scrollbar-width:none;}
-.filtro-bar::-webkit-scrollbar{display:none;}
-.filtro-btn{
-  background:var(--bg3);border:1px solid var(--border);
-  border-radius:20px;padding:5px 13px;
-  font-size:12px;font-weight:500;color:var(--muted);
-  cursor:pointer;white-space:nowrap;transition:all .15s;
-}
-.filtro-btn.ativo{background:rgba(0,136,255,.15);border-color:var(--blue);color:var(--text);}
-
-/* ── CARDS ── */
-.alertas-list{padding:0 14px;}
-.alerta-card{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:14px;padding:14px;margin-bottom:10px;
-  position:relative;overflow:hidden;transition:border-color .2s;
-}
-.alerta-card.ativo{border-color:rgba(255,34,68,.25);}
-.alerta-card.ativo::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);}
-.alerta-card.resolvido{border-color:rgba(0,204,102,.15);opacity:.7;}
-.alerta-card.resolvido::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--green);}
-.alerta-card.dms{border-color:rgba(255,170,0,.25);}
-.alerta-card.dms::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber);}
-.alerta-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
-.alerta-tipo{font-weight:600;font-size:14px;flex:1;line-height:1.3;}
-.badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;flex-shrink:0;}
-.badge.ativo{background:rgba(255,34,68,.1);color:var(--red);border:1px solid rgba(255,34,68,.25);}
-.badge.resolvido{background:rgba(0,204,102,.1);color:var(--green);border:1px solid rgba(0,204,102,.25);}
-.alerta-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
-.alerta-field{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;}
-.alerta-field strong{color:var(--text);}
-.alerta-actions{display:flex;gap:8px;flex-wrap:wrap;}
-.btn-resolver{background:rgba(0,204,102,.1);border:1px solid rgba(0,204,102,.25);border-radius:7px;padding:6px 14px;color:var(--green);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
-.btn-resolver:hover{background:rgba(0,204,102,.2);}
-.btn-mapa{background:rgba(0,136,255,.1);border:1px solid rgba(0,136,255,.2);border-radius:7px;padding:6px 14px;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;}
-.btn-mapa:hover{background:rgba(0,136,255,.2);}
-
-/* ── EMPTY / TOAST ── */
-.empty{text-align:center;padding:48px 24px;color:var(--muted);}
-.empty-icon{font-size:48px;margin-bottom:12px;}
-.toast{
-  position:fixed;top:70px;left:50%;
-  transform:translateX(-50%) translateY(-10px);
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:10px;padding:10px 18px;
-  font-size:13px;font-weight:500;color:var(--text);
-  z-index:999;opacity:0;transition:all .3s;
-  pointer-events:none;white-space:nowrap;
-  box-shadow:0 8px 32px rgba(0,0,0,.4);
-}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.toast.ok{color:var(--green);border-color:rgba(0,204,102,.3);}
-.toast.erro{color:var(--red);border-color:rgba(255,34,68,.3);}
-.nav-spacer{height:20px;}
-</style>
+<link rel="stylesheet" href="/static/css/painel.css">
 </head>
 <body>
 
 <!-- ══ TELA DE ATIVAÇÃO DO SOM ══ -->
 <div class="ativacao-overlay" id="ativacao">
-  <img src="/static/icon-512.png" style="width:120px;height:120px;border-radius:24px;margin-bottom:8px;" alt="Driver Shield 360">
+  <img class="s-005618f2" src="/static/icon-512.png" alt="Driver Shield 360">
   <div class="ativ-titulo">Painel de Monitoramento</div>
   <div class="ativ-sub">Toque para ativar o painel. A sirene tocará automaticamente quando um SOS for disparado.</div>
-  <button class="ativ-btn" onclick="ativarPainel()">🛡️ ATIVAR PAINEL</button>
+  <button class="ativ-btn" data-acao="ativarPainel">🛡️ ATIVAR PAINEL</button>
 </div>
 
 <!-- ══ HEADER ══ -->
@@ -208,11 +26,11 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
       <div class="ldot" id="ldot"></div>
       <span id="live-txt">Ao vivo</span>
     </div>
-    <button class="hbtn verde" id="btn-sirene" onclick="toggleSirene()">🔊 Sirene</button>
+    <button class="hbtn verde" id="btn-sirene" data-acao="toggleSirene">🔊 Sirene</button>
     <a href="/motorista" class="hbtn azul">🛡️ Motorista</a>
-    <button class="hbtn cinza" onclick="reiniciar()">🔄 Reiniciar</button>
-    <button class="hbtn vermelho" onclick="limparTodos()">🗑️ Limpar</button>
-    <a href="/painel/logout" class="hbtn cinza">Sair</a>
+    <button class="hbtn cinza" data-acao="reiniciar">🔄 Reiniciar</button>
+    <button class="hbtn vermelho" data-acao="limparTodos">🗑️ Limpar</button>
+    <form class="s-8a1834eb" method="POST" action="/painel/logout"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button type="submit" class="hbtn cinza">Sair</button></form>
   </div>
 </div>
 
@@ -229,7 +47,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
 </div>
 
 <!-- Viagem ativa -->
-<div style="padding:0 14px">
+<div class="s-0a98ee48">
   <div class="viagem-banner oculto" id="viagem-banner">
     <div>
       <div class="viagem-lbl">⏰ Modo viagem ativo</div>
@@ -250,10 +68,10 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
 
 <!-- Filtros -->
 <div class="filtro-bar">
-  <button class="filtro-btn ativo" onclick="filtrar('todos',this)">Todos</button>
-  <button class="filtro-btn" onclick="filtrar('ativo',this)">🔴 Ativos</button>
-  <button class="filtro-btn" onclick="filtrar('resolvido',this)">✅ Resolvidos</button>
-  <button class="filtro-btn" onclick="filtrar('dms',this)">⏰ Automáticos</button>
+  <button class="filtro-btn ativo" data-acao="filtrar" data-filtro="todos">Todos</button>
+  <button class="filtro-btn" data-acao="filtrar" data-filtro="ativo">🔴 Ativos</button>
+  <button class="filtro-btn" data-acao="filtrar" data-filtro="resolvido">✅ Resolvidos</button>
+  <button class="filtro-btn" data-acao="filtrar" data-filtro="dms">⏰ Automáticos</button>
 </div>
 
 <!-- Lista de alertas -->
@@ -264,220 +82,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
 <div class="nav-spacer"></div>
 <div class="toast" id="toast"></div>
 
-<script>
-let todosAlertas = [];
-let filtroAtual = 'todos';
-let viagemInterval = null;
-let ultimoTotal = -1;
-let sireneAtiva = false;
-let sireneLoop = null;
-let painelAtivado = false;
-
-// ══ ATIVAÇÃO ══
-function ativarPainel() {
-  painelAtivado = true;
-  // Pré-carrega e desbloqueia MP3 com gesto do usuário
-  criarAudio();
-  // Toca mudo por 0.1s para desbloquear autoplay
-  sireneAudio.volume = 0;
-  sireneAudio.play().then(()=>{
-    setTimeout(()=>{ sireneAudio.pause(); sireneAudio.currentTime=0; sireneAudio.volume=0.9; },100);
-  }).catch(()=>{});
-  document.getElementById('ativacao').classList.add('oculto');
-  carregarAlertas();
-  verificarViagem();
-  setInterval(carregarAlertas, 6000);
-  setInterval(verificarViagem, 15000);
-}
-
-// ══ SIRENE MP3 REAL ══
-let sireneAudio = null;
-
-function criarAudio() {
-  if (sireneAudio) return;
-  sireneAudio = new Audio('/static/sirene.mp3');
-  sireneAudio.loop = true;
-  sireneAudio.volume = 0.9;
-}
-
-function iniciarSirene() {
-  if (sireneAtiva) return;
-  sireneAtiva = true;
-  criarAudio();
-  sireneAudio.currentTime = 0;
-  sireneAudio.play().catch(()=>{});
-  const btn = document.getElementById('btn-sirene');
-  btn.textContent = '🔇 Parar';
-  btn.className = 'hbtn sirene-on';
-}
-
-function pararSirene() {
-  sireneAtiva = false;
-  if (sireneAudio) { sireneAudio.pause(); sireneAudio.currentTime = 0; }
-  const btn = document.getElementById('btn-sirene');
-  btn.textContent = '🔊 Sirene';
-  btn.className = 'hbtn verde';
-}
-
-function toggleSirene() {
-  if (sireneAtiva) pararSirene();
-  else iniciarSirene();
-}
-
-// ══ ALERTAS ══
-async function carregarAlertas() {
-  try {
-    const res = await fetch('/api/alerts');
-    const data = await res.json();
-    todosAlertas = data.reverse();
-
-    const ativos = todosAlertas.filter(a => a.status === 'Ativo').length;
-
-    // Novo alerta chegou → toca sirene
-    if (ultimoTotal >= 0 && todosAlertas.length > ultimoTotal && ativos > 0) {
-      iniciarSirene();
-      showToast('🚨 Novo alerta recebido!', 'erro');
-      if (navigator.vibrate) navigator.vibrate([300,100,300,100,600]);
-    }
-    ultimoTotal = todosAlertas.length;
-
-    // UI muda conforme estado
-    const header = document.getElementById('main-header');
-    const banner = document.getElementById('alerta-banner');
-    const badge  = document.getElementById('live-badge');
-    const dot    = document.getElementById('ldot');
-    const liveTxt = document.getElementById('live-txt');
-
-    if (ativos > 0) {
-      header.classList.add('alerta-ativo');
-      banner.classList.add('visivel');
-      badge.classList.add('alerta');
-      dot.classList.add('alerta');
-      liveTxt.textContent = `${ativos} ALERTA${ativos>1?'S':''} ATIVO${ativos>1?'S':''}`;
-      document.getElementById('banner-txt').textContent =
-        `${ativos} alerta${ativos>1?'s':''} ativo${ativos>1?'s':''} — motorista precisa de ajuda!`;
-      document.title = `🚨 ${ativos} ALERTA — Driver Shield 360`;
-    } else {
-      header.classList.remove('alerta-ativo');
-      banner.classList.remove('visivel');
-      badge.classList.remove('alerta');
-      dot.classList.remove('alerta');
-      liveTxt.textContent = 'Ao vivo';
-      document.title = 'Painel — Driver Shield 360';
-      if (sireneAtiva) pararSirene();
-    }
-
-    atualizarStats();
-    renderAlertas();
-  } catch(e) {}
-}
-
-function atualizarStats() {
-  const ativos = todosAlertas.filter(a => a.status==='Ativo').length;
-  const resolvidos = todosAlertas.filter(a => a.status==='Resolvido').length;
-  document.getElementById('cnt-ativos').textContent = ativos;
-  document.getElementById('cnt-total').textContent = todosAlertas.length;
-  document.getElementById('cnt-resolvidos').textContent = resolvidos;
-}
-
-function renderAlertas() {
-  const list = document.getElementById('alertas-list');
-  let f = todosAlertas;
-  if (filtroAtual==='ativo')     f = todosAlertas.filter(a=>a.status==='Ativo');
-  if (filtroAtual==='resolvido') f = todosAlertas.filter(a=>a.status==='Resolvido');
-  if (filtroAtual==='dms')       f = todosAlertas.filter(a=>a.tipo==='dead_mans_switch');
-
-  if (!f.length) {
-    list.innerHTML = `<div class="empty"><div class="empty-icon">✅</div><p>Nenhuma ocorrência</p></div>`;
-    return;
-  }
-  list.innerHTML = f.map(a => {
-    const idx = todosAlertas.indexOf(a);
-    const st  = a.status || 'Ativo';
-    const cl  = a.tipo==='dead_mans_switch' ? 'dms' : st.toLowerCase();
-    const map = (a.lat && a.lng) ? `https://www.google.com/maps?q=${a.lat},${a.lng}&z=16` : null;
-    const loc = (a.lat && a.lng) ? `${parseFloat(a.lat).toFixed(4)}, ${parseFloat(a.lng).toFixed(4)}` : 'Sem GPS';
-    return `
-    <div class="alerta-card ${cl}">
-      <div class="alerta-top">
-        <div class="alerta-tipo">${a.ocorrencia}</div>
-        <span class="badge ${st.toLowerCase()}">${st}</span>
-      </div>
-      <div class="alerta-meta">
-        <div class="alerta-field">👤 <strong>${a.motorista}</strong></div>
-        <div class="alerta-field">⏰ ${a.ts}</div>
-        <div class="alerta-field">📍 ${loc}</div>
-      </div>
-      <div class="alerta-actions">
-        ${st==='Ativo'?`<button class="btn-resolver" onclick="resolver(${idx})">✅ Resolver</button>`:''}
-        ${map?`<a class="btn-mapa" href="${map}" target="_blank">🗺️ Ver mapa</a>`:''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function filtrar(f, btn) {
-  filtroAtual = f;
-  document.querySelectorAll('.filtro-btn').forEach(b=>b.classList.remove('ativo'));
-  btn.classList.add('ativo');
-  renderAlertas();
-}
-
-async function resolver(idx) {
-  await fetch('/api/resolve',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({idx: todosAlertas.length-1-idx})});
-  await carregarAlertas();
-  showToast('✅ Ocorrência resolvida','ok');
-}
-
-async function limparTodos() {
-  if (!confirm('Apagar todo o histórico de alertas?')) return;
-  await fetch('/api/clear_alerts',{method:'POST'});
-  ultimoTotal = 0;
-  await carregarAlertas();
-  showToast('🗑️ Histórico limpo','ok');
-}
-
-function reiniciar() {
-  pararSirene();
-  showToast('🔄 Recarregando...','ok');
-  setTimeout(()=>location.reload(),800);
-}
-
-// ══ VIAGEM ══
-async function verificarViagem() {
-  try {
-    const res = await fetch('/api/viagem/status');
-    const d = await res.json();
-    const banner = document.getElementById('viagem-banner');
-    if (d.ativa) {
-      banner.classList.remove('oculto');
-      document.getElementById('viagem-motorista').textContent = d.motorista||'—';
-      iniciarCountdown(d.restante);
-    } else {
-      banner.classList.add('oculto');
-      if (viagemInterval) { clearInterval(viagemInterval); viagemInterval=null; }
-    }
-  } catch(e) {}
-}
-
-function iniciarCountdown(s) {
-  if (viagemInterval) { clearInterval(viagemInterval); viagemInterval=null; }
-  atualizarTimer(s);
-  viagemInterval = setInterval(()=>{s--;atualizarTimer(s);if(s<=0){clearInterval(viagemInterval);verificarViagem();}},1000);
-}
-function atualizarTimer(s) {
-  const el = document.getElementById('viagem-timer');
-  el.textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-  el.className = 'viagem-timer'+(s<=120?' urgente':'');
-}
-
-// ══ TOAST ══
-function showToast(msg, tipo) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${tipo} show`;
-  setTimeout(()=>t.className='toast',3000);
-}
-</script>
+<script src="/static/js/painel.js"></script>
 </body>
 </html>

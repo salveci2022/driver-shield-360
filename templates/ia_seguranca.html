@@ -4,133 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#0a0e1a">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Shield AI — Driver Shield 360</title>
 <link rel="manifest" href="/manifest.json">
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-  :root{
-    --bg:#0a0e1a; --bg2:#111827; --bg3:#1a2235;
-    --blue:#0088ff; --green:#00cc66; --red:#ff2244; --amber:#ffaa00;
-    --text:#e8edf5; --muted:#8899aa; --border:rgba(0,136,255,.15);
-  }
-  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-  html,body{ background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
-
-  .header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 20px; background:var(--bg2);
-    border-bottom:1px solid var(--border); flex-shrink:0;
-  }
-  .logo{ font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; letter-spacing:1px; color:var(--blue); }
-  .logo span{ color:var(--text); }
-  .ai-badge{
-    display:flex; align-items:center; gap:6px;
-    background:rgba(0,136,255,.1); border:1px solid rgba(0,136,255,.2);
-    border-radius:20px; padding:4px 12px;
-    font-size:12px; color:var(--blue); font-weight:600;
-  }
-  .ai-dot{ width:6px; height:6px; border-radius:50%; background:var(--blue); animation:pdot 2s ease-in-out infinite; }
-  @keyframes pdot{ 0%,100%{opacity:1}50%{opacity:.4} }
-
-  /* Chat área */
-  .chat-area{
-    flex:1; overflow-y:auto; padding:16px;
-    display:flex; flex-direction:column; gap:12px;
-    scrollbar-width:thin; scrollbar-color:var(--bg3) transparent;
-  }
-  .chat-area::-webkit-scrollbar{ width:4px; }
-  .chat-area::-webkit-scrollbar-track{ background:transparent; }
-  .chat-area::-webkit-scrollbar-thumb{ background:var(--bg3); border-radius:2px; }
-
-  /* Boas-vindas */
-  .welcome{
-    text-align:center; padding:24px 16px; flex-shrink:0;
-  }
-  .welcome-icon{ font-size:48px; margin-bottom:12px; }
-  .welcome-title{ font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; margin-bottom:6px; }
-  .welcome-sub{ font-size:13px; color:var(--muted); line-height:1.5; max-width:320px; margin:0 auto 20px; }
-  .sugestoes{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
-  .sug-btn{
-    background:var(--bg3); border:1px solid var(--border);
-    border-radius:20px; padding:7px 14px;
-    font-size:12px; color:var(--muted); cursor:pointer;
-    transition:all .15s;
-  }
-  .sug-btn:hover{ color:var(--text); border-color:rgba(0,136,255,.3); }
-
-  /* Mensagens */
-  .msg{ display:flex; gap:10px; max-width:90%; animation:fadeIn .2s ease; }
-  @keyframes fadeIn{ from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
-  .msg.user{ align-self:flex-end; flex-direction:row-reverse; }
-  .msg.ai  { align-self:flex-start; }
-
-  .msg-avatar{
-    width:32px; height:32px; border-radius:50%; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center; font-size:16px;
-  }
-  .msg.ai   .msg-avatar{ background:rgba(0,136,255,.15); border:1px solid rgba(0,136,255,.25); }
-  .msg.user .msg-avatar{ background:rgba(0,204,102,.1); border:1px solid rgba(0,204,102,.2); }
-
-  .msg-bubble{
-    padding:10px 14px; border-radius:14px;
-    font-size:14px; line-height:1.55;
-  }
-  .msg.ai   .msg-bubble{ background:var(--bg2); border:1px solid var(--border); border-bottom-left-radius:4px; }
-  .msg.user .msg-bubble{ background:var(--blue); color:white; border-bottom-right-radius:4px; }
-
-  /* Typing */
-  .typing .msg-bubble{ padding:12px 16px; }
-  .typing-dots{ display:flex; gap:4px; align-items:center; height:16px; }
-  .typing-dots span{
-    width:6px; height:6px; border-radius:50%;
-    background:var(--muted); animation:typing 1.2s ease-in-out infinite;
-  }
-  .typing-dots span:nth-child(2){ animation-delay:.2s; }
-  .typing-dots span:nth-child(3){ animation-delay:.4s; }
-  @keyframes typing{ 0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)} }
-
-  /* Input */
-  .input-bar{
-    display:flex; align-items:flex-end; gap:10px;
-    padding:12px 16px; background:var(--bg2);
-    border-top:1px solid var(--border); flex-shrink:0;
-    padding-bottom:max(12px, env(safe-area-inset-bottom));
-  }
-  .msg-input{
-    flex:1; background:var(--bg3); border:1px solid var(--border);
-    border-radius:12px; padding:11px 14px;
-    color:var(--text); font-family:'Inter',sans-serif; font-size:14px;
-    outline:none; resize:none; min-height:44px; max-height:120px;
-    transition:border-color .2s; line-height:1.4;
-  }
-  .msg-input:focus{ border-color:var(--blue); }
-  .msg-input::placeholder{ color:var(--muted); }
-  .btn-send{
-    width:44px; height:44px; border-radius:12px;
-    background:var(--blue); border:none;
-    color:white; font-size:18px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    flex-shrink:0; transition:all .15s;
-  }
-  .btn-send:hover{ background:#0077dd; }
-  .btn-send:active{ transform:scale(.92); }
-  .btn-send:disabled{ background:var(--bg3); color:var(--muted); cursor:not-allowed; }
-
-  .nav-bar{
-    display:grid; grid-template-columns:repeat(3,1fr);
-    background:var(--bg2); border-top:1px solid var(--border);
-    flex-shrink:0;
-  }
-  .nav-item{
-    display:flex; flex-direction:column; align-items:center;
-    padding:10px 0 8px; text-decoration:none;
-    font-size:10px; color:var(--muted); font-weight:500;
-    letter-spacing:.3px; gap:3px; transition:color .15s;
-  }
-  .nav-item.ativo{ color:var(--blue); }
-  .nav-icon{ font-size:20px; }
-</style>
+<link rel="stylesheet" href="/static/css/ia_seguranca.css">
 </head>
 <body>
 
@@ -145,11 +23,11 @@
     <div class="welcome-title">Shield AI</div>
     <div class="welcome-sub">Assistente especializado em segurança para motoristas. Tire dúvidas, receba orientações e dicas de proteção.</div>
     <div class="sugestoes">
-      <button class="sug-btn" onclick="enviarSugestao(this)">O que fazer em caso de assalto?</button>
-      <button class="sug-btn" onclick="enviarSugestao(this)">Dicas de segurança para motoristas mulheres</button>
-      <button class="sug-btn" onclick="enviarSugestao(this)">Passageiro está se comportando de forma estranha</button>
-      <button class="sug-btn" onclick="enviarSugestao(this)">Como acionar a polícia de forma discreta?</button>
-      <button class="sug-btn" onclick="enviarSugestao(this)">Rotas seguras e horários de risco</button>
+      <button class="sug-btn" data-acao="enviarSugestao">O que fazer em caso de assalto?</button>
+      <button class="sug-btn" data-acao="enviarSugestao">Dicas de segurança para motoristas mulheres</button>
+      <button class="sug-btn" data-acao="enviarSugestao">Passageiro está se comportando de forma estranha</button>
+      <button class="sug-btn" data-acao="enviarSugestao">Como acionar a polícia de forma discreta?</button>
+      <button class="sug-btn" data-acao="enviarSugestao">Rotas seguras e horários de risco</button>
     </div>
   </div>
 </div>
@@ -160,10 +38,9 @@
     id="msg-input"
     placeholder="Pergunte sobre segurança..."
     rows="1"
-    onkeydown="handleKey(event)"
-    oninput="autoResize(this)"
+    maxlength="2000"
   ></textarea>
-  <button class="btn-send" id="btn-send" onclick="enviar()">➤</button>
+  <button class="btn-send" id="btn-send" data-acao="enviar">➤</button>
 </div>
 
 <div class="nav-bar">
@@ -178,124 +55,6 @@
   </a>
 </div>
 
-<script>
-const SYSTEM_PROMPT = `Você é o Shield AI, assistente de segurança do Driver Shield 360, um sistema de proteção para motoristas de aplicativo, especialmente mulheres.
-
-Seu papel é:
-- Orientar motoristas em situações de risco e emergência
-- Dar dicas práticas de segurança no trânsito e durante as corridas
-- Ajudar a identificar comportamentos suspeitos de passageiros
-- Orientar sobre como agir em caso de assalto, perseguição, acidente
-- Dar suporte emocional e orientações de prevenção
-- Explicar como usar o sistema Driver Shield 360
-
-Seja sempre:
-- Direto, prático e objetivo
-- Empático com situações de estresse
-- Claro nas instruções (use listas numeradas quando necessário)
-- Nunca dê informações que possam colocar a motorista em mais risco
-
-Responda sempre em português brasileiro. Seja conciso mas completo.`;
-
-let historico = [];
-let aguardando = false;
-
-async function enviar() {
-  const input = document.getElementById('msg-input');
-  const texto = input.value.trim();
-  if (!texto || aguardando) return;
-
-  const welcome = document.getElementById('welcome-screen');
-  if (welcome) welcome.remove();
-
-  adicionarMsg(texto, 'user');
-  input.value = '';
-  autoResize(input);
-  historico.push({ role: 'user', content: texto });
-
-  aguardando = true;
-  document.getElementById('btn-send').disabled = true;
-
-  const typing = adicionarTyping();
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: historico
-      })
-    });
-    const data = await res.json();
-    const resposta = data.content?.[0]?.text || 'Desculpe, não consegui processar sua mensagem.';
-
-    typing.remove();
-    adicionarMsg(resposta, 'ai');
-    historico.push({ role: 'assistant', content: resposta });
-
-  } catch(e) {
-    typing.remove();
-    adicionarMsg('❌ Sem conexão com o assistente. Verifique sua internet.', 'ai');
-  }
-
-  aguardando = false;
-  document.getElementById('btn-send').disabled = false;
-  input.focus();
-}
-
-function enviarSugestao(btn) {
-  document.getElementById('msg-input').value = btn.textContent;
-  enviar();
-}
-
-function adicionarMsg(texto, tipo) {
-  const area = document.getElementById('chat-area');
-  const div = document.createElement('div');
-  div.className = `msg ${tipo}`;
-  div.innerHTML = `
-    <div class="msg-avatar">${tipo === 'ai' ? '🤖' : '👤'}</div>
-    <div class="msg-bubble">${formatarTexto(texto)}</div>
-  `;
-  area.appendChild(div);
-  area.scrollTop = area.scrollHeight;
-  return div;
-}
-
-function adicionarTyping() {
-  const area = document.getElementById('chat-area');
-  const div = document.createElement('div');
-  div.className = 'msg ai typing';
-  div.innerHTML = `
-    <div class="msg-avatar">🤖</div>
-    <div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>
-  `;
-  area.appendChild(div);
-  area.scrollTop = area.scrollHeight;
-  return div;
-}
-
-function formatarTexto(texto) {
-  return texto
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/\n/g,'<br>');
-}
-
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    enviar();
-  }
-}
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-}
-</script>
+<script src="/static/js/ia.js"></script>
 </body>
 </html>

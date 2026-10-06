@@ -1,0 +1,86 @@
+# ══════════════════════════════════════════════════════════════════════
+# DRIVER-SHIELD 360 — Blueprint de HOMOLOGAÇÃO (staging)   ⚠️ AINDA NÃO APLICADO
+#
+# • Nome NÃO é "render.yaml": o Render não o aplica sozinho. Para usar:
+#   Dashboard → New → Blueprint → repositório → "Blueprint path" = render-staging.yaml
+# • Cria recursos NOVOS e separados (sufixo -staging). Não toca no serviço atual,
+#   no banco de produção nem em DNS.
+# • autoDeployTrigger: off → nada é publicado sem clique manual.
+# • Nenhum segredo neste arquivo: gerados pelo Render (generateValue) ou
+#   digitados no painel na criação (sync: false).
+# ══════════════════════════════════════════════════════════════════════
+
+databases:
+  - name: driver-shield-360-db-staging
+    databaseName: ds360_staging
+    user: ds360_staging
+    region: virginia            # mais próxima do Brasil entre as regiões disponíveis
+    postgresMajorVersion: "16"  # mesma versão usada nos testes locais
+    plan: free                  # homologação: expira em 30 dias e não tem backup
+    ipAllowList: []             # sem acesso externo (só os serviços internos)
+
+envVarGroups:
+  - name: ds360-staging-comum
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true     # gerado pelo Render; diferente de produção
+      - key: API_SECRET
+        generateValue: true
+      - key: STORAGE_BACKEND
+        value: postgres
+      - key: PYTHON_VERSION
+        value: "3.14.3"         # versão exata testada localmente (3.13.7 também testada)
+      # Z-API: instância SEPARADA, exclusiva para testes (nunca a de produção).
+      # Os contatos cadastrados na homologação devem ser SOMENTE números da equipe.
+      - key: ZAPI_INSTANCE
+        sync: false
+      - key: ZAPI_TOKEN
+        sync: false
+      - key: ZAPI_CLIENT_TOKEN
+        sync: false
+
+services:
+  # ── Web Service (sem agendador: AGENDADOR_EMBUTIDO=0) ──
+  - type: web
+    name: driver-shield-360-staging
+    runtime: python
+    region: virginia
+    plan: starter               # pago: permite Pre-Deploy e não hiberna
+    branch: homologacao
+    autoDeployTrigger: "off"
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    preDeployCommand: python migrar.py aplicar
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60 --access-logfile -
+    healthCheckPath: /saude
+    envVars:
+      - fromGroup: ds360-staging-comum
+      - key: DATABASE_URL
+        fromDatabase:
+          name: driver-shield-360-db-staging
+          property: connectionString
+      - key: AGENDADOR_EMBUTIDO
+        value: "0"
+      - key: DS360_PROXY_HOPS
+        value: "1"
+      - key: URL_PUBLICA
+        value: https://driver-shield-360-staging.onrender.com   # conferir a URL real após criar
+      # Shield AI DESLIGADO nesta homologação: ANTHROPIC_API_KEY propositalmente ausente.
+
+  # ── Background Worker: ÚNICO lugar onde o agendador (Dead Man's Switch) roda ──
+  - type: worker
+    name: driver-shield-360-agendador-staging
+    runtime: python
+    region: virginia
+    plan: starter               # worker não tem plano gratuito
+    branch: homologacao
+    autoDeployTrigger: "off"
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: python agendador.py
+    envVars:
+      - fromGroup: ds360-staging-comum
+      - key: DATABASE_URL
+        fromDatabase:
+          name: driver-shield-360-db-staging
+          property: connectionString
+      - key: URL_PUBLICA
+        value: https://driver-shield-360-staging.onrender.com

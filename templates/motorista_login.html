@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<title>Acesso do Motorista — Driver Shield 360</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/static/css/motorista_login.css">
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="logo-area">
+    <div class="logo-icon">🛡️</div>
+    <div class="logo-text">DRIVER<span>·SHIELD</span> 360</div>
+    <div class="logo-sub">Proteção do Motorista</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Acesso do Motorista</div>
+    <div class="card-sub">Insira o código de acesso — você fica conectado por 30 dias</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash {{ cat }}">⚠️ {{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('motorista_login', next=destino) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      {% if multiusuario %}
+      <div class="input-group">
+        <label class="input-label" for="usuario">Usuário</label>
+        <input class="input-field" type="text" id="usuario" name="usuario" autocomplete="username"
+               autocapitalize="none" spellcheck="false" maxlength="80" required autofocus>
+      </div>
+      {% endif %}
+      <div class="input-group">
+        <label class="input-label">Código de acesso</label>
+        <input
+          class="input-field"
+          type="password"
+          name="senha"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          autofocus
+          required
+        >
+      </div>
+      <button class="btn-login" type="submit">🛡️ Entrar</button>
+    </form>
+
+    <a href="/" class="back-link">← Voltar ao início</a>
+  </div>
+
+  <div class="info-box">
+    Área do motorista: botão SOS, modo viagem e contatos de confiança. Pessoas de confiança usam o <a class="s-285582c7" href="/painel/login">painel</a>.
+  </div>
+</div>
+
+</body>
+</html>

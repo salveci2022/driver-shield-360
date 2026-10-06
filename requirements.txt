@@ -1,4 +1,7 @@
-flask>=3.0.0
-reportlab>=4.0.0
-gunicorn>=21.0.0
-Pillow>=10.0.0
+# Faixas testadas na FASE 4 (limite superior = próxima versão major, ainda não testada)
+flask>=3.0.0,<4
+reportlab>=4.0.0,<6
+gunicorn>=21.0.0,<27
+Pillow>=10.0.0,<13
+anthropic>=0.96.0,<2
+psycopg2-binary>=2.9.9,<2.10
